@@ -187,7 +187,7 @@ router.post('/acceptOrder',async function(req,res,next){
   const {courierId,orderId} = req.body;
   try{
     var checkif = await requestSchema.find({orderId:orderId,status:"Accept"});
-    if(checkif.length!=0){
+    if(checkif.length==0){
       await requestSchema.findOneAndUpdate({orderId:orderId,courierId:courierId},{status:"Accept"});
       await orderSchema.findByIdAndUpdate(orderId,{courierId:courierId});
       res.status(200)
