@@ -50,7 +50,7 @@ setInterval(() =>{
     }
   });
   console.log("Total Found: "+counter);
-}, 1000000);
+}, 300000);
 
 
 async function getcuurentlocation(id){

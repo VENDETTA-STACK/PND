@@ -85,6 +85,22 @@ router.post('/newoder',async function(req,res,next){
               fcmToken:courierfound[0].fcmToken,
             });
             await newrequest.save();
+            var payload = {
+              notification: {
+                title: "Order Alert",
+                body: "New Order Alert Found For You."
+              },
+              data: {
+                orderid: courierfound[0].orderId,
+                distance: courierfound[0].distance
+              }
+            };
+
+            var options = {
+              priority: "high",
+              timeToLive: 60 * 60 *24
+            };
+            config.firebase.messaging().sendToDevice(courierfound[0].fcmToken,payload,options);
           }else{
            
             console.log("No Courier Boys Available:: Waiting For Admin Response");

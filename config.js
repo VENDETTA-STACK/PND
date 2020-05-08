@@ -23,5 +23,5 @@ mongoose.connection
         console.log("Error While Connecting With DB");
     });
 
-module.exports = {mongoose,docref};
+module.exports = {mongoose,docref,firebase};
 
