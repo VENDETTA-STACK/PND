@@ -1,0 +1,69 @@
+const mongoose = require('mongoose');
+
+const courierSchema = mongoose.Schema({
+    _id:mongoose.Schema.Types.ObjectId,
+    firstName:{
+        type:String,
+        required:true},
+    lastName:{
+        type:String,
+        required:true},
+    mobileNo:{
+        type:String,
+        required:true},
+    profileImg:{
+        type:String,
+        required:true},
+    poaType:{
+        type:String,
+        required:true},
+    poaFrontImg:{
+        type:String,
+        required:true},
+    poaBackImg:{
+        type:String,
+        required:true},
+    panCardImg:{
+        type:String,
+        required:true},
+    fcmToken:{
+        type:String},
+    transport:{
+        vehicleType:{
+            type:String,
+            default:null},
+        vehicleNo:{
+            type:String,
+            default:null},
+    },
+    bankDetail:{
+        bankName:{
+            type:String,
+            default:null},
+        ifscCode:{
+            type:String,
+            default:null},
+        accNo:{
+            type:String,
+            default:null},
+        branch:{
+            type:String,
+            default:null},
+    },
+    accStatus:{
+        flag:{
+            type:Boolean,
+            default:false},
+        message:{
+            type:String,
+            default:"Waiting For Administrator Approval!"},
+    },
+    isVerified:{
+        type:Boolean,
+        default:false},
+    isActive:{
+        type:Boolean,
+        default:true}
+});
+
+module.exports = mongoose.model('Couriers',courierSchema);
