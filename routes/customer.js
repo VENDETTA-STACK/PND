@@ -6,7 +6,7 @@ var axios = require('axios');
 var router = express.Router();
 var config = require('../config');
 var upload = multer.diskStorage({
-  destination:function(req,file,cb){cb(null,'public/uploads/customers')},
+  destination:function(req,file,cb){cb(null,'uploads/customers')},
   filename:function(req,file,cb){cb(null,file.fieldname+'_'+Date.now()+path.extname(file.originalname));}
 });
 var uploadpic = multer({storage:upload});

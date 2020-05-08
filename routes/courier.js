@@ -10,7 +10,7 @@ var router = express.Router();
 
 /* Creating FileUpload Path */
 var filestorage = multer.diskStorage({
-  destination:function(req,file,cb){cb(null,'public/uploads/couriers')},
+  destination:function(req,file,cb){cb(null,'uploads/couriers')},
   filename:function(req,file,cb){cb(null,file.fieldname+'_'+Date.now()+path.extname(file.originalname));}
 });
 var finalstorage = multer({storage:filestorage});
