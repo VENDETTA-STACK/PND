@@ -92,7 +92,7 @@ router.post('/newoder',async function(req,res,next){
               },
               data: {
                 orderid: courierfound[0].orderId,
-                distance: courierfound[0].distance
+                distance: courierfound[0].distance.toString()
               }
             };
 
@@ -100,7 +100,9 @@ router.post('/newoder',async function(req,res,next){
               priority: "high",
               timeToLive: 60 * 60 *24
             };
-            config.firebase.messaging().sendToDevice(courierfound[0].fcmToken,payload,options);
+            config.firebase.messaging().sendToDevice(courierfound[0].fcmToken,payload,options).then(doc=>{
+              console.log(doc);
+            });
           }else{
            
             console.log("No Courier Boys Available:: Waiting For Admin Response");
@@ -355,6 +357,6 @@ router.post('/c_completeOrder',async function(req,res,next){
 });
 
 
-
+208378
 
 module.exports = router;

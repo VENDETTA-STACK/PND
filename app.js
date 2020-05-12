@@ -6,6 +6,7 @@ var logger = require('morgan');
 
 
 var indexRouter = require('./routes/index');
+var adminRouter = require('./routes/admin');
 var customersRouter = require('./routes/customer');
 var courierRouter = require('./routes/courier');
 var orderRouter = require('./routes/order');
@@ -26,14 +27,17 @@ app.use('/', indexRouter);
 app.use('/customers', customersRouter);
 app.use('/couriers',courierRouter);
 app.use('/orders',orderRouter);
+app.use('/admin',adminRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
 
+
 // error handler
 app.use(function(err, req, res, next) {
+  
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
