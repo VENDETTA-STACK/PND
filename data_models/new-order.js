@@ -73,6 +73,9 @@ const orderSchema = mongoose.Schema({
     discount:{
         type:Number,
         required:true},
+    additionalAmount:{
+        type:Number,
+        required:true},
     finalAmount:{
         type:Number,
         required:true},

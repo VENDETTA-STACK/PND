@@ -17,10 +17,7 @@ var locationSchema = require('../data_models/courier-location');
 var requestSchema = require('../data_models/order-request');
 var settingsSchema = require('../data_models/o-settings');
 
-//API ROUTES
-router.get('/', function(req, res, next) {
-    res.render('index', { title: 'Invalid URL' });
-});
+
 
 //CUSTOMER APP API
 router.post('/settings',async function(req,res,next){
@@ -44,8 +41,9 @@ router.post('/newoder',async function(req,res,next){
         customerId,deliveryType,weightLimit,pkName,pkMobileNo,pkAddress,pkLat,pkLong,
         pkCompleteAddress,pkContent,pkArriveType,pkArriveTime,dpName,dpMobileNo,
         dpAddress,dpLat,dpLong,dpCompleteAddress,dpDistance,collectCash,promoCode,
-        amount,discount,finalAmount
+        amount,discount,additionalAmount,finalAmount
     } = req.body;
+    
     try{
       var newOrder = new orderSchema({
         _id:new config.mongoose.Types.ObjectId(),
@@ -76,6 +74,7 @@ router.post('/newoder',async function(req,res,next){
         promoCode:promoCode,
         amount:amount,
         discount:discount,
+        additionalAmount:additionalAmount,
         finalAmount:finalAmount,
         status:pkArriveType=="RightNow"?"Finding":"Scheduled",
         note:pkArriveType=="RightNow"?"Finding Delivery Boy Near By You!":"Your Order is Scheduled"
