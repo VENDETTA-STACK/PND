@@ -15,14 +15,30 @@ var orderSchema = require('../data_models/new-order');
 var courierSchema = require('../data_models/courier-signup');
 var locationSchema = require('../data_models/courier-location');
 var requestSchema = require('../data_models/order-request');
+var settingsSchema = require('../data_models/o-settings');
 
 //API ROUTES
 router.get('/', function(req, res, next) {
     res.render('index', { title: 'Invalid URL' });
 });
 
-
 //CUSTOMER APP API
+router.post('/settings',async function(req,res,next){
+  try{
+    var getsettings = await settingsSchema.find({});
+    if(getsettings.length == 1){
+      res.status(200)
+      .json({Message:"Settings Found!",Data:getsettings,IsSuccess:true});
+    }else{
+      res.status(200)
+      .json({Message:"Settings Not Found!",Data:getsettings,IsSuccess:true});
+    }
+  }catch(err){
+    res.status(500)
+    .json({Message:err.message,Data:0,IsSuccess:false});
+  }
+});
+
 router.post('/newoder',async function(req,res,next){
     const {
         customerId,deliveryType,weightLimit,pkName,pkMobileNo,pkAddress,pkLat,pkLong,
@@ -67,7 +83,7 @@ router.post('/newoder',async function(req,res,next){
       
       if(dpDistance <=15){
           var placedorder = await newOrder.save();
-          var avlcourier = await avlCourierBoy(pkLat,pkLong,placedorder.id);
+          var avlcourier = await findCourierBoy(pkLat,pkLong,placedorder.id);
 
           if(placedorder!=null && avlcourier.length!=0){
             
@@ -125,7 +141,7 @@ router.post('/newoder',async function(req,res,next){
     }
 });
 
-async function avlCourierBoy(pick_lat,pick_long,orderid){
+async function findCourierBoy(pick_lat,pick_long,orderid){
 
   var availableCouriers = [];
   var getCourierIds = await courierSchema.find({isActive:true,"accStatus.flag":true}).select('id fcmToken');
@@ -227,7 +243,7 @@ router.post('/rejectOrder',async function(req,res,next){
     if(updateRejection!=null){
       var orderData = await orderSchema.find({'_id':orderId,isActive:true});
       if(orderData.length!=0){
-        var avlcourier = await avlCourierBoy(orderData[0].pickupPoint.lat,orderData[0].pickupPoint.long,orderId);
+        var avlcourier = await findCourierBoy(orderData[0].pickupPoint.lat,orderData[0].pickupPoint.long,orderId);
           if(avlcourier.length!=0){
             console.log("Courier Boys Available");
             let courierfound = arraySort(avlcourier,'distance');
@@ -264,7 +280,7 @@ router.post('/noResponseOrder',async function(req,res,next){
     if(updateRejection!=null){
       var orderData = await orderSchema.find({'_id':orderId,isActive:true});
       if(orderData.length!=0){
-        var avlcourier = await avlCourierBoy(orderData[0].pickupPoint.lat,orderData[0].pickupPoint.long,orderId);
+        var avlcourier = await findCourierBoy(orderData[0].pickupPoint.lat,orderData[0].pickupPoint.long,orderId);
           if(avlcourier.length!=0){
             console.log("Courier Boys Available");
             let courierfound = arraySort(avlcourier,'distance');
