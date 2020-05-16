@@ -88,6 +88,9 @@ const orderSchema = mongoose.Schema({
     isActive:{
         type:Boolean,
         default:true},
+    dateTime:{
+        type:Date,
+        default:Date.now},
     courierId:[{type:mongoose.Types.ObjectId,ref:'Couriers',default:null}]
 });
 
