@@ -63,7 +63,13 @@ const courierSchema = mongoose.Schema({
         default:false},
     isActive:{
         type:Boolean,
-        default:true}
+        default:true},
+    policeVerificationImg:{
+        type:String,
+        default:""},
+    dateTime:{
+        type:Date,
+        default:Date.now}
 });
 
 module.exports = mongoose.model('Couriers',courierSchema);

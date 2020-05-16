@@ -154,6 +154,85 @@ router.post('/couriers',cors(),async function(req,res,next){
     }
 });
 
+router.post('/couriersIsApproval',cors(),async function(req,res,next){
+  const id = req.body.id;
+  try{
+    let courierApp = await courierSchema.find({'_id':id});
+    if(courierApp.length==1){
+      if(courierApp[0].accStatus.flag == true){
+        await courierSchema.findByIdAndUpdate(id,{"accStatus.flag":false,"accStatus.message":"Waiting For Administrator Approval"});
+        res.status(200)
+        .json({Message:"Account Status Updated!",Data:1,IsSuccess:true});
+      }else{
+        await courierSchema.findByIdAndUpdate(id,{"accStatus.flag":true,"accStatus.message":"Approved"});
+        res.status(200)
+        .json({Message:"Account Status Updated!",Data:1,IsSuccess:true});
+      }
+    }else{
+      res.status(200)
+      .json({Message:"Account Status Not Updated!",Data:0,IsSuccess:true});
+    }
+  }catch(err){
+    res.status(500)
+      .json({Message:err.message,Data:0,IsSuccess:false});
+  }
+});
+
+router.post('/couriersIsActive',cors(),async function(req,res,next){
+  const id = req.body.id;
+  try{
+    let courierApp = await courierSchema.find({'_id':id});
+    if(courierApp.length==1){
+      if(courierApp[0].isActive == true){
+        await courierSchema.findByIdAndUpdate(id,{isActive:false});
+        res.status(200)
+        .json({Message:"Account Status Updated!",Data:1,IsSuccess:true});
+      }else{
+        await courierSchema.findByIdAndUpdate(id,{isActive:true});
+        res.status(200)
+        .json({Message:"Account Status Updated!",Data:1,IsSuccess:true});
+      }
+    }else{
+      res.status(200)
+      .json({Message:"Account Status Not Updated!",Data:0,IsSuccess:true});
+    }
+  }catch(err){
+    res.status(500)
+      .json({Message:err.message,Data:0,IsSuccess:false});
+  }
+});
+
+router.post('/couriersDelete',cors(),async function(req,res,next){
+  const id = req.body.id;
+  try{
+      var data = await courierSchema.find({'_id':id});
+      if(data.length == 1){
+        
+        //Removing Uploaded Files
+        var old = data[0].profileImg;
+        if(fs.existsSync(old.replace('\\g','/'))){fs.unlinkSync(old.replace('\\g','/'));} 
+        old = data[0].poaFrontImg;
+        if(fs.existsSync(old.replace('\\g','/'))){fs.unlinkSync(old.replace('\\g','/'));} 
+        old = data[0].poaBackImg;
+        if(fs.existsSync(old.replace('\\g','/'))){fs.unlinkSync(old.replace('\\g','/'));}
+        old = data[0].panCardImg;
+        if(fs.existsSync(old.replace('\\g','/'))){fs.unlinkSync(old.replace('\\g','/'));}
+
+        await courierSchema.findByIdAndDelete(id);
+        res.status(200)
+        .json({Message:"Account Not Deleted!",Data:1,IsSuccess:true});
+      }else{
+        res.status(200)
+        .json({Message:"Account Not Deleted!",Data:0,IsSuccess:true});
+      }
+  }catch(err){
+    res.status(500)
+      .json({Message:err.message,Data:0,IsSuccess:false});
+  }
+});
+
+
+
 router.post('/users',cors(),async function(req,res,next){
     try{
        adminSchema.find({})
@@ -172,4 +251,5 @@ router.post('/users',cors(),async function(req,res,next){
       .json({Message:err.message,Data:0,IsSuccess:false});
     }
 });
+
 module.exports = router;
