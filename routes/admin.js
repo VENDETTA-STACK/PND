@@ -14,7 +14,7 @@ var settingsSchema = require('../data_models/o-settings');
 var orderSchema = require('../data_models/new-order');
 var courierSchema = require('../data_models/courier-signup');
 
-router.post('/signup',cors(),async function(req,res,next){
+router.post('/signup',async function(req,res,next){
     const {name,username,password,type} = req.body;
     try{
         var existAdmin = await adminSchema.find({username:username.toLowerCase()});
@@ -39,13 +39,13 @@ router.post('/signup',cors(),async function(req,res,next){
     }
 });
 
-router.post('/login',cors(),async function(req,res,next){
+router.post('/login',async function(req,res,next){
     const {username,password,type} = req.body;
     try{
         var existAdmin = await adminSchema.find(
-            {   username:username.toLowerCase(),
-                password:password.toLowerCase(),
-                type:type.toLowerCase()});
+            {   username:username,
+                password:password,
+                type:type});
         if(existAdmin.length!=0){
             res.status(200)
             .json({Message:"user found!",Data:existAdmin,IsSuccess:true});
@@ -59,7 +59,7 @@ router.post('/login',cors(),async function(req,res,next){
     }
 });
 
-router.post('/validate',cors(),async function(req,res,next){
+router.post('/validate',async function(req,res,next){
     const {id,type} = req.body;
     try{
         var existAdmin = await adminSchema.find({'_id':id,type:type});
@@ -76,7 +76,7 @@ router.post('/validate',cors(),async function(req,res,next){
     }
 });
 
-router.post('/updatesetttings',cors(),async function(req,res,next){
+router.post('/updatesetttings',async function(req,res,next){
     const {PerUnder5KM,PerKM,ExpDelivery} = req.body;
     try{
         var existData = await settingsSchema.find({});
@@ -98,7 +98,7 @@ router.post('/updatesetttings',cors(),async function(req,res,next){
     }
 });
 
-router.post('/settings',cors(),async function(req,res,next){
+router.post('/settings',async function(req,res,next){
     try{
       var getsettings = await settingsSchema.find({});
       if(getsettings.length == 1){
@@ -114,7 +114,7 @@ router.post('/settings',cors(),async function(req,res,next){
     }
 });
 
-router.post('/orders',cors(),async function(req,res,next){
+router.post('/orders',async function(req,res,next){
     try{
       orderSchema.find({})
       .populate('courierId','firstName lastName fcmToken mobileNo accStatus transport isVerified')
@@ -135,7 +135,7 @@ router.post('/orders',cors(),async function(req,res,next){
     }
 });
 
-router.post('/couriers',cors(),async function(req,res,next){
+router.post('/couriers',async function(req,res,next){
     try{
        courierSchema.find({})
       .exec()
@@ -154,7 +154,7 @@ router.post('/couriers',cors(),async function(req,res,next){
     }
 });
 
-router.post('/couriersIsApproval',cors(),async function(req,res,next){
+router.post('/couriersIsApproval',async function(req,res,next){
   const id = req.body.id;
   try{
     let courierApp = await courierSchema.find({'_id':id});
@@ -178,7 +178,7 @@ router.post('/couriersIsApproval',cors(),async function(req,res,next){
   }
 });
 
-router.post('/couriersIsActive',cors(),async function(req,res,next){
+router.post('/couriersIsActive',async function(req,res,next){
   const id = req.body.id;
   try{
     let courierApp = await courierSchema.find({'_id':id});
@@ -202,7 +202,7 @@ router.post('/couriersIsActive',cors(),async function(req,res,next){
   }
 });
 
-router.post('/couriersDelete',cors(),async function(req,res,next){
+router.post('/couriersDelete',async function(req,res,next){
   const id = req.body.id;
   try{
       var data = await courierSchema.find({'_id':id});
@@ -231,9 +231,7 @@ router.post('/couriersDelete',cors(),async function(req,res,next){
   }
 });
 
-
-
-router.post('/users',cors(),async function(req,res,next){
+router.post('/users',async function(req,res,next){
     try{
        adminSchema.find({})
       .exec()
