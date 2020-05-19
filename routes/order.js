@@ -107,7 +107,8 @@ router.post('/newoder',async function(req,res,next){
               },
               data: {
                 orderid: courierfound[0].orderId,
-                distance: courierfound[0].distance.toString()
+                distance: courierfound[0].distance.toString(),
+                click_action:"FLUTTER_NOTIFICATION_CLICK"
               }
             };
 
