@@ -215,6 +215,7 @@ router.post('/completeOrders',async function(req,res,next){
 });
 
 
+
 //COURIER BOY APP API
 router.post('/acceptOrder',async function(req,res,next){
   const {courierId,orderId} = req.body;
@@ -371,5 +372,21 @@ router.post('/c_completeOrder',async function(req,res,next){
   }
 });
 
+router.post('orderDetails',async function(req,res,next){
+  const id = req.body;
+  try{
+    var order = await orderSchema.find({'_id':id});
+    if(order.length==1){
+      res.status(200)
+    .json({Message:"Orders Found!",Data:order,IsSuccess:true});
+    }else{
+      res.status(200)
+    .json({Message:"Orders Not Found!",Data:order,IsSuccess:true});
+    }
+  }catch(err){
+    res.status(500)
+    .json({Message:err.message,Data:0,IsSuccess:false});
+  }
+});
 
 module.exports = router;
