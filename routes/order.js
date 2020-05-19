@@ -76,8 +76,8 @@ router.post('/newoder',async function(req,res,next){
         discount:discount,
         additionalAmount:additionalAmount,
         finalAmount:finalAmount,
-        status:pkArriveType=="RightNow"?"Finding":"Scheduled",
-        note:pkArriveType=="RightNow"?"Finding Delivery Boy Near By You!":"Your Order is Scheduled"
+        status:pkArriveType=="rightnow"?"Finding":"Scheduled",
+        note:pkArriveType=="rightnow"?"Finding Delivery Boy Near By You!":"Your Order is Scheduled"
       });
       
       if(dpDistance <=15){
