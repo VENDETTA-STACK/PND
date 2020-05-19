@@ -13,6 +13,7 @@ var adminSchema = require('../data_models/a-signup');
 var settingsSchema = require('../data_models/o-settings');
 var orderSchema = require('../data_models/new-order');
 var courierSchema = require('../data_models/courier-signup');
+var locationSchema = require('../data_models/courier-location');
 
 router.post('/signup',async function(req,res,next){
     const {name,username,password,type} = req.body;
@@ -252,6 +253,24 @@ router.post('/users',async function(req,res,next){
       res.status(500)
       .json({Message:err.message,Data:0,IsSuccess:false});
     }
+});
+
+router.post('/courierLocations',async function(req,res,next){
+  var listOfCourierBoy = [];
+  var listIds = await courierSchema.find({isActive:true,"accStatus.flag":true}).select('id firstName lastName');
+  for(var i=0;i<listIds.length;i++){
+    var getlocation = await locationSchema.find({courierId:listIds[i].id}).sort({'_id':-1}).limit(1);
+    if(getlocation.length == 1 && getlocation[0].duty=="ON"){
+      let name = listIds[0].firstName +' '+listIds[0].lastName;
+      let lat = Number(getlocation[0].latitude);
+      let long = Number(getlocation[0].longitude);
+      let Din = i+1;
+      var data = [name,lat,long,Din];
+      listOfCourierBoy.push(data);
+      console.log(data);
+    }
+  }
+  res.status(200).json(listOfCourierBoy);
 });
 
 module.exports = router;

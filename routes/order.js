@@ -145,7 +145,7 @@ async function findCourierBoy(pick_lat,pick_long,orderid){
   var availableCouriers = [];
   var getCourierIds = await courierSchema.find({isActive:true,"accStatus.flag":true}).select('id fcmToken');
   for(var i=0;i<getCourierIds.length;i++){
-    var getlocation = await locationSchema.find({courierId:getCourierIds[0].id}).sort({'_id':-1}).limit(1);
+    var getlocation = await locationSchema.find({courierId:getCourierIds[i].id}).sort({'_id':-1}).limit(1);
     if(getlocation.length == 1 && getlocation[0].duty=="ON")
     {
       let counters = await requestSchema.countDocuments({orderId:orderid});
@@ -388,5 +388,6 @@ router.post('/orderDetails',async function(req,res,next){
     .json({Message:err.message,Data:0,IsSuccess:false});
   }
 });
+
 
 module.exports = router;
