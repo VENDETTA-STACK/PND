@@ -372,8 +372,8 @@ router.post('/c_completeOrder',async function(req,res,next){
   }
 });
 
-router.post('orderDetails',async function(req,res,next){
-  const id = req.body;
+router.post('/orderDetails',async function(req,res,next){
+  const {id} = req.body;
   try{
     var order = await orderSchema.find({'_id':id});
     if(order.length==1){
