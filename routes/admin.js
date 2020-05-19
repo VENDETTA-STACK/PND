@@ -87,7 +87,11 @@ router.post('/updatesetttings',async function(req,res,next){
             res.status(200)
             .json({Message:"Settings Updated!",Data:1,IsSuccess:true});
         }else{
-            var newsettings = new settingsSchema({_id:new config.mongoose.Types.ObjectId(),PerUnder5KM:PerUnder5KM,PerKM:PerKM,ExpDelivery:ExpDelivery});
+            var newsettings = new settingsSchema({_id:new config.mongoose.Types.ObjectId(),
+              PerUnder5KM:PerUnder5KM,
+              PerKM:PerKM,
+              ExpDelivery:ExpDelivery,
+              ReferalPoint:ReferalPoint});
             await newsettings.save();
             res.status(200)
             .json({Message:"Settings Created!",Data:1,IsSuccess:true});
