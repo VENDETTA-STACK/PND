@@ -77,12 +77,12 @@ router.post('/validate',async function(req,res,next){
 });
 
 router.post('/updatesetttings',async function(req,res,next){
-    const {PerUnder5KM,PerKM,ExpDelivery} = req.body;
+    const {PerUnder5KM,PerKM,ExpDelivery,ReferalPoint} = req.body;
     try{
         var existData = await settingsSchema.find({});
         if(existData.length == 1){
             let id = existData[0].id;
-            let updatedsettings = {PerUnder5KM:PerUnder5KM,PerKM:PerKM,ExpDelivery:ExpDelivery};
+            let updatedsettings = {PerUnder5KM:PerUnder5KM,PerKM:PerKM,ExpDelivery:ExpDelivery,ReferalPoint:ReferalPoint};
             await settingsSchema.findByIdAndUpdate(id,updatedsettings);
             res.status(200)
             .json({Message:"Settings Updated!",Data:1,IsSuccess:true});
