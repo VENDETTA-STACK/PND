@@ -277,7 +277,7 @@ router.post('/rejectOrder',async function(req,res,next){
               priority: "high",
               timeToLive: 60 * 60 *24
             };
-            
+
             config.firebase.messaging().sendToDevice(courierfound[0].fcmToken,payload,options).then(doc=>{
               console.log("Sending Notification");
               console.log(doc);
@@ -320,6 +320,28 @@ router.post('/noResponseOrder',async function(req,res,next){
                 fcmToken:courierfound[0].fcmToken,
               });
             await newrequest.save();
+            
+            var payload = {
+              notification: {
+                title: "Order Alert",
+                body: "New Order Alert Found For You."
+              },
+              data: {
+                orderid: courierfound[0].orderId,
+                distance: courierfound[0].distance.toString(),
+                click_action:"FLUTTER_NOTIFICATION_CLICK"
+              }
+            };
+
+            var options = {
+              priority: "high",
+              timeToLive: 60 * 60 *24
+            };
+            
+            config.firebase.messaging().sendToDevice(courierfound[0].fcmToken,payload,options).then(doc=>{
+              console.log("Sending Notification");
+              console.log(doc);
+            });
           }else{
             console.log("No Courier Boys Available:: Waiting For Admin Response");
             var updateorder = ({
