@@ -126,8 +126,10 @@ router.post('/sendotp',async function(req,res,next){
 
 router.post('/verify',async function(req,res,next){
   const {mobileNo,fcmToken,lat,long} = req.body;
+  console.log(req.body);
   try{
       var existCourier = await courierSchema.findOneAndUpdate({mobileNo:mobileNo},{isVerified:true,fcmToken:fcmToken});
+      console.log(existCourier);
       if(existCourier!=null){
         var newfirebase = config.docref.child(existCourier.id);
         newfirebase.set({latitude:lat,longitude:long,duty:"OFF",parcel:0});
