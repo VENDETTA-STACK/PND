@@ -273,4 +273,30 @@ router.post('/courierLocations',async function(req,res,next){
   res.status(200).json(listOfCourierBoy);
 });
 
+router.post('/getLiveLocation',async function(req,res,next){
+  var list_courier = [];
+  var listIds = await courierSchema.find({isActive:true,"accStatus.flag":true}).select('id firstName lastName');
+  var counter = 0;
+  for(let i=0;i<listIds.length;i++){
+    let location = await getcuurentlocation(listIds[i].id);
+    console.log(location);
+    if(location!=null && location.duty=="ON"){
+      counter++;
+      let name = listIds[i].firstName +' '+listIds[i].lastName;
+      let lat = Number(location.latitude);
+      let long = Number(location.longitude);
+      var data = [name,lat,long,counter];
+      list_courier.push(data);
+      console.log(data);
+    }
+  }
+  res.status(200).json(list_courier);
+});
+
+async function getcuurentlocation(id){
+  var CourierRef = config.docref.child(id);
+  const data = await CourierRef.once("value").then(snapshot=>snapshot.val()).catch(err=>err);
+  return data;
+}
+
 module.exports = router;
