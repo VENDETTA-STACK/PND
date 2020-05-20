@@ -85,10 +85,10 @@ router.post('/newoder',async function(req,res,next){
           var avlcourier = await findCourierBoy(pkLat,pkLong,placedorder.id);
 
           if(placedorder!=null && avlcourier.length!=0){
-            
             console.log("Courier Boys Available");
             //find NearByCourierBoy
             let courierfound = arraySort(avlcourier,'distance');
+            console.log();
             console.log(courierfound[0]);
             var newrequest = new requestSchema({
               _id:new config.mongoose.Types.ObjectId(),
@@ -117,6 +117,7 @@ router.post('/newoder',async function(req,res,next){
               timeToLive: 60 * 60 *24
             };
             config.firebase.messaging().sendToDevice(courierfound[0].fcmToken,payload,options).then(doc=>{
+              console.log("Sending Notification");
               console.log(doc);
             });
           }else{
@@ -151,18 +152,20 @@ async function findCourierBoy(pick_lat,pick_long,orderid){
     {
       let counters = await requestSchema.countDocuments({orderId:orderid});
       if(counters <=3){
-        let data = await requestSchema.find({courierId:getCourierIds[0].id,orderId:orderid});
+        let data = await requestSchema.find({courierId:getCourierIds[i].id,orderId:orderid});
+        console.log("Found!");
+        console.log(data);
         if(data.length ==0){
           let courierLocation = {latitude:getlocation[0].latitude,longitude:getlocation[0].longitude};
           let pickLocation = {latitude:pick_lat,longitude:pick_long};
           var distance = convertDistance(getDistance(courierLocation,pickLocation,1000),'km');
           if(distance<=15){
             availableCouriers.push({
-              courierId:getCourierIds[0].id,
+              courierId:getCourierIds[i].id,
               orderId:orderid,
               distance:distance,
               status:"Pending",
-              fcmToken:getCourierIds[0].fcmToken,
+              fcmToken:getCourierIds[i].fcmToken,
               reason:"",
             });
           }
