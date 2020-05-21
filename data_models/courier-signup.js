@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const courierSchema = mongoose.Schema({
     _id:mongoose.Schema.Types.ObjectId,
-    CId:{
+    cId:{
         type:String,
         required:true},
     firstName:{
