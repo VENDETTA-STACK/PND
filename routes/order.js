@@ -28,7 +28,7 @@ async function getOrderNumber(){
   let orderNo = Math.floor(Math.random()*90000) + 10000;
   return orderNo;
 }
-d
+
 //CUSTOMER APP API
 router.post('/settings',async function(req,res,next){
   try{
