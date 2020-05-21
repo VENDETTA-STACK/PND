@@ -18,6 +18,11 @@ var requestSchema = require('../data_models/order-request');
 var settingsSchema = require('../data_models/o-settings');
 
 
+async function getcuurentlocation(id){
+  var CourierRef = config.docref.child(id);
+  const data = await CourierRef.once("value").then(snapshot=>snapshot.val()).catch(err=>err);
+  return data;
+}
 
 //CUSTOMER APP API
 router.post('/settings',async function(req,res,next){
@@ -85,11 +90,8 @@ router.post('/newoder',async function(req,res,next){
           var avlcourier = await findCourierBoy(pkLat,pkLong,placedorder.id);
 
           if(placedorder!=null && avlcourier.length!=0){
-            console.log("Courier Boys Available");
-            //find NearByCourierBoy
+            console.log("Total Found:"+avlcourier.length);
             let courierfound = arraySort(avlcourier,'distance');
-            console.log();
-            console.log(courierfound[0]);
             var newrequest = new requestSchema({
               _id:new config.mongoose.Types.ObjectId(),
               courierId:courierfound[0].courierId,
@@ -111,7 +113,6 @@ router.post('/newoder',async function(req,res,next){
                 click_action:"FLUTTER_NOTIFICATION_CLICK"
               }
             };
-
             var options = {
               priority: "high",
               timeToLive: 60 * 60 *24
@@ -121,14 +122,12 @@ router.post('/newoder',async function(req,res,next){
               console.log(doc);
             });
           }else{
-           
             console.log("No Courier Boys Available:: Waiting For Admin Response");
             var updateorder = ({
               note:"All Courier Boys Are Busy. Please wait for response.",
               status:"Admin"
             });
             await orderSchema.findByIdAndUpdate(placedorder.id,updateorder);
-
           }
         res.status(200)
         .json({Message:"Order Placed!",Data:1,IsSuccess:true});
@@ -143,29 +142,25 @@ router.post('/newoder',async function(req,res,next){
 });
 
 async function findCourierBoy(pick_lat,pick_long,orderid){
-
-  var availableCouriers = [];
-  var getCourierIds = await courierSchema.find({isActive:true,"accStatus.flag":true}).select('id fcmToken');
-  for(var i=0;i<getCourierIds.length;i++){
-    var getlocation = await locationSchema.find({courierId:getCourierIds[i].id}).sort({'_id':-1}).limit(1);
-    if(getlocation.length == 1 && getlocation[0].duty=="ON")
-    {
-      let counters = await requestSchema.countDocuments({orderId:orderid});
-      if(counters <=3){
-        let data = await requestSchema.find({courierId:getCourierIds[i].id,orderId:orderid});
-        console.log("Found!");
-        console.log(data);
-        if(data.length ==0){
-          let courierLocation = {latitude:getlocation[0].latitude,longitude:getlocation[0].longitude};
+  var listCouriers = [];
+  var getCourier = await courierSchema.find({isActive:true,isVerified:true,"accStatus.flag":true}).select('id fcmToken');
+  for(let i=0;i<getCourier.length;i++){
+    let location = await getcuurentlocation(getCourier[i].id);
+    if(location!=null && location.duty=="ON" && Number(location.parcel) < 3){
+      let counter = await requestSchema.countDocuments({orderId:orderid});
+      let exist = await requestSchema.find({courierId:getCourierIds[i].id,orderId:orderid});
+      if(counter<=3){
+        if(exist.length==0){
+          let courierLocation = {latitude:location.latitude,longitude:location.longitude};
           let pickLocation = {latitude:pick_lat,longitude:pick_long};
-          var distance = convertDistance(getDistance(courierLocation,pickLocation,1000),'km');
-          if(distance<=15){
-            availableCouriers.push({
-              courierId:getCourierIds[i].id,
+          let distanceKM = convertDistance(getDistance(courierLocation,pickLocation,1000),'km');
+          if(distanceKM<=15){
+            listCouriers.push({
+              courierId:getCourier[i].id,
               orderId:orderid,
-              distance:distance,
+              distance:distanceKM,
               status:"Pending",
-              fcmToken:getCourierIds[i].fcmToken,
+              fcmToken:getCourier[i].fcmToken,
               reason:"",
             });
           }
@@ -173,7 +168,7 @@ async function findCourierBoy(pick_lat,pick_long,orderid){
       }
     }
   }
-  return availableCouriers;
+  return listCouriers;ssss
 }
 
 router.post('/activeOrders',async function(req,res,next){
