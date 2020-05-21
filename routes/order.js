@@ -28,7 +28,7 @@ async function getOrderNumber(){
   let orderNo = Math.floor(Math.random()*90000) + 10000;
   return orderNo;
 }
-
+d
 //CUSTOMER APP API
 router.post('/settings',async function(req,res,next){
   try{
@@ -88,7 +88,7 @@ router.post('/newoder',async function(req,res,next){
         additionalAmount:additionalAmount,
         finalAmount:finalAmount,
         status:pkArriveType=="rightnow"?"Finding":"Scheduled",
-        note:pkArriveType=="rightnow"?"Finding Delivery Boy Near By You!":"Your Order is Scheduled"
+        note:pkArriveType=="rightnow"?"Your order is processing!":"Your Order is Scheduled"
       });
       
       if(dpDistance <=15){
@@ -174,7 +174,7 @@ async function findCourierBoy(pick_lat,pick_long,orderid){
       }
     }
   }
-  return listCouriers;ssss
+  return listCouriers;
 }
 
 router.post('/activeOrders',async function(req,res,next){
@@ -228,7 +228,7 @@ router.post('/acceptOrder',async function(req,res,next){
     var checkif = await requestSchema.find({orderId:orderId,status:"Accept"});
     if(checkif.length==0){
       await requestSchema.findOneAndUpdate({orderId:orderId,courierId:courierId},{status:"Accept"});
-      await orderSchema.findByIdAndUpdate(orderId,{courierId:courierId});
+      await orderSchema.findByIdAndUpdate(orderId,{courierId:courierId,});
       res.status(200)
       .json({Message:"Order Accepted!",Data:1,IsSuccess:true});
     }else{
