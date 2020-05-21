@@ -24,6 +24,11 @@ async function getcuurentlocation(id){
   return data;
 }
 
+async function getOrderNumber(){
+  let orderNo = Math.floor(Math.random()*90000) + 10000;
+  return orderNo;
+}
+
 //CUSTOMER APP API
 router.post('/settings',async function(req,res,next){
   try{
@@ -52,6 +57,7 @@ router.post('/newoder',async function(req,res,next){
     try{
       var newOrder = new orderSchema({
         _id:new config.mongoose.Types.ObjectId(),
+        orderNo: await getOrderNumber(),
         customerId:customerId,
         deliveryType:deliveryType,
         weightLimit:weightLimit,
@@ -244,7 +250,7 @@ router.post('/rejectOrder',async function(req,res,next){
       if(orderData.length!=0){
         var avlcourier = await findCourierBoy(orderData[0].pickupPoint.lat,orderData[0].pickupPoint.long,orderId);
           if(avlcourier.length!=0){
-            console.log("Courier Boys Available");
+            console.log("Total Found: "+avlcourier.length);
             let courierfound = arraySort(avlcourier,'distance');
               let newrequest = new requestSchema({
                 _id:new config.mongoose.Types.ObjectId(),
@@ -267,12 +273,10 @@ router.post('/rejectOrder',async function(req,res,next){
                 click_action:"FLUTTER_NOTIFICATION_CLICK"
               }
             };
-
             var options = {
               priority: "high",
               timeToLive: 60 * 60 *24
             };
-
             config.firebase.messaging().sendToDevice(courierfound[0].fcmToken,payload,options).then(doc=>{
               console.log("Sending Notification");
               console.log(doc);
