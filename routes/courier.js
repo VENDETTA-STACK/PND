@@ -24,7 +24,11 @@ var fieldset = finalstorage.fields([
 var courierSchema = require('../data_models/courier-signup');
 var locationsSchema = require('../data_models/courier-location');
 
-
+async function cidgenerator(){
+  let pnd = "PND";
+  let pndno = pnd +''+ (Math.floor(Math.random()*90000) + 10000).toString();
+  return pndno;
+}
 
 setInterval(() =>{
   var counter = 0;
@@ -86,6 +90,7 @@ router.post('/signup',fieldset,async function(req,res,next){
     }else{
       var newCourier = new courierSchema({
         _id:new config.mongoose.Types.ObjectId(),
+        cId:await cidgenerator(),
         firstName:firstName,
         lastName:lastName,
         mobileNo:mobileNo,
