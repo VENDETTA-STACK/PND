@@ -436,14 +436,19 @@ router.post('/reachDropPoint',async function(req,res,next){
 router.post('/c_activeOrder',async function(req,res,next){
   const {courierId} = req.body;
   var data = await requestSchema.find({courierId:courierId,status:"TakeThisOrder"});
+  var datalist = [];
   if(data.length!=0){
-    var orderdata = await orderSchema.find({courierId:courierId,isActive:true});
-    if(orderdata.length!=0){
+    for(var i=0;i<data.length;i++){
+      var orderdata = await orderSchema.findOne({'_id':data[i].orderId,courierId:courierId,isActive:true});
+      datalist.push(orderdata);
+    }
+    console.log(datalist);
+    if(datalist.length!=0){
       res.status(200)
-      .json({Message:"Orders Found!",Data:orderdata,IsSuccess:true});
+      .json({Message:"Orders Found!",Data:datalist,IsSuccess:true});
     }else{
       res.status(200)
-      .json({Message:"No Orders Found!",Data:orderdata,IsSuccess:true});
+      .json({Message:"No Orders Found!",Data:datalist,IsSuccess:true});
     }
   }else{
     let orderdata = [];
@@ -467,14 +472,19 @@ router.post('/c_completeOrder',async function(req,res,next){
 router.post('/c_responseOrder',async function(req,res,next){
   const {courierId} = req.body;
   var data = await requestSchema.find({courierId:courierId,status:"Accept"});
+  var datalist = [];
   if(data.length!=0){
-    var orderdata = await orderSchema.find({courierId:courierId,isActive:true});
-    if(orderdata.length!=0){
+    for(var i=0;i<data.length;i++){
+      var orderdata = await orderSchema.findOne({'_id':data[i].orderId,courierId:courierId,isActive:true});
+      datalist.push(orderdata);
+    }
+    console.log(datalist);;
+    if(datalist.length!=0){
       res.status(200)
-      .json({Message:"Orders Found!",Data:orderdata,IsSuccess:true});
+      .json({Message:"Orders Found!",Data:datalist,IsSuccess:true});
     }else{
       res.status(200)
-      .json({Message:"No Orders Found!",Data:orderdata,IsSuccess:true});
+      .json({Message:"No Orders Found!",Data:datalist,IsSuccess:true});
     }
   }else{
     let orderdata = [];
