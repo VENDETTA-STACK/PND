@@ -226,10 +226,16 @@ router.post('/acceptOrder',async function(req,res,next){
   try{
     var checkif = await requestSchema.find({orderId:orderId,status:"Accept"});
     if(checkif.length==0){
-      await requestSchema.findOneAndUpdate({orderId:orderId,courierId:courierId},{status:"Accept"});
-      await orderSchema.findByIdAndUpdate(orderId,{courierId:courierId,status:"Order Assigned",note:"Order Has Been Assigned"});
+      var data = await requestSchema.findOneAndUpdate({orderId:orderId,courierId:courierId},{status:"Accept"},{new: true});
+      if(data.status == "Accept"){
+        console.log(data);
+        await orderSchema.findByIdAndUpdate(orderId,{courierId:courierId,status:"Order Assigned",note:"Order Has Been Assigned"});
+        res.status(200)
+        .json({Message:"Order Accepted!",Data:1,IsSuccess:true});
+      }else{
       res.status(200)
-      .json({Message:"Order Accepted!",Data:1,IsSuccess:true});
+      .json({Message:"Order No Accepted!",Data:0,IsSuccess:true});
+      }
     }else{
       res.status(200)
       .json({Message:"Order Not Available!",Data:0,IsSuccess:true});
