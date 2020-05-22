@@ -24,8 +24,8 @@ async function getcuurentlocation(id){
   return data;
 }
 
-async function getOrderNumber(){
-  let orderNo = Math.floor(Math.random()*90000) + 10000;
+function getOrderNumber(){
+  let orderNo = "ORD-"+Math.floor(Math.random()*90000) + 10000;
   return orderNo;
 }
 
@@ -53,11 +53,11 @@ router.post('/newoder',async function(req,res,next){
         dpAddress,dpLat,dpLong,dpCompleteAddress,dpDistance,collectCash,promoCode,
         amount,discount,additionalAmount,finalAmount
     } = req.body;
-    
+    let num = getOrderNumber();
     try{
       var newOrder = new orderSchema({
         _id:new config.mongoose.Types.ObjectId(),
-        orderNo: await getOrderNumber(),
+        orderNo:num,
         customerId:customerId,
         deliveryType:deliveryType,
         weightLimit:weightLimit,
@@ -154,7 +154,7 @@ async function findCourierBoy(pick_lat,pick_long,orderid){
     let location = await getcuurentlocation(getCourier[i].id);
     if(location!=null && location.duty=="ON" && Number(location.parcel) < 3){
       let counter = await requestSchema.countDocuments({orderId:orderid});
-      let exist = await requestSchema.find({courierId:getCourierIds[i].id,orderId:orderid});
+      let exist = await requestSchema.find({courierId:getCourier[i].id,orderId:orderid});
       if(counter<=3){
         if(exist.length==0){
           let courierLocation = {latitude:location.latitude,longitude:location.longitude};
