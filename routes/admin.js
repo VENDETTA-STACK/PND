@@ -60,6 +60,22 @@ router.post('/login',async function(req,res,next){
     }
 });
 
+router.post('/getUsers',async function(req,res,next){
+  try{
+    var existAdmin = await adminSchema.find();
+      if(existAdmin.length!=0){
+          res.status(200)
+          .json({Message:"user found!",Data:existAdmin,IsSuccess:true});
+      }else{
+          res.status(200)
+          .json({Message:"user not found!",Data:existAdmin,IsSuccess:true});
+      }
+  }catch(err){
+      res.status(500)
+      .json({Message:err.message,Data:0,IsSuccess:false});
+  }
+});
+
 router.post('/validate',async function(req,res,next){
     const {id,type} = req.body;
     try{
