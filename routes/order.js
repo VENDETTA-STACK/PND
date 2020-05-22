@@ -227,7 +227,7 @@ router.post('/acceptOrder',async function(req,res,next){
     var checkif = await requestSchema.find({orderId:orderId,status:"Accept"});
     if(checkif.length==0){
       await requestSchema.findOneAndUpdate({orderId:orderId,courierId:courierId},{status:"Accept"});
-      await orderSchema.findByIdAndUpdate(orderId,{courierId:courierId,});
+      await orderSchema.findByIdAndUpdate(orderId,{courierId:courierId,status:"Order Assigned",note:"Order Has Been Assigned"});
       res.status(200)
       .json({Message:"Order Accepted!",Data:1,IsSuccess:true});
     }else{
@@ -390,14 +390,22 @@ router.post('/noResponseOrder',async function(req,res,next){
 router.post('/reachPickPoint',async function(req,res,next){
   const {courierId,orderId} = req.body;
   try{
-    var checkif = await orderSchema.find({'_id':orderId,isActive:true});
-    if(checkif.length!=0){
-      await orderSchema.findOneAndUpdate({'_id':orderId,courierId:courierId},{note:"Delivery boy reached to Pickup Point"});
-      res.status(200)
-      .json({Message:"Reached Pickup Point!",Data:1,IsSuccess:true});
+    var location = await getcuurentlocation(courierId);
+    if(location.duty=="ON"){
+      var checkif = await orderSchema.find({'_id':orderId,isActive:true});
+      if(checkif.length!=0){
+        await orderSchema.findOneAndUpdate({'_id':orderId,courierId:courierId},{note:"Delivery boy reached to Pickup Point"});
+        var data = {plat:location.latitude,plong:location.longitude};
+        await ExtatimeSchema.findOneAndUpdate({courierId:courierId,orderId:orderId},data);
+        res.status(200)
+        .json({Message:"Reached Pickup Point!",Data:1,IsSuccess:true});
+      }else{
+        res.status(200)
+        .json({Message:"Order Not Available!",Data:0,IsSuccess:true});
+      }
     }else{
       res.status(200)
-      .json({Message:"Order Not Available!",Data:0,IsSuccess:true});
+      .json({Message:"Please Turn ON Your Duty!",Data:0,IsSuccess:true});
     }
   }catch(err){
     res.status(500)
