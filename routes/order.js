@@ -16,7 +16,8 @@ var courierSchema = require('../data_models/courier-signup');
 var locationSchema = require('../data_models/courier-location');
 var requestSchema = require('../data_models/order-request');
 var settingsSchema = require('../data_models/o-settings');
-
+var ExtatimeSchema = require('../data_models/extratimetook');
+var customerSchema = require('../data_models/c-signup');
 
 async function getcuurentlocation(id){
   var CourierRef = config.docref.child(id);
@@ -219,8 +220,6 @@ router.post('/completeOrders',async function(req,res,next){
   }
 });
 
-
-
 //COURIER BOY APP API
 router.post('/acceptOrder',async function(req,res,next){
   const {courierId,orderId} = req.body;
@@ -234,6 +233,37 @@ router.post('/acceptOrder',async function(req,res,next){
     }else{
       res.status(200)
       .json({Message:"Order Not Available!",Data:0,IsSuccess:true});
+    }
+  }catch(err){
+    res.status(500)
+    .json({Message:err.message,Data:0,IsSuccess:false});
+  }
+});
+
+router.post('/takeThisOrder',async function(req,res,next){
+  const {courierId,orderId} = req.body;
+  try{
+    var location = await getcuurentlocation(courierId);
+    if(location.duty=="ON"){
+      var updatetakeOrder = await requestSchema.findOneAndUpdate({courierId:courierId,orderId:orderId},{status:"TakeThisOrder"});
+      if(updatetakeOrder!=null){
+        var prepare = new ExtatimeSchema({
+          _id:new config.mongoose.Types.ObjectId(),
+          courierId:courierId,
+          orderId:orderId,
+          blat:location.latitude,
+          blong:location.longitude,
+        });
+        await prepare.save();
+        res.status(200)
+        .json({Message:"Order Taking Success!",Data:1,IsSuccess:true});
+      }else{
+        res.status(200)
+        .json({Message:"Order Taking Failed!",Data:0,IsSuccess:true});
+      }
+    }else{
+      res.status(200)
+      .json({Message:"Please Turn ON Your Duty!",Data:0,IsSuccess:true});
     }
   }catch(err){
     res.status(500)
@@ -397,13 +427,20 @@ router.post('/reachDropPoint',async function(req,res,next){
 
 router.post('/c_activeOrder',async function(req,res,next){
   const {courierId} = req.body;
-  var data = await orderSchema.find({courierId:courierId,isActive:true});
+  var data = await requestSchema.find({courierId:courierId,status:"TakeThisOrder"});
   if(data.length!=0){
-    res.status(200)
-    .json({Message:"Orders Found!",Data:data,IsSuccess:true});
+    var orderdata = await orderSchema.find({courierId:courierId,isActive:true});
+    if(orderdata.length!=0){
+      res.status(200)
+      .json({Message:"Orders Found!",Data:orderdata,IsSuccess:true});
+    }else{
+      res.status(200)
+      .json({Message:"No Orders Found!",Data:orderdata,IsSuccess:true});
+    }
   }else{
+    let orderdata = [];
     res.status(200)
-    .json({Message:"No Orders Found!",Data:data,IsSuccess:true});
+    .json({Message:"No Orders Found!",Data:orderdata,IsSuccess:true});
   }
 });
 
@@ -419,6 +456,25 @@ router.post('/c_completeOrder',async function(req,res,next){
   }
 });
 
+router.post('/c_responseOrder',async function(req,res,next){
+  const {courierId} = req.body;
+  var data = await requestSchema.find({courierId:courierId,status:"Accept"});
+  if(data.length!=0){
+    var orderdata = await orderSchema.find({courierId:courierId,isActive:true});
+    if(orderdata.length!=0){
+      res.status(200)
+      .json({Message:"Orders Found!",Data:orderdata,IsSuccess:true});
+    }else{
+      res.status(200)
+      .json({Message:"No Orders Found!",Data:orderdata,IsSuccess:true});
+    }
+  }else{
+    let orderdata = [];
+    res.status(200)
+    .json({Message:"No Orders Found!",Data:orderdata,IsSuccess:true});
+  }
+});
+
 router.post('/orderDetails',async function(req,res,next){
   const {id} = req.body;
   try{
@@ -429,6 +485,38 @@ router.post('/orderDetails',async function(req,res,next){
     }else{
       res.status(200)
     .json({Message:"Orders Not Found!",Data:order,IsSuccess:true});
+    }
+  }catch(err){
+    res.status(500)
+    .json({Message:err.message,Data:0,IsSuccess:false});
+  }
+});
+
+router.post('/sendNotification',async function(req,res,next){
+  const customerId = req.body.customerId;
+  try{
+    var data = await customerSchema.find({'_id':customerId});
+    if(data.length!=0){
+      console.log(data);
+      var payload = {
+        notification: {
+          title: "Notification Test",
+          body: "This Is a Notification For You."
+        }
+      };
+      var options = {
+        priority: "high",
+        timeToLive: 60 * 60 *24
+      };
+      
+      config.firebase.messaging().sendToDevice(data[0].fcmToken,payload,options).then(doc=>{
+        console.log("Sending Notification");
+        console.log(doc);
+      });
+
+      res.status(200)
+      .json({Message:"Success FUlly Sent!",Data:1,IsSuccess:true});
+
     }
   }catch(err){
     res.status(500)
