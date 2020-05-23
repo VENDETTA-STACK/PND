@@ -92,8 +92,7 @@ router.post('/newoder',async function(req,res,next){
         note:pkArriveType=="rightnow"?"Your order is processing!":"Your Order is Scheduled"
       });
       
-      if(dpDistance <=15){
-          var placedorder = await newOrder.save();
+      var placedorder = await newOrder.save();
           var avlcourier = await findCourierBoy(pkLat,pkLong,placedorder.id);
 
           if(placedorder!=null && avlcourier.length!=0){
@@ -128,6 +127,7 @@ router.post('/newoder',async function(req,res,next){
               console.log("Sending Notification");
               console.log(doc);
             });
+            
           }else{
             console.log("No Courier Boys Available:: Waiting For Admin Response");
             var updateorder = ({
@@ -136,12 +136,8 @@ router.post('/newoder',async function(req,res,next){
             });
             await orderSchema.findByIdAndUpdate(placedorder.id,updateorder);
           }
-        res.status(200)
-        .json({Message:"Order Placed!",Data:1,IsSuccess:true});
-      }else{
-        res.status(200)
-        .json({Message:"Distance is Over 15KM !",Data:0,IsSuccess:true});
-      }
+          res.status(200)
+          .json({Message:"Order Placed!",Data:1,IsSuccess:true});
     }catch(err){
       res.status(500)
       .json({Message:err.message,Data:0,IsSuccess:false});
