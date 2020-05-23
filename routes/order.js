@@ -482,9 +482,11 @@ router.post('/c_responseOrder',async function(req,res,next){
   if(data.length!=0){
     for(var i=0;i<data.length;i++){
       var orderdata = await orderSchema.findOne({'_id':data[i].orderId,courierId:courierId,isActive:true});
-      datalist.push(orderdata);
+      if(orderdata!=null){
+        datalist.push(orderdata);
+      }
     }
-    console.log(datalist);;
+    console.log(datalist);
     if(datalist.length!=0){
       res.status(200)
       .json({Message:"Orders Found!",Data:datalist,IsSuccess:true});

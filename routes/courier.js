@@ -232,5 +232,4 @@ router.post('/updatetransport',async function(req,res,next){
       .json({Message:err.message,Data:0,IsSuccess:false});
   }
 });
-
 module.exports = router;
