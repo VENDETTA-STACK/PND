@@ -312,6 +312,7 @@ router.post('/currentExtrakms',async function(req,res,next){
       model:'Customers'
     }
   });
+  
   for(let i=0;i<exttime.length;i++){
     if(exttime[i].dateTime.toISOString().slice(0,10) == currentdate){
       dataList.push(exttime[i]);
