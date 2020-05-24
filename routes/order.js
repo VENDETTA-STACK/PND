@@ -19,16 +19,7 @@ var settingsSchema = require('../data_models/o-settings');
 var ExtatimeSchema = require('../data_models/extratimetook');
 var customerSchema = require('../data_models/c-signup');
 
-async function getcuurentlocation(id){
-  var CourierRef = config.docref.child(id);
-  const data = await CourierRef.once("value").then(snapshot=>snapshot.val()).catch(err=>err);
-  return data;
-}
 
-function getOrderNumber(){
-  let orderNo = "ORD-"+Math.floor(Math.random()*90000) + 10000;
-  return orderNo;
-}
 
 //CUSTOMER APP API
 router.post('/settings',async function(req,res,next){
@@ -148,7 +139,7 @@ async function findCourierBoy(pick_lat,pick_long,orderid){
   var listCouriers = [];
   var getCourier = await courierSchema.find({isActive:true,isVerified:true,"accStatus.flag":true}).select('id fcmToken');
   for(let i=0;i<getCourier.length;i++){
-    let location = await getcuurentlocation(getCourier[i].id);
+    let location = await currentLocation(getCourier[i].id);
     if(location!=null && location.duty=="ON" && Number(location.parcel) < 3){
       let counter = await requestSchema.countDocuments({orderId:orderid});
       let exist = await requestSchema.find({courierId:getCourier[i].id,orderId:orderid});
@@ -245,7 +236,7 @@ router.post('/acceptOrder',async function(req,res,next){
 router.post('/takeThisOrder',async function(req,res,next){
   const {courierId,orderId} = req.body;
   try{
-    var location = await getcuurentlocation(courierId);
+    var location = await currentLocation(courierId);
     if(location.duty=="ON"){
       var updatetakeOrder = await requestSchema.findOneAndUpdate({courierId:courierId,orderId:orderId},{status:"TakeThisOrder"});
       if(updatetakeOrder!=null){
@@ -351,28 +342,18 @@ router.post('/noResponseOrder',async function(req,res,next){
                 fcmToken:courierfound[0].fcmToken,
               });
             await newrequest.save();
-            
-            var payload = {
-              notification: {
-                title: "Order Alert",
-                body: "New Order Alert Found For You."
-              },
-              data: {
-                orderid: courierfound[0].orderId,
-                distance: courierfound[0].distance.toString(),
-                click_action:"FLUTTER_NOTIFICATION_CLICK"
-              }
-            };
 
-            var options = {
-              priority: "high",
-              timeToLive: 60 * 60 *24
-            };
-            
-            config.firebase.messaging().sendToDevice(courierfound[0].fcmToken,payload,options).then(doc=>{
-              console.log("Sending Notification");
-              console.log(doc);
-            });
+            let fcmtoken = courierfound[0].fcmToken;
+            let title = "New Order Alert";
+            let body = "New Order Found For You!";
+            let data = {
+              orderid: courierfound[0].orderId,
+              distance: courierfound[0].distance.toString(),
+              click_action:"FLUTTER_NOTIFICATION_CLICK"
+            }
+            sendPopupNotification(fcmtoken,title,body,data);
+            res.status(200)
+            .json({Message:"Order No Response!",Data:1,IsSuccess:true});
           }else{
             console.log("No Courier Boys Available:: Waiting For Admin Response");
             var updateorder = ({
@@ -380,6 +361,8 @@ router.post('/noResponseOrder',async function(req,res,next){
               status:"Admin"
             });
             await orderSchema.findByIdAndUpdate(placedorder.id,updateorder);
+            res.status(200)
+            .json({Message:"Order Sent To Admin!",Data:1,IsSuccess:true});
           }
       }
     }
@@ -392,7 +375,7 @@ router.post('/noResponseOrder',async function(req,res,next){
 router.post('/reachPickPoint',async function(req,res,next){
   const {courierId,orderId} = req.body;
   try{
-    var location = await getcuurentlocation(courierId);
+    var location = await currentLocation(courierId);
     if(location.duty=="ON"){
       var checkif = await orderSchema.find({'_id':orderId,isActive:true});
       if(checkif.length!=0){
@@ -514,37 +497,30 @@ router.post('/orderDetails',async function(req,res,next){
   }
 });
 
-router.post('/sendNotification',async function(req,res,next){
-  const customerId = req.body.customerId;
-  try{
-    var data = await customerSchema.find({'_id':customerId});
-    if(data.length!=0){
-      console.log(data);
-      var payload = {
-        notification: {
-          title: "Notification Test",
-          body: "This Is a Notification For You."
-        }
-      };
-      var options = {
-        priority: "high",
-        timeToLive: 60 * 60 *24
-      };
-      
-      config.firebase.messaging().sendToDevice(data[0].fcmToken,payload,options).then(doc=>{
-        console.log("Sending Notification");
-        console.log(doc);
-      });
+function getOrderNumber(){
+  let orderNo = "ORD-"+Math.floor(Math.random()*90000) + 10000;
+  return orderNo;
+}
 
-      res.status(200)
-      .json({Message:"Success FUlly Sent!",Data:1,IsSuccess:true});
+async function sendPushNotification(fcmtoken,title,body){
+  let payload = {notification: {title: title,body: body}};
+  let options = {priority: "high",timeToLive: 60 * 60 *24};
+  let response = await config.firebase.messaging().sendToDevice(fcmtoken,payload,options);
+  return response;
+}
 
-    }
-  }catch(err){
-    res.status(500)
-    .json({Message:err.message,Data:0,IsSuccess:false});
-  }
-});
+async function sendPopupNotification(fcmtoken,title,body,data){
+  let payload = {notification: {title: title,body: body},data:data};
+  let options = {priority: "high",timeToLive: 60 * 60 *24};
+  let response = await config.firebase.messaging().sendToDevice(fcmtoken,payload,options);
+  return response;
+}
+
+async function currentLocation(courierId){
+  var CourierRef = config.docref.child(courierId);
+  const data = await CourierRef.once("value").then(snapshot=>snapshot.val()).catch(err=>err);
+  return data;
+}
 
 
 module.exports = router;

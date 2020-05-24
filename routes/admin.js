@@ -7,6 +7,7 @@ var express = require('express');
 var config = require('../config');
 var router = express.Router();
 var cors = require('cors');
+const moment = require('moment');
 
 /* Data Models */
 var adminSchema = require('../data_models/a-signup');
@@ -14,6 +15,14 @@ var settingsSchema = require('../data_models/o-settings');
 var orderSchema = require('../data_models/new-order');
 var courierSchema = require('../data_models/courier-signup');
 var locationSchema = require('../data_models/courier-location');
+var ExtatimeSchema = require('../data_models/extratimetook');
+
+
+async function currentLocation(id){
+  var CourierRef = config.docref.child(id);
+  const data = await CourierRef.once("value").then(snapshot=>snapshot.val()).catch(err=>err);
+  return data;
+}
 
 router.post('/signup',async function(req,res,next){
     const {name,username,password,type} = req.body;
@@ -271,30 +280,12 @@ router.post('/users',async function(req,res,next){
     }
 });
 
-router.post('/courierLocations',async function(req,res,next){
-  var listOfCourierBoy = [];
-  var listIds = await courierSchema.find({isActive:true,"accStatus.flag":true}).select('id firstName lastName');
-  for(var i=0;i<listIds.length;i++){
-    var getlocation = await locationSchema.find({courierId:listIds[i].id}).sort({'_id':-1}).limit(1);
-    if(getlocation.length == 1 && getlocation[0].duty=="ON"){
-      let name = listIds[0].firstName +' '+listIds[0].lastName;
-      let lat = Number(getlocation[0].latitude);
-      let long = Number(getlocation[0].longitude);
-      let Din = i+1;
-      var data = [name,lat,long,Din];
-      listOfCourierBoy.push(data);
-      console.log(data);
-    }
-  }
-  res.status(200).json(listOfCourierBoy);
-});
-
 router.post('/getLiveLocation',async function(req,res,next){
   var list_courier = [];
   var listIds = await courierSchema.find({isActive:true,"accStatus.flag":true}).select('id firstName lastName');
   var counter = 0;
   for(let i=0;i<listIds.length;i++){
-    let location = await getcuurentlocation(listIds[i].id);
+    let location = await currentLocation(listIds[i].id);
     console.log(location);
     if(location!=null && location.duty=="ON"){
       counter++;
@@ -309,10 +300,12 @@ router.post('/getLiveLocation',async function(req,res,next){
   res.status(200).json(list_courier);
 });
 
-async function getcuurentlocation(id){
-  var CourierRef = config.docref.child(id);
-  const data = await CourierRef.once("value").then(snapshot=>snapshot.val()).catch(err=>err);
-  return data;
-}
+router.post('/currentExtrakms',async function(req,res,next){
+  let date = new Date();
+  let onlyDate = date.toISOString().slice(0,10)
+  let exttime = await ExtatimeSchema.find({dateTime:moment.utc(onlyDate)});
+  res.json(exttime);
+});
+
 
 module.exports = router;
