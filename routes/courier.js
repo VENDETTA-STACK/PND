@@ -30,33 +30,6 @@ async function cidgenerator(){
   return pndno;
 }
 
-setInterval(() =>{
-  var counter = 0;
-  courierSchema.find({isActive:true,"accStatus.flag":true})
-  .exec()
-  .then(couriers=>{
-    for(let i=0;i<couriers.length;i++){
-      getcuurentlocation(couriers[i].id)
-      .then(getloc=>{
-        if(getloc!=null){
-          var newloc = new locationsSchema({
-            _id:new config.mongoose.Types.ObjectId(),
-            courierId:couriers[i].id,
-            latitude:getloc.latitude,
-            longitude:getloc.longitude,
-            duty:getloc.duty,
-            parcel:getloc.parcel
-          });
-          newloc.save().then(document=>{console.log(document);});
-          counter++;
-        }
-      });
-    }
-  });
-  console.log("Total Found: "+counter);
-}, 300000);
-
-
 async function getcuurentlocation(id){
   var CourierRef = config.docref.child(id);
   const data = await CourierRef.once("value").then(snapshot=>snapshot.val()).catch(err=>err);

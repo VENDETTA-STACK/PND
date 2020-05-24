@@ -301,10 +301,17 @@ router.post('/getLiveLocation',async function(req,res,next){
 });
 
 router.post('/currentExtrakms',async function(req,res,next){
-  let date = new Date();
-  let onlyDate = date.toISOString().slice(0,10)
-  let exttime = await ExtatimeSchema.find({dateTime:moment.utc(onlyDate)});
-  res.json(exttime);
+  var dataList = [];
+  let currentdate = new Date().toISOString().slice(0,10);
+  let exttime = await ExtatimeSchema.find({})
+  .populate('orderId','orderNo customerId pickupPoint.lat pickupPoint.long deliveryPoint.lat deliveryPoint.long')
+  .populate('courierId');
+  for(let i=0;i<exttime.length;i++){
+    if(exttime[i].dateTime.toISOString().slice(0,10) == currentdate){
+      dataList.push(exttime[i]);
+    }
+  }
+  res.json(dataList);
 });
 
 
