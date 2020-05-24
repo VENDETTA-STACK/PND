@@ -304,8 +304,14 @@ router.post('/currentExtrakms',async function(req,res,next){
   var dataList = [];
   let currentdate = new Date().toISOString().slice(0,10);
   let exttime = await ExtatimeSchema.find({})
-  .populate('orderId','orderNo customerId pickupPoint.lat pickupPoint.long deliveryPoint.lat deliveryPoint.long')
-  .populate('courierId');
+  .populate('courierId')
+  .populate({
+    path:'orderId',
+    populate:{
+      path:'customerId',
+      model:'Customers'
+    }
+  });
   for(let i=0;i<exttime.length;i++){
     if(exttime[i].dateTime.toISOString().slice(0,10) == currentdate){
       dataList.push(exttime[i]);
