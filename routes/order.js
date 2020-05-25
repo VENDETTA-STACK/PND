@@ -275,21 +275,17 @@ router.post("/promoCodes", async function (req, res, next) {
       if (exist.length == 0) datasets.push(listPromoCodes[i]);
     }
     if (datasets.length != 0) {
-      res
-        .status(200)
-        .json({
-          Message: "Promocodes Found!",
-          Data: datasets,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Promocodes Found!",
+        Data: datasets,
+        IsSuccess: true,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "No Promocodes Found!",
-          Data: datasets,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "No Promocodes Found!",
+        Data: datasets,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -309,21 +305,17 @@ router.post("/applyPromoCode", async function (req, res, next) {
         code: code,
       });
       if (exist.length === 0) {
-        res
-          .status(200)
-          .json({
-            Message: "Promo Code Found!",
-            Data: listPromoCodes,
-            IsSuccess: true,
-          });
+        res.status(200).json({
+          Message: "Promo Code Found!",
+          Data: listPromoCodes,
+          IsSuccess: true,
+        });
       } else {
-        res
-          .status(200)
-          .json({
-            Message: "Promo Code Already Used!",
-            Data: 0,
-            IsSuccess: true,
-          });
+        res.status(200).json({
+          Message: "Promo Code Already Used!",
+          Data: 0,
+          IsSuccess: true,
+        });
       }
     } else {
       res

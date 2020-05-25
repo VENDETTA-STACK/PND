@@ -402,4 +402,13 @@ router.post("/todaysExtraKms", async function (req, res, next) {
   }
 });
 
+router.post("/sendNotificationToCustomers", async function (req, res, next) {
+  const { customerId, title, message } = req.body;
+  try {
+    res.json(customerId);
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
 module.exports = router;
