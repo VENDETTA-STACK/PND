@@ -17,27 +17,25 @@ var requestSchema = require("../data_models/order.request.model");
 var settingsSchema = require("../data_models/settings.model");
 var ExtatimeSchema = require("../data_models/extratime.model");
 var customerSchema = require("../data_models/customer.signup.model");
+var usedpromoSchema = require("../data_models/used.promocode.model");
+var promoCodeSchema = require("../data_models/promocode.model");
 
 //CUSTOMER APP API
 router.post("/settings", async function (req, res, next) {
   try {
     var getsettings = await settingsSchema.find({});
     if (getsettings.length == 1) {
-      res
-        .status(200)
-        .json({
-          Message: "Settings Found!",
-          Data: getsettings,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Settings Found!",
+        Data: getsettings,
+        IsSuccess: true,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "Settings Not Found!",
-          Data: getsettings,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Settings Not Found!",
+        Data: getsettings,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -264,11 +262,28 @@ router.post("/completeOrders", async function (req, res, next) {
   }
 });
 
-router.post("/promocode",async function(req,res,next){
+router.post("/promocode", async function (req, res, next) {
   const { customerId } = req.body;
-  try{
-
-  }catch(err){
+  try {
+    var datasets = [];
+    let listPromoCodes = await promoCodeSchema.find({ isActive: true });
+    for (var i = 0; i < listPromoCodes.length; i++) {
+      let exist = await usedpromoSchema.find({
+        customer: customerId,
+        code: listPromoCodes[i].code,
+      });
+      if (exist.length == 0) datasets.push(listPromoCodes[i]);
+    }
+    if(datasets.length!=0){
+      res
+        .status(200)
+        .json({ Message: "Promocodes Found!", Data: datasets, IsSuccess: true });
+    }else{
+      res
+        .status(200)
+        .json({ Message: "No Promocodes Found!", Data: datasets, IsSuccess: true });
+    }
+  } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
 });
@@ -339,13 +354,11 @@ router.post("/takeThisOrder", async function (req, res, next) {
           .json({ Message: "Order Taking Failed!", Data: 0, IsSuccess: true });
       }
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "Please Turn ON Your Duty!",
-          Data: 0,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Please Turn ON Your Duty!",
+        Data: 0,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -465,13 +478,11 @@ router.post("/noResponseOrder", async function (req, res, next) {
             status: "Admin",
           };
           await orderSchema.findByIdAndUpdate(placedorder.id, updateorder);
-          res
-            .status(200)
-            .json({
-              Message: "Order Sent To Admin!",
-              Data: 1,
-              IsSuccess: true,
-            });
+          res.status(200).json({
+            Message: "Order Sent To Admin!",
+            Data: 1,
+            IsSuccess: true,
+          });
         }
       }
     }
@@ -505,13 +516,11 @@ router.post("/reachPickPoint", async function (req, res, next) {
           .json({ Message: "Order Not Available!", Data: 0, IsSuccess: true });
       }
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "Please Turn ON Your Duty!",
-          Data: 0,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Please Turn ON Your Duty!",
+        Data: 0,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
