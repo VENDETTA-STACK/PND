@@ -300,19 +300,32 @@ router.post('/getLiveLocation',async function(req,res,next){
   res.status(200).json(list_courier);
 });
 
-router.post('/currentExtrakms',async function(req,res,next){
-  var dataList = [];
-  let currentdate = new Date().toISOString().slice(0,10)
-  let exttime = await ExtatimeSchema.find({})
-  .populate('courierId')
-  .populate('orderId')
+router.post('/todaysExtraKms',async function(req,res,next){
+  try{
+    var dataList = [];
+    let currentdate = new Date().toISOString().slice(0,10)
+    let exttime = await ExtatimeSchema.find({})
+    .populate('courierId')
+    .populate('orderId')
 
-  for(let i=0;i<exttime.length;i++){
-    if(exttime[i].dateTime.toISOString().slice(0,10) == currentdate){
-     dataList.push(exttime[i]);
+    for(let i=0;i<exttime.length;i++){
+      if(exttime[i].dateTime.toISOString().slice(0,10) == currentdate){
+      dataList.push(exttime[i]);
+      }
     }
+
+    if(dataList.length!=0){
+      res.status(200)
+      .json({Message:"Data Found!",Data:dataList,IsSuccess:true})
+    }else{
+      res.status(200)
+      .json({Message:"Data Not Found!",Data:dataList,IsSuccess:true})
+    }
+  }catch(err){
+    res.status(500)
+    .json({Message:err.message,Data:0,IsSuccess:false})
   }
-  res.json(dataList);
+  
 });
 
 
