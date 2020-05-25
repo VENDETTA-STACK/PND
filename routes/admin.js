@@ -9,12 +9,11 @@ var router = express.Router();
 var cors = require("cors");
 
 /* Data Models */
-var adminSchema = require("../data_models/a-signup");
-var settingsSchema = require("../data_models/o-settings");
-var orderSchema = require("../data_models/new-order");
-var courierSchema = require("../data_models/courier-signup");
-var locationSchema = require("../data_models/courier-location");
-var ExtatimeSchema = require("../data_models/extratimetook");
+var adminSchema = require("../data_models/admin.signup.model");
+var settingsSchema = require("../data_models/settings.model");
+var orderSchema = require("../data_models/order.model");
+var courierSchema = require("../data_models/courier.signup.model");
+var ExtatimeSchema = require("../data_models/extratime.model");
 
 async function currentLocation(id) {
   var CourierRef = config.docref.child(id);

@@ -11,13 +11,12 @@ var arraySort = require("array-sort");
 const { getDistance, convertDistance } = require("geolib");
 
 //SCHEMAS
-var orderSchema = require("../data_models/new-order");
-var courierSchema = require("../data_models/courier-signup");
-var locationSchema = require("../data_models/courier-location");
-var requestSchema = require("../data_models/order-request");
-var settingsSchema = require("../data_models/o-settings");
-var ExtatimeSchema = require("../data_models/extratimetook");
-var customerSchema = require("../data_models/c-signup");
+var orderSchema = require("../data_models/order.model");
+var courierSchema = require("../data_models/courier.signup.model");
+var requestSchema = require("../data_models/order.request.model");
+var settingsSchema = require("../data_models/settings.model");
+var ExtatimeSchema = require("../data_models/extratime.model");
+var customerSchema = require("../data_models/customer.signup.model");
 
 //CUSTOMER APP API
 router.post("/settings", async function (req, res, next) {

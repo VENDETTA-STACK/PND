@@ -19,7 +19,7 @@ var upload = multer.diskStorage({
 var uploadpic = multer({ storage: upload });
 
 /* Data Models */
-var customerSchema = require("../data_models/c-signup");
+var customerSchema = require("../data_models/customer.signup.model");
 var pickupAddressSchema = require("../data_models/pickupaddresses.model");
 
 /* Routes. */

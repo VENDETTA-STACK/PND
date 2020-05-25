@@ -29,8 +29,7 @@ var fieldset = finalstorage.fields([
 ]);
 
 /* Data Models */
-var courierSchema = require("../data_models/courier-signup");
-var locationsSchema = require("../data_models/courier-location");
+var courierSchema = require("../data_models/courier.signup.model");
 
 function cidgenerator() {
   let pnd = "PND";
