@@ -377,7 +377,13 @@ router.post("/todaysExtraKms", async function (req, res, next) {
     let currentdate = new Date().toISOString().slice(0, 10);
     let exttime = await ExtatimeSchema.find({})
       .populate("courierId")
-      .populate("orderId");
+      .populate({
+        path:"orderId",
+        populate:{
+          path:"customerId",
+          model:"Customers"
+        }
+      });
     for (let i = 0; i < exttime.length; i++) {
       if (exttime[i].dateTime.toISOString().slice(0, 10) == currentdate) {
         dataList.push(exttime[i]);
