@@ -9,6 +9,7 @@ var router = express.Router();
 var cors = require('cors');
 const moment = require('moment');
 const {getDistance,convertDistance} = require('geolib');
+
 /* Data Models */
 var adminSchema = require('../data_models/a-signup');
 var settingsSchema = require('../data_models/o-settings');
@@ -306,14 +307,12 @@ router.post('/todaysExtraKms',async function(req,res,next){
     let currentdate = new Date().toISOString().slice(0,10)
     let exttime = await ExtatimeSchema.find({})
     .populate('courierId')
-    .populate('orderId')
-
+    .populate('orderId');
     for(let i=0;i<exttime.length;i++){
       if(exttime[i].dateTime.toISOString().slice(0,10) == currentdate){
       dataList.push(exttime[i]);
       }
     }
-
     if(dataList.length!=0){
       res.status(200)
       .json({Message:"Data Found!",Data:dataList,IsSuccess:true})
