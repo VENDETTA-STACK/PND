@@ -14,6 +14,10 @@ const promoCodeSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  discount:{
+    type:Number,
+    required:true,
+  },
   expiryDate: {
     type: Date,
     required: true,

@@ -262,7 +262,7 @@ router.post("/completeOrders", async function (req, res, next) {
   }
 });
 
-router.post("/promocode", async function (req, res, next) {
+router.post("/promoCodes", async function (req, res, next) {
   const { customerId } = req.body;
   try {
     var datasets = [];
@@ -284,6 +284,34 @@ router.post("/promocode", async function (req, res, next) {
         .json({ Message: "No Promocodes Found!", Data: datasets, IsSuccess: true });
     }
   } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+router.post("/applyPromoCode", async function(req, res, next){
+  const { customerId,code } = req.body;
+  try{
+    let listPromoCodes = await promoCodeSchema.find({ isActive: true, code: code});
+    if(listPromoCodes.length === 1){
+      let exist = await usedpromoSchema.find({
+        customer: customerId,
+        code: code,
+      });
+      if(exist.length===0){
+        res
+          .status(200)
+          .json({ Message: "Promo Code Found!", Data: listPromoCodes, IsSuccess: true });
+      }else{
+        res
+          .status(200)
+          .json({ Message: "Promo Code Already Used!", Data: 0, IsSuccess: true });
+      }
+    }else{
+      res
+        .status(200)
+        .json({ Message: "Promocode Not Found!", Data: 0, IsSuccess: true });
+    }
+  }catch(err){
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
 });
