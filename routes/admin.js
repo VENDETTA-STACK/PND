@@ -8,7 +8,7 @@ var config = require('../config');
 var router = express.Router();
 var cors = require('cors');
 const moment = require('moment');
-
+const {getDistance,convertDistance} = require('geolib');
 /* Data Models */
 var adminSchema = require('../data_models/a-signup');
 var settingsSchema = require('../data_models/o-settings');
@@ -302,20 +302,14 @@ router.post('/getLiveLocation',async function(req,res,next){
 
 router.post('/currentExtrakms',async function(req,res,next){
   var dataList = [];
-  let currentdate = new Date().toISOString().slice(0,10);
+  let currentdate = new Date().toISOString().slice(0,10)
   let exttime = await ExtatimeSchema.find({})
   .populate('courierId')
-  .populate({
-    path:'orderId',
-    populate:{
-      path:'customerId',
-      model:'Customers'
-    }
-  });
-  
+  .populate('orderId')
+
   for(let i=0;i<exttime.length;i++){
     if(exttime[i].dateTime.toISOString().slice(0,10) == currentdate){
-      dataList.push(exttime[i]);
+     dataList.push(exttime[i]);
     }
   }
   res.json(dataList);
