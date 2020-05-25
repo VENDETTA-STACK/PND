@@ -265,6 +265,15 @@ router.post("/completeOrders", async function (req, res, next) {
   }
 });
 
+router.post("/promocode",async function(req,res,next){
+  const { customerId } = req.body;
+  try{
+
+  }catch(err){
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
 //COURIER BOY APP API
 router.post("/acceptOrder", async function (req, res, next) {
   const { courierId, orderId } = req.body;

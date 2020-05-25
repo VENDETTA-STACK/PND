@@ -20,8 +20,8 @@ var uploadpic = multer({ storage: upload });
 
 /* Data Models */
 var customerSchema = require("../data_models/c-signup");
-var pickupAddressSchema = require("../data_models/pickupaddressbook");
-var dropAddressSchema = require("../data_models/dropaddressbook");
+var pickupAddressSchema = require("../data_models/pickupaddresses.model");
+
 /* Routes. */
 router.get("/", function (req, res, next) {
   res.render("index", { title: "Invalid URL" });
@@ -258,32 +258,6 @@ router.post("/pickupAddress", async function (req, res, next) {
         .status(200)
         .json({
           Message: "Pickup Address Not Added!",
-          Data: getaddress,
-          IsSuccess: true,
-        });
-    }
-  } catch (err) {
-    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
-  }
-});
-
-router.post("/dropAddress", async function (req, res, next) {
-  const { customerId } = req.body;
-  try {
-    var getaddress = await dropAddressSchema.find({ customerId: customerId });
-    if (getaddress.length != 0) {
-      res
-        .status(200)
-        .json({
-          Message: "Drop Addresses Found!",
-          Data: getaddress,
-          IsSuccess: true,
-        });
-    } else {
-      res
-        .status(200)
-        .json({
-          Message: "Drop Address Not Added!",
           Data: getaddress,
           IsSuccess: true,
         });
