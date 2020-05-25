@@ -79,7 +79,6 @@ router.post("/login", async function (req, res, next) {
   }
 });
 
-
 router.post("/getUsers", async function (req, res, next) {
   try {
     var existAdmin = await adminSchema.find();
