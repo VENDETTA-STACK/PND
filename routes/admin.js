@@ -23,6 +23,7 @@ async function currentLocation(id) {
   return data;
 }
 
+//create adminpanel accounts
 router.post("/signup", async function (req, res, next) {
   const { name, username, password, type } = req.body;
   try {
@@ -53,6 +54,7 @@ router.post("/signup", async function (req, res, next) {
   }
 });
 
+//admin panel login
 router.post("/login", async function (req, res, next) {
   const { username, password, type } = req.body;
   try {
@@ -76,6 +78,7 @@ router.post("/login", async function (req, res, next) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
 });
+
 
 router.post("/getUsers", async function (req, res, next) {
   try {
@@ -116,6 +119,7 @@ router.post("/validate", async function (req, res, next) {
   }
 });
 
+//update settings by admin panel
 router.post("/updatesetttings", async function (req, res, next) {
   const { PerUnder5KM, PerKM, ExpDelivery, ReferalPoint } = req.body;
   try {
@@ -150,6 +154,7 @@ router.post("/updatesetttings", async function (req, res, next) {
   }
 });
 
+//get settings for mobile app
 router.post("/settings", async function (req, res, next) {
   try {
     var getsettings = await settingsSchema.find({});
@@ -171,6 +176,7 @@ router.post("/settings", async function (req, res, next) {
   }
 });
 
+//list of orders with full details
 router.post("/orders", async function (req, res, next) {
   try {
     orderSchema
@@ -197,6 +203,7 @@ router.post("/orders", async function (req, res, next) {
   }
 });
 
+//list of couriers boys
 router.post("/couriers", async function (req, res, next) {
   try {
     courierSchema
@@ -220,6 +227,7 @@ router.post("/couriers", async function (req, res, next) {
   }
 });
 
+//toggle account approval of courier boys
 router.post("/couriersIsApproval", async function (req, res, next) {
   const id = req.body.id;
   try {
@@ -258,6 +266,7 @@ router.post("/couriersIsApproval", async function (req, res, next) {
   }
 });
 
+//toggle account status accessibility of courier boys
 router.post("/couriersIsActive", async function (req, res, next) {
   const id = req.body.id;
   try {
@@ -290,6 +299,7 @@ router.post("/couriersIsActive", async function (req, res, next) {
   }
 });
 
+//delete courier boys with their images and documents
 router.post("/couriersDelete", async function (req, res, next) {
   const id = req.body.id;
   try {
@@ -327,6 +337,7 @@ router.post("/couriersDelete", async function (req, res, next) {
   }
 });
 
+//get list of users using admin panel
 router.post("/users", async function (req, res, next) {
   try {
     adminSchema
@@ -348,6 +359,7 @@ router.post("/users", async function (req, res, next) {
   }
 });
 
+//get live location of courier boys whose duty is on: used in dashboard adminpanel
 router.post("/getLiveLocation", async function (req, res, next) {
   var list_courier = [];
   var listIds = await courierSchema
@@ -370,6 +382,7 @@ router.post("/getLiveLocation", async function (req, res, next) {
   res.status(200).json(list_courier);
 });
 
+//get todays extra kilometers done by courier boys during orders
 router.post("/todaysExtraKms", async function (req, res, next) {
   try {
     var dataList = [];
