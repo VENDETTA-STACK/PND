@@ -274,44 +274,63 @@ router.post("/promoCodes", async function (req, res, next) {
       });
       if (exist.length == 0) datasets.push(listPromoCodes[i]);
     }
-    if(datasets.length!=0){
+    if (datasets.length != 0) {
       res
         .status(200)
-        .json({ Message: "Promocodes Found!", Data: datasets, IsSuccess: true });
-    }else{
+        .json({
+          Message: "Promocodes Found!",
+          Data: datasets,
+          IsSuccess: true,
+        });
+    } else {
       res
         .status(200)
-        .json({ Message: "No Promocodes Found!", Data: datasets, IsSuccess: true });
+        .json({
+          Message: "No Promocodes Found!",
+          Data: datasets,
+          IsSuccess: true,
+        });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
 });
 
-router.post("/applyPromoCode", async function(req, res, next){
-  const { customerId,code } = req.body;
-  try{
-    let listPromoCodes = await promoCodeSchema.find({ isActive: true, code: code});
-    if(listPromoCodes.length === 1){
+router.post("/applyPromoCode", async function (req, res, next) {
+  const { customerId, code } = req.body;
+  try {
+    let listPromoCodes = await promoCodeSchema.find({
+      isActive: true,
+      code: code,
+    });
+    if (listPromoCodes.length === 1) {
       let exist = await usedpromoSchema.find({
         customer: customerId,
         code: code,
       });
-      if(exist.length===0){
+      if (exist.length === 0) {
         res
           .status(200)
-          .json({ Message: "Promo Code Found!", Data: listPromoCodes, IsSuccess: true });
-      }else{
+          .json({
+            Message: "Promo Code Found!",
+            Data: listPromoCodes,
+            IsSuccess: true,
+          });
+      } else {
         res
           .status(200)
-          .json({ Message: "Promo Code Already Used!", Data: 0, IsSuccess: true });
+          .json({
+            Message: "Promo Code Already Used!",
+            Data: 0,
+            IsSuccess: true,
+          });
       }
-    }else{
+    } else {
       res
         .status(200)
         .json({ Message: "Promocode Not Found!", Data: 0, IsSuccess: true });
     }
-  }catch(err){
+  } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
 });

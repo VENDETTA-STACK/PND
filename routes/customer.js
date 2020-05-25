@@ -32,13 +32,11 @@ router.post("/signup", async function (req, res, next) {
   try {
     let existCustomer = await customerSchema.find({ mobileNo: mobileNo });
     if (existCustomer.length == 1) {
-      res
-        .status(200)
-        .json({
-          Message: "Customer Already Registered!",
-          Data: 0,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Customer Already Registered!",
+        Data: 0,
+        IsSuccess: true,
+      });
     } else {
       let newCustomer = new customerSchema({
         _id: new config.mongoose.Types.ObjectId(),
@@ -119,21 +117,17 @@ router.post("/signin", async function (req, res, next) {
       isActive: true,
     });
     if (existCustomer.length == 1) {
-      res
-        .status(200)
-        .json({
-          Message: "Customer Found!",
-          Data: existCustomer,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Customer Found!",
+        Data: existCustomer,
+        IsSuccess: true,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "Customer Not Found!",
-          Data: existCustomer,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Customer Not Found!",
+        Data: existCustomer,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -246,21 +240,17 @@ router.post("/pickupAddress", async function (req, res, next) {
   try {
     var getaddress = await pickupAddressSchema.find({ customerId: customerId });
     if (getaddress.length != 0) {
-      res
-        .status(200)
-        .json({
-          Message: "Pickup Address Found!",
-          Data: getaddress,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Pickup Address Found!",
+        Data: getaddress,
+        IsSuccess: true,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "Pickup Address Not Added!",
-          Data: getaddress,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Pickup Address Not Added!",
+        Data: getaddress,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });

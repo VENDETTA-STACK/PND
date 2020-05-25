@@ -73,13 +73,11 @@ router.post("/signup", fieldset, async function (req, res, next) {
         fs.unlinkSync(old.replace("\\g", "/"));
       }
 
-      res
-        .status(200)
-        .json({
-          Message: "Courier Already Registered!",
-          Data: 0,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Courier Already Registered!",
+        Data: 0,
+        IsSuccess: true,
+      });
     } else {
       var newCourier = new courierSchema({
         _id: new config.mongoose.Types.ObjectId(),
@@ -169,21 +167,17 @@ router.post("/signin", async function (req, res, next) {
   try {
     var existCourier = await courierSchema.find({ mobileNo: mobileNo });
     if (existCourier.length == 1) {
-      res
-        .status(200)
-        .json({
-          Message: "Customer Found!",
-          Data: existCourier,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Customer Found!",
+        Data: existCourier,
+        IsSuccess: true,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "Customer Not Found!",
-          Data: existCourier,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Customer Not Found!",
+        Data: existCourier,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -202,13 +196,11 @@ router.post("/updateprofile", async function (req, res, next) {
         .status(200)
         .json({ Message: "Profile Updated!", Data: 1, IsSuccess: true });
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "Profile Updation Failed!",
-          Data: 0,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Profile Updation Failed!",
+        Data: 0,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -232,13 +224,11 @@ router.post("/updatebank", async function (req, res, next) {
         .status(200)
         .json({ Message: "BankDetail Updated!", Data: 1, IsSuccess: true });
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "BankDetail Updation Failed !",
-          Data: 0,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "BankDetail Updation Failed !",
+        Data: 0,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -261,13 +251,11 @@ router.post("/updatetransport", async function (req, res, next) {
         .status(200)
         .json({ Message: "TrasportDetail Updated!", Data: 1, IsSuccess: true });
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "TrasportDetail Updation Failed !",
-          Data: 0,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "TrasportDetail Updation Failed !",
+        Data: 0,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
