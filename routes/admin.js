@@ -7,8 +7,6 @@ var express = require('express');
 var config = require('../config');
 var router = express.Router();
 var cors = require('cors');
-const moment = require('moment');
-const {getDistance,convertDistance} = require('geolib');
 
 /* Data Models */
 var adminSchema = require('../data_models/a-signup');
