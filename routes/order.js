@@ -20,6 +20,7 @@ var customerSchema = require("../data_models/customer.signup.model");
 var usedpromoSchema = require("../data_models/used.promocode.model");
 var promoCodeSchema = require("../data_models/promocode.model");
 var locationLoggerSchema = require("../data_models/location.logger.model");
+var courierNotificationSchema = require("../data_models/courier.notification.model");
 
 //CUSTOMER APP API
 router.post("/settings", async function (req, res, next) {
@@ -341,14 +342,13 @@ router.post("/acceptOrder", async function (req, res, next) {
     if (checkif.length == 0) {
       var location = await currentLocation(courierId);
       if (location.duty == "ON") {
-
-        let locationfinder = location.latitude+','+location.longitude;
+        let locationfinder = location.latitude + "," + location.longitude;
         let description = orderId + " had Been Accepted";
         let logger = new locationLoggerSchema({
           _id: new config.mongoose.Types.ObjectId(),
           courierId: courierId,
-          latlong:locationfinder,
-          description:description
+          latlong: locationfinder,
+          description: description,
         });
 
         var data = await requestSchema.findOneAndUpdate(
@@ -505,13 +505,11 @@ router.post("/rejectOrder", async function (req, res, next) {
         }
       }
     } else {
-      res
-        .status(200)
-        .json({
-          Message: "Please Turn ON Your Duty!",
-          Data: 0,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Please Turn ON Your Duty!",
+        Data: 0,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
