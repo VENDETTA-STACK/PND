@@ -373,7 +373,43 @@ router.post("/todaysExtraKms", async function (req, res, next) {
   }
 });
 
-//send sms & notfication 
+router.post("/ftExtraKms", async function (req, res, next) {
+  const { FromDate, ToDate } = req.body;
+  let fdate = new Date(FromDate);
+  let tdate = new Date(ToDate);
+  console.log(fdate);
+  console.log(tdate);
+  try {
+    let exttime = await ExtatimeSchema.find({
+      dateTime: {
+        $gte: fdate,
+        $lt: tdate,
+      },
+    })
+      .populate("courierId")
+      .populate({
+        path: "orderId",
+        populate: {
+          path: "customerId",
+          model: "Customers",
+        },
+      });
+
+    if (exttime.length != 0) {
+      res
+        .status(200)
+        .json({ Message: "Data Found!", Data: exttime, IsSuccess: true });
+    } else {
+      res
+        .status(200)
+        .json({ Message: "Data Not Found!", Data: exttime, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//send sms & notfication
 router.post("/notificationToCustomers", async function (req, res, next) {
   const { customerId, title, message, checkins } = req.body;
   try {

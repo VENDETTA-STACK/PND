@@ -81,9 +81,10 @@ router.post("/signup", fieldset, async function (req, res, next) {
         IsSuccess: true,
       });
     } else {
+      let cid = cidgenerator();
       var newCourier = new courierSchema({
         _id: new config.mongoose.Types.ObjectId(),
-        cId: cidgenerator(),
+        cId: cid,
         firstName: firstName,
         lastName: lastName,
         mobileNo: mobileNo,
