@@ -205,36 +205,6 @@ router.post("/savePickupAddress", async function (req, res, next) {
   }
 });
 
-router.post("/saveDropAddress", async function (req, res, next) {
-  const {
-    customerId,
-    name,
-    mobileNo,
-    address,
-    lat,
-    long,
-    completeAddress,
-  } = req.body;
-  try {
-    let newaddress = new dropAddressSchema({
-      _id: new config.mongoose.Types.ObjectId(),
-      name: name,
-      mobileNo: mobileNo,
-      address: address,
-      lat: lat,
-      long: long,
-      completeAddress: completeAddress,
-      customerId: customerId,
-    });
-    await newaddress.save();
-    res
-      .status(200)
-      .json({ Message: "Address Added!", Data: 1, IsSuccess: true });
-  } catch (err) {
-    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
-  }
-});
-
 router.post("/pickupAddress", async function (req, res, next) {
   const { customerId } = req.body;
   try {
