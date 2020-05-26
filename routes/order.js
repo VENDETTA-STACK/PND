@@ -19,6 +19,7 @@ var ExtatimeSchema = require("../data_models/extratime.model");
 var customerSchema = require("../data_models/customer.signup.model");
 var usedpromoSchema = require("../data_models/used.promocode.model");
 var promoCodeSchema = require("../data_models/promocode.model");
+var locationLoggerSchema = require("../data_models/location.logger.model");
 
 //CUSTOMER APP API
 router.post("/settings", async function (req, res, next) {
@@ -133,7 +134,7 @@ router.post("/newoder", async function (req, res, next) {
           body: "New Order Alert Found For You.",
         },
         data: {
-          type:"orders",
+          type: "orders",
           orderid: courierfound[0].orderId,
           distance: courierfound[0].distance.toString(),
           click_action: "FLUTTER_NOTIFICATION_CLICK",
@@ -336,10 +337,20 @@ router.post("/acceptOrder", async function (req, res, next) {
       orderId: orderId,
       status: "Accept",
     });
+
     if (checkif.length == 0) {
       var location = await currentLocation(courierId);
-      if(location.duty == "ON")
-      {
+      if (location.duty == "ON") {
+
+        let locationfinder = location.latitude+','+location.longitude;
+        let description = orderId + " had Been Accepted";
+        let logger = new locationLoggerSchema({
+          _id: new config.mongoose.Types.ObjectId(),
+          courierId: courierId,
+          latlong:locationfinder,
+          description:description
+        });
+
         var data = await requestSchema.findOneAndUpdate(
           { orderId: orderId, courierId: courierId },
           { status: "Accept" },
@@ -352,6 +363,7 @@ router.post("/acceptOrder", async function (req, res, next) {
             status: "Order Assigned",
             note: "Order Has Been Assigned",
           });
+          logger.save();
           res
             .status(200)
             .json({ Message: "Order Accepted!", Data: 1, IsSuccess: true });
@@ -360,10 +372,10 @@ router.post("/acceptOrder", async function (req, res, next) {
             .status(200)
             .json({ Message: "Order No Accepted!", Data: 0, IsSuccess: true });
         }
-      }else{
+      } else {
         res
-            .status(200)
-            .json({ Message: "Please Your Duty On!", Data: 0, IsSuccess: true });
+          .status(200)
+          .json({ Message: "Please Your Duty On!", Data: 0, IsSuccess: true });
       }
     } else {
       res
@@ -420,59 +432,86 @@ router.post("/rejectOrder", async function (req, res, next) {
       { courierId: courierId, orderId: orderId },
       { status: "Reject", reason: reason }
     );
-    if (updateRejection != null) {
-      var orderData = await orderSchema.find({ _id: orderId, isActive: true });
-      if (orderData.length != 0) {
-        var avlcourier = await findCourierBoy(
-          orderData[0].pickupPoint.lat,
-          orderData[0].pickupPoint.long,
-          orderId
-        );
-        if (avlcourier.length != 0) {
-          console.log("Total Found: " + avlcourier.length);
-          let courierfound = arraySort(avlcourier, "distance");
-          let newrequest = new requestSchema({
-            _id: new config.mongoose.Types.ObjectId(),
-            courierId: courierfound[0].courierId,
-            orderId: courierfound[0].orderId,
-            distance: courierfound[0].distance,
-            status: courierfound[0].status,
-            reason: courierfound[0].reason,
-            fcmToken: courierfound[0].fcmToken,
-          });
-          await newrequest.save();
-          var payload = {
-            notification: {
-              title: "Order Alert",
-              body: "New Order Alert Found For You.",
-            },
-            data: {
-              type:"orders",
-              orderid: courierfound[0].orderId,
-              distance: courierfound[0].distance.toString(),
-              click_action: "FLUTTER_NOTIFICATION_CLICK",
-            },
-          };
-          var options = {
-            priority: "high",
-            timeToLive: 60 * 60 * 24,
-          };
-          config.firebase
-            .messaging()
-            .sendToDevice(courierfound[0].fcmToken, payload, options)
-            .then((doc) => {
-              console.log("Sending Notification");
-              console.log(doc);
+    var location = await currentLocation(courierId);
+    if (location.duty == "ON") {
+      if (updateRejection != null) {
+        var orderData = await orderSchema.find({
+          _id: orderId,
+          isActive: true,
+        });
+        if (orderData.length != 0) {
+          var avlcourier = await findCourierBoy(
+            orderData[0].pickupPoint.lat,
+            orderData[0].pickupPoint.long,
+            orderId
+          );
+          if (avlcourier.length != 0) {
+            console.log("Total Found: " + avlcourier.length);
+            let courierfound = arraySort(avlcourier, "distance");
+            let newrequest = new requestSchema({
+              _id: new config.mongoose.Types.ObjectId(),
+              courierId: courierfound[0].courierId,
+              orderId: courierfound[0].orderId,
+              distance: courierfound[0].distance,
+              status: courierfound[0].status,
+              reason: courierfound[0].reason,
+              fcmToken: courierfound[0].fcmToken,
             });
+            await newrequest.save();
+            var payload = {
+              notification: {
+                title: "Order Alert",
+                body: "New Order Alert Found For You.",
+              },
+              data: {
+                type: "orders",
+                orderid: courierfound[0].orderId,
+                distance: courierfound[0].distance.toString(),
+                click_action: "FLUTTER_NOTIFICATION_CLICK",
+              },
+            };
+            var options = {
+              priority: "high",
+              timeToLive: 60 * 60 * 24,
+            };
+            config.firebase
+              .messaging()
+              .sendToDevice(courierfound[0].fcmToken, payload, options)
+              .then((doc) => {
+                console.log("Sending Notification");
+                console.log(doc);
+              });
+            res
+              .status(200)
+              .json({ Message: "Order Rejected!", Data: 1, IsSuccess: true });
+          } else {
+            console.log(
+              "No Courier Boys Available:: Waiting For Admin Response"
+            );
+            var updateorder = {
+              note: "All Courier Boys Are Busy. Please wait for response.",
+              status: "Admin",
+            };
+            await orderSchema.findByIdAndUpdate(placedorder.id, updateorder);
+
+            res
+              .status(200)
+              .json({ Message: "Order Rejected!", Data: 1, IsSuccess: true });
+          }
         } else {
-          console.log("No Courier Boys Available:: Waiting For Admin Response");
-          var updateorder = {
-            note: "All Courier Boys Are Busy. Please wait for response.",
-            status: "Admin",
-          };
-          await orderSchema.findByIdAndUpdate(placedorder.id, updateorder);
+          res
+            .status(200)
+            .json({ Message: "Order Not Found!", Data: 0, IsSuccess: true });
         }
       }
+    } else {
+      res
+        .status(200)
+        .json({
+          Message: "Please Turn ON Your Duty!",
+          Data: 0,
+          IsSuccess: true,
+        });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -512,7 +551,7 @@ router.post("/noResponseOrder", async function (req, res, next) {
           let title = "New Order Alert";
           let body = "New Order Found For You!";
           let data = {
-            type:"orders",
+            type: "orders",
             orderid: courierfound[0].orderId,
             distance: courierfound[0].distance.toString(),
             click_action: "FLUTTER_NOTIFICATION_CLICK",
