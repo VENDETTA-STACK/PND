@@ -138,19 +138,18 @@ router.post("/sendotp", async function (req, res, next) {
 
 //couriers verify
 router.post("/verify", async function (req, res, next) {
-  const { mobileNo, fcmToken, lat, long } = req.body;
-  console.log(req.body);
+  const { mobileNo } = req.body;
   try {
     var existCourier = await courierSchema.findOneAndUpdate(
       { mobileNo: mobileNo },
-      { isVerified: true, fcmToken: fcmToken }
+      { isVerified: true }
     );
     console.log(existCourier);
     if (existCourier != null) {
       var newfirebase = config.docref.child(existCourier.id);
       newfirebase.set({
-        latitude: lat,
-        longitude: long,
+        latitude: "",
+        longitude: "",
         duty: "OFF",
         parcel: 0,
       });
@@ -161,6 +160,26 @@ router.post("/verify", async function (req, res, next) {
       res
         .status(200)
         .json({ Message: "Verification Failed!", Data: 0, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+router.post("/updateFcmToken", async function (req, res, next) {
+  const { courierId, fcmToken } = req.body;
+  try {
+    var existCourier = await courierSchema.findByIdAndUpdate(courierId, {
+      fcmToken: fcmToken,
+    },{new:true});
+    if (existCourier != null){
+      res
+        .status(200)
+        .json({ Message: "FCM Token Updated!", Data: 1, IsSuccess: true });
+    }else{
+      res
+        .status(200)
+        .json({ Message: "FCM Token Not Updated!", Data: 0, IsSuccess: true });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
