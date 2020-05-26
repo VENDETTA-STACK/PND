@@ -20,7 +20,6 @@ const courierSchema = mongoose.Schema({
   },
   profileImg: {
     type: String,
-    required: true,
   },
   poaType: {
     type: String,
@@ -28,15 +27,12 @@ const courierSchema = mongoose.Schema({
   },
   poaFrontImg: {
     type: String,
-    required: true,
   },
   poaBackImg: {
     type: String,
-    required: true,
   },
   panCardImg: {
     type: String,
-    required: true,
   },
   fcmToken: {
     type: String,

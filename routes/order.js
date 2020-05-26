@@ -133,6 +133,7 @@ router.post("/newoder", async function (req, res, next) {
           body: "New Order Alert Found For You.",
         },
         data: {
+          type:"orders",
           orderid: courierfound[0].orderId,
           distance: courierfound[0].distance.toString(),
           click_action: "FLUTTER_NOTIFICATION_CLICK",
@@ -336,25 +337,33 @@ router.post("/acceptOrder", async function (req, res, next) {
       status: "Accept",
     });
     if (checkif.length == 0) {
-      var data = await requestSchema.findOneAndUpdate(
-        { orderId: orderId, courierId: courierId },
-        { status: "Accept" },
-        { new: true }
-      );
-      if (data.status == "Accept") {
-        console.log(data);
-        await orderSchema.findByIdAndUpdate(orderId, {
-          courierId: courierId,
-          status: "Order Assigned",
-          note: "Order Has Been Assigned",
-        });
+      var location = await currentLocation(courierId);
+      if(location.duty == "ON")
+      {
+        var data = await requestSchema.findOneAndUpdate(
+          { orderId: orderId, courierId: courierId },
+          { status: "Accept" },
+          { new: true }
+        );
+        if (data.status == "Accept") {
+          console.log(data);
+          await orderSchema.findByIdAndUpdate(orderId, {
+            courierId: courierId,
+            status: "Order Assigned",
+            note: "Order Has Been Assigned",
+          });
+          res
+            .status(200)
+            .json({ Message: "Order Accepted!", Data: 1, IsSuccess: true });
+        } else {
+          res
+            .status(200)
+            .json({ Message: "Order No Accepted!", Data: 0, IsSuccess: true });
+        }
+      }else{
         res
-          .status(200)
-          .json({ Message: "Order Accepted!", Data: 1, IsSuccess: true });
-      } else {
-        res
-          .status(200)
-          .json({ Message: "Order No Accepted!", Data: 0, IsSuccess: true });
+            .status(200)
+            .json({ Message: "Please Your Duty On!", Data: 0, IsSuccess: true });
       }
     } else {
       res
@@ -438,6 +447,7 @@ router.post("/rejectOrder", async function (req, res, next) {
               body: "New Order Alert Found For You.",
             },
             data: {
+              type:"orders",
               orderid: courierfound[0].orderId,
               distance: courierfound[0].distance.toString(),
               click_action: "FLUTTER_NOTIFICATION_CLICK",
@@ -502,6 +512,7 @@ router.post("/noResponseOrder", async function (req, res, next) {
           let title = "New Order Alert";
           let body = "New Order Found For You!";
           let data = {
+            type:"orders",
             orderid: courierfound[0].orderId,
             distance: courierfound[0].distance.toString(),
             click_action: "FLUTTER_NOTIFICATION_CLICK",

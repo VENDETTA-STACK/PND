@@ -169,14 +169,18 @@ router.post("/verify", async function (req, res, next) {
 router.post("/updateFcmToken", async function (req, res, next) {
   const { courierId, fcmToken } = req.body;
   try {
-    var existCourier = await courierSchema.findByIdAndUpdate(courierId, {
-      fcmToken: fcmToken,
-    },{new:true});
-    if (existCourier != null){
+    var existCourier = await courierSchema.findByIdAndUpdate(
+      courierId,
+      {
+        fcmToken: fcmToken,
+      },
+      { new: true }
+    );
+    if (existCourier != null) {
       res
         .status(200)
         .json({ Message: "FCM Token Updated!", Data: 1, IsSuccess: true });
-    }else{
+    } else {
       res
         .status(200)
         .json({ Message: "FCM Token Not Updated!", Data: 0, IsSuccess: true });
@@ -331,4 +335,57 @@ router.post("/notificationList", async function (req, res, next) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
 });
+
+router.post("/sendNotification", async function (req, res, next) {
+  const { courierId, title, description } = req.body;
+  try {
+    let dataset = await courierSchema.find({ _id: courierId });
+    if (dataset.length == 1) {
+      let newNotification = new courierNotificationSchema({
+        _id: new config.mongoose.Types.ObjectId(),
+        courierId: courierId,
+        title: title,
+        description: description,
+      });
+
+      let data = {
+        type: "info",
+        click_action: "FLUTTER_NOTIFICATION_CLICK",
+      };
+
+      var datdasa = await sendPopupNotification(
+        dataset[0].fcmToken,
+        title,
+        description,
+        data
+      );
+      console.log(datdasa);
+      await newNotification.save();
+
+      res.json({
+        Message: "Notification Sent!",
+        Data: 1,
+        IsSuccess: true,
+      });
+    } else {
+      res.json({
+        Message: "Notification Not Sent!",
+        Data: 0,
+        IsSuccess: true,
+      });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+async function sendPopupNotification(fcmtoken, title, body, data) {
+  let payload = { notification: { title: title, body: body }, data: data };
+  let options = { priority: "high", timeToLive: 60 * 60 * 24 };
+  let response = await config.firebase
+    .messaging()
+    .sendToDevice(fcmtoken, payload, options);
+  return response;
+}
+
 module.exports = router;
