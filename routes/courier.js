@@ -52,28 +52,28 @@ router.get("/", function (req, res, next) {
 });
 
 //couriers signup
-router.post("/signup", fieldset, async function (req, res, next) {
+router.post("/signup", async function (req, res, next) {
   const { firstName, lastName, mobileNo, poaType } = req.body;
   try {
     var existCourier = await courierSchema.find({ mobileNo: mobileNo });
     if (existCourier.length == 1) {
       //Removing Uploaded Files
-      var old = req.files.profileImg[0].path;
-      if (fs.existsSync(old.replace("\\g", "/"))) {
-        fs.unlinkSync(old.replace("\\g", "/"));
-      }
-      old = req.files.poaFrontImg[0].path;
-      if (fs.existsSync(old.replace("\\g", "/"))) {
-        fs.unlinkSync(old.replace("\\g", "/"));
-      }
-      old = req.files.poaBackImg[0].path;
-      if (fs.existsSync(old.replace("\\g", "/"))) {
-        fs.unlinkSync(old.replace("\\g", "/"));
-      }
-      old = req.files.panCardImg[0].path;
-      if (fs.existsSync(old.replace("\\g", "/"))) {
-        fs.unlinkSync(old.replace("\\g", "/"));
-      }
+      // var old = req.files.profileImg[0].path;
+      // if (fs.existsSync(old.replace("\\g", "/"))) {
+      //   fs.unlinkSync(old.replace("\\g", "/"));
+      // }
+      // old = req.files.poaFrontImg[0].path;
+      // if (fs.existsSync(old.replace("\\g", "/"))) {
+      //   fs.unlinkSync(old.replace("\\g", "/"));
+      // }
+      // old = req.files.poaBackImg[0].path;
+      // if (fs.existsSync(old.replace("\\g", "/"))) {
+      //   fs.unlinkSync(old.replace("\\g", "/"));
+      // }
+      // old = req.files.panCardImg[0].path;
+      // if (fs.existsSync(old.replace("\\g", "/"))) {
+      //   fs.unlinkSync(old.replace("\\g", "/"));
+      // }
 
       res.status(200).json({
         Message: "Courier Already Registered!",
@@ -81,6 +81,7 @@ router.post("/signup", fieldset, async function (req, res, next) {
         IsSuccess: true,
       });
     } else {
+      //req.files.profileImg[0].path
       let cid = cidgenerator();
       var newCourier = new courierSchema({
         _id: new config.mongoose.Types.ObjectId(),
@@ -89,10 +90,10 @@ router.post("/signup", fieldset, async function (req, res, next) {
         lastName: lastName,
         mobileNo: mobileNo,
         poaType: poaType,
-        // profileImg: req.files.profileImg[0].path,
-        // poaFrontImg: req.files.poaFrontImg[0].path,
-        // poaBackImg: req.files.poaBackImg[0].path,
-        // panCardImg: req.files.panCardImg[0].path,
+        profileImg: "",
+        poaFrontImg: "",
+        poaBackImg: "",
+        panCardImg: "",
       });
       await newCourier.save();
       res
