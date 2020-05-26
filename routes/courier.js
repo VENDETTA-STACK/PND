@@ -30,6 +30,7 @@ var fieldset = finalstorage.fields([
 
 /* Data Models */
 var courierSchema = require("../data_models/courier.signup.model");
+var courierNotificationSchema = require("../data_models/courier.notification.model");
 
 function cidgenerator() {
   let pnd = "PND";
@@ -50,6 +51,7 @@ router.get("/", function (req, res, next) {
   res.render("index", { title: "Invalid URL" });
 });
 
+//couriers signup
 router.post("/signup", fieldset, async function (req, res, next) {
   const { firstName, lastName, mobileNo, poaType } = req.body;
   try {
@@ -101,6 +103,7 @@ router.post("/signup", fieldset, async function (req, res, next) {
   }
 });
 
+//couriers sms
 router.post("/sendotp", async function (req, res, next) {
   const { mobileNo, code } = req.body;
   try {
@@ -132,6 +135,7 @@ router.post("/sendotp", async function (req, res, next) {
   }
 });
 
+//couriers verify
 router.post("/verify", async function (req, res, next) {
   const { mobileNo, fcmToken, lat, long } = req.body;
   console.log(req.body);
@@ -162,6 +166,7 @@ router.post("/verify", async function (req, res, next) {
   }
 });
 
+//couriers Login
 router.post("/signin", async function (req, res, next) {
   const { mobileNo } = req.body;
   try {
@@ -184,6 +189,7 @@ router.post("/signin", async function (req, res, next) {
   }
 });
 
+//update couriers profile
 router.post("/updateprofile", async function (req, res, next) {
   const { id, firstName, lastName } = req.body;
   try {
@@ -207,6 +213,7 @@ router.post("/updateprofile", async function (req, res, next) {
   }
 });
 
+//update couriers bank details
 router.post("/updatebank", async function (req, res, next) {
   const { id, ifscCode, bankName, accNo, branch } = req.body;
   try {
@@ -235,6 +242,7 @@ router.post("/updatebank", async function (req, res, next) {
   }
 });
 
+//update couriers vehicle data
 router.post("/updatetransport", async function (req, res, next) {
   const { id, vehicleType, vehicleNo } = req.body;
   try {
@@ -254,6 +262,48 @@ router.post("/updatetransport", async function (req, res, next) {
       res.status(200).json({
         Message: "TrasportDetail Updation Failed !",
         Data: 0,
+        IsSuccess: true,
+      });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//get unreaded notification list of couriers
+router.post("/notificationCount", async function (req, res, next) {
+  const courierId = req.body;
+  try {
+    let dataset = await courierNotificationSchema
+      .countDocuments()
+      .where({ courierId: courierId, isRead: false });
+    res.json({
+      Message: "Total Notification Found!",
+      Data: dataset,
+      IsSuccess: true,
+    });
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//get notification list of couriers
+router.post("/notificationList", async function (req, res, next) {
+  const courierId = req.body;
+  try {
+    let dataset = await courierNotificationSchema
+      .find({ courierId: courierId })
+      .sort({ _id: -1 });
+    if (dataset.length != 0) {
+      res.json({
+        Message: "Total Notification Found!",
+        Data: dataset,
+        IsSuccess: true,
+      });
+    } else {
+      res.json({
+        Message: "No Notification Found!",
+        Data: dataset,
         IsSuccess: true,
       });
     }

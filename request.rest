@@ -1,2 +1,2 @@
-POST http://localhost:3000/orders/promocode
+POST http://localhost:3000/admin/todaysExtraKms
 Content-Type: application/json

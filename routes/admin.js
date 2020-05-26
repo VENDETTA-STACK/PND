@@ -79,29 +79,10 @@ router.post("/login", async function (req, res, next) {
   }
 });
 
-router.post("/getUsers", async function (req, res, next) {
+//get admin users listings
+router.post("/adminusers", async function (req, res, next) {
   try {
     var existAdmin = await adminSchema.find();
-    if (existAdmin.length != 0) {
-      res
-        .status(200)
-        .json({ Message: "user found!", Data: existAdmin, IsSuccess: true });
-    } else {
-      res.status(200).json({
-        Message: "user not found!",
-        Data: existAdmin,
-        IsSuccess: true,
-      });
-    }
-  } catch (err) {
-    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
-  }
-});
-
-router.post("/validate", async function (req, res, next) {
-  const { id, type } = req.body;
-  try {
-    var existAdmin = await adminSchema.find({ _id: id, type: type });
     if (existAdmin.length != 0) {
       res
         .status(200)
@@ -336,28 +317,6 @@ router.post("/couriersDelete", async function (req, res, next) {
   }
 });
 
-//get list of users using admin panel
-router.post("/users", async function (req, res, next) {
-  try {
-    adminSchema
-      .find({})
-      .exec()
-      .then((docs) => {
-        if (docs.length != 0) {
-          res
-            .status(200)
-            .json({ Message: "Users Found!", Data: docs, IsSuccess: true });
-        } else {
-          res
-            .status(200)
-            .json({ Message: "No Users Found!", Data: docs, IsSuccess: true });
-        }
-      });
-  } catch (err) {
-    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
-  }
-});
-
 //get live location of courier boys whose duty is on: used in dashboard adminpanel
 router.post("/getLiveLocation", async function (req, res, next) {
   var list_courier = [];
@@ -414,10 +373,11 @@ router.post("/todaysExtraKms", async function (req, res, next) {
   }
 });
 
-router.post("/sendNotificationToCustomers", async function (req, res, next) {
-  const { customerId, title, message } = req.body;
+//send sms & notfication 
+router.post("/notificationToCustomers", async function (req, res, next) {
+  const { customerId, title, message, checkins } = req.body;
   try {
-    res.json(customerId);
+    res.json(req.body);
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
