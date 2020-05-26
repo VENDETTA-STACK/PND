@@ -89,10 +89,10 @@ router.post("/signup", fieldset, async function (req, res, next) {
         lastName: lastName,
         mobileNo: mobileNo,
         poaType: poaType,
-        profileImg: req.files.profileImg[0].path,
-        poaFrontImg: req.files.poaFrontImg[0].path,
-        poaBackImg: req.files.poaBackImg[0].path,
-        panCardImg: req.files.panCardImg[0].path,
+        // profileImg: req.files.profileImg[0].path,
+        // poaFrontImg: req.files.poaFrontImg[0].path,
+        // poaBackImg: req.files.poaBackImg[0].path,
+        // panCardImg: req.files.panCardImg[0].path,
       });
       await newCourier.save();
       res
