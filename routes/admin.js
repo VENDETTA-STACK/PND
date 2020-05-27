@@ -453,14 +453,14 @@ router.post("/ftExtraKms", async function (req, res, next) {
 
 //change Admin Password : Account Settings
 router.post("/changePassword", async function (req, res, next) {
-  const { userId, oldpassword, newpassword } = req.body;
+  const { userId,accountname, oldpassword, newpassword } = req.body;
   try {
     let dataset = await adminSchema.find({
       _id: userId,
       password: oldpassword,
     });
     if (dataset.length == 1) {
-      await adminSchema.findByIdAndUpdate(userId, {
+      await adminSchema.findByIdAndUpdate(userId, {name:accountname,
         password: newpassword,
       });
       res
