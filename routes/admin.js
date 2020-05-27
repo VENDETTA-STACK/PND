@@ -105,11 +105,13 @@ router.post("/dashcounters", async function (req, res, next) {
 //get verfied couriers for admin panel map
 router.post("/getVerifiedCouriers", async function (req, res, next) {
   try {
-    let dataset = await courierSchema.find({
-      isActive: true,
-      isVerified: true,
-      "accStatus.flag": true,
-    }).select("id cId firstName lastName");
+    let dataset = await courierSchema
+      .find({
+        isActive: true,
+        isVerified: true,
+        "accStatus.flag": true,
+      })
+      .select("id cId firstName lastName");
     res
       .status(200)
       .json({ Message: "Counters Found!", Data: dataset, IsSuccess: true });
@@ -412,6 +414,7 @@ router.post("/todaysExtraKms", async function (req, res, next) {
   }
 });
 
+//get extra kilometers done by courier boys during orders from date wise
 router.post("/ftExtraKms", async function (req, res, next) {
   const { FromDate, ToDate } = req.body;
   let fdate = new Date(FromDate);
@@ -442,6 +445,31 @@ router.post("/ftExtraKms", async function (req, res, next) {
       res
         .status(200)
         .json({ Message: "Data Not Found!", Data: exttime, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//change Admin Password : Account Settings
+router.post("/changePassword", async function (req, res, next) {
+  const { userId, oldpassword, newpassword } = req.body;
+  try {
+    let dataset = await adminSchema.find({
+      _id: userId,
+      password: oldpassword,
+    });
+    if (dataset.length == 1) {
+      await adminSchema.findByIdAndUpdate(userId, {
+        password: newpassword,
+      });
+      res
+        .status(200)
+        .json({ Message: "Password Updated!", Data: 1, IsSuccess: true });
+    } else {
+      res
+        .status(200)
+        .json({ Message: "Password Not Updated!", Data: 0, IsSuccess: true });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
