@@ -7,6 +7,7 @@ var express = require("express");
 var config = require("../config");
 var router = express.Router();
 var cors = require("cors");
+const { getDistance, convertDistance } = require("geolib");
 
 /* Data Models */
 var adminSchema = require("../data_models/admin.signup.model");
@@ -15,6 +16,8 @@ var orderSchema = require("../data_models/order.model");
 var courierSchema = require("../data_models/courier.signup.model");
 var ExtatimeSchema = require("../data_models/extratime.model");
 var customerSchema = require("../data_models/customer.signup.model");
+var requestSchema = require("../data_models/order.request.model");
+var locationLoggerSchema = require("../data_models/location.logger.model");
 
 async function currentLocation(id) {
   var CourierRef = config.docref.child(id);
@@ -87,12 +90,19 @@ router.post("/dashcounters", async function (req, res, next) {
     let couriers = await courierSchema.countDocuments();
     let totalOrders = await orderSchema.countDocuments();
     let customers = await customerSchema.countDocuments();
+    let pendingOrders = await orderSchema
+      .find({
+        status: "Admin",
+      })
+      .countDocuments();
+
     let datalist = [];
     datalist.push({
       admins: admins,
       couriers: couriers,
       totalOrders: totalOrders,
       customers: customers,
+      pendingOrders: pendingOrders,
     });
     res
       .status(200)
@@ -200,29 +210,37 @@ router.post("/settings", async function (req, res, next) {
 //list of orders with full details
 router.post("/orders", async function (req, res, next) {
   try {
-    orderSchema
+    let newdataset = [];
+    let totalorders = await orderSchema
       .find({})
       .populate(
         "courierId",
         "firstName lastName fcmToken mobileNo accStatus transport isVerified"
       )
-      .populate("customerId")
-      .exec()
-      .then((docs) => {
-        if (docs.length != 0) {
-          res
-            .status(200)
-            .json({ Message: "Order Found!", Data: docs, IsSuccess: true });
-        } else {
-          res
-            .status(200)
-            .json({ Message: "No Order Found!", Data: docs, IsSuccess: true });
-        }
-      });
+      .populate("customerId");
+
+    let pendingOrders = await orderSchema
+      .find({ status: "Admin" })
+      .populate(
+        "courierId",
+        "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+      )
+      .populate("customerId");
+
+    newdataset.push({
+      totalOrders: totalorders,
+      pendingOrders: pendingOrders,
+    });
+
+    res
+      .status(200)
+      .json({ Message: "Order Found!", Data: newdataset, IsSuccess: true });
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
 });
+
+//assign order
 
 //list of couriers boys
 router.post("/couriers", async function (req, res, next) {
@@ -362,7 +380,7 @@ router.post("/couriersDelete", async function (req, res, next) {
 router.post("/getLiveLocation", async function (req, res, next) {
   var list_courier = [];
   var listIds = await courierSchema
-    .find({ isActive: true, "accStatus.flag": true })
+    .find({ isActive: true, "accStatus.flag": true, isVerified: true })
     .select("id firstName lastName");
   var counter = 0;
   for (let i = 0; i < listIds.length; i++) {
@@ -453,14 +471,15 @@ router.post("/ftExtraKms", async function (req, res, next) {
 
 //change Admin Password : Account Settings
 router.post("/changePassword", async function (req, res, next) {
-  const { userId,accountname, oldpassword, newpassword } = req.body;
+  const { userId, accountname, oldpassword, newpassword } = req.body;
   try {
     let dataset = await adminSchema.find({
       _id: userId,
       password: oldpassword,
     });
     if (dataset.length == 1) {
-      await adminSchema.findByIdAndUpdate(userId, {name:accountname,
+      await adminSchema.findByIdAndUpdate(userId, {
+        name: accountname,
         password: newpassword,
       });
       res
@@ -470,6 +489,98 @@ router.post("/changePassword", async function (req, res, next) {
       res
         .status(200)
         .json({ Message: "Password Not Updated!", Data: 0, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//get delivery Boys whose duty is on
+router.post("/getAvailableBoys", async function (req, res, next) {
+  try {
+    var list_courier = [];
+
+    var listIds = await courierSchema
+      .find({ isActive: true, "accStatus.flag": true, isVerified: true })
+      .select("id firstName lastName");
+
+    for (let i = 0; i < listIds.length; i++) {
+      let location = await currentLocation(listIds[i].id);
+      if (location != null && location.duty == "ON") {
+        let dbID = listIds[i].id;
+        let name = listIds[i].firstName + " " + listIds[i].lastName;
+        list_courier.push({
+          Id: dbID,
+          name: name,
+        });
+      }
+    }
+
+    res.status(200).json({
+      Message: "Delivery Boys Found!",
+      Data: list_courier,
+      IsSuccess: true,
+    });
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+router.post("/AssignOrder", async function (req, res, next) {
+  const { courierId, orderId } = req.body;
+  try {
+    let OrderData = await orderSchema.find({ _id: orderId, isActive: true });
+    let courierboy = await courierSchema.find({ _id: courierId });
+    if (OrderData.length == 1) {
+      let location = await currentLocation(courierId);
+      let pick = {
+        latitude: OrderData[0].pickupPoint.lat,
+        longitude: OrderData[0].pickupPoint.long,
+      };
+      let emplocation = {
+        latitude: location.latitude,
+        longitude: location.longitude,
+      };
+      let distanceKM = convertDistance(
+        getDistance(emplocation, pick, 1000),
+        "km"
+      );
+
+      var newrequest = new requestSchema({
+        _id: new config.mongoose.Types.ObjectId(),
+        courierId: courierId,
+        orderId: orderId,
+        distance: distanceKM,
+        status: "Accept",
+        reason: "",
+        fcmToken: courierboy[0].fcmToken,
+      });
+      await newrequest.save();
+
+      await orderSchema.findByIdAndUpdate(orderId, {
+        courierId: courierId,
+        status: "Order Assigned",
+        note: "Order Has Been Assigned",
+      });
+
+      let locationfinder = location.latitude + "," + location.longitude;
+      let description = orderId + " Assigned By Admin";
+      let logger = new locationLoggerSchema({
+        _id: new config.mongoose.Types.ObjectId(),
+        courierId: courierId,
+        latlong: locationfinder,
+        description: description,
+      });
+      await logger.save();
+
+      //send Notificaiton Code Here To Customer
+      res
+        .status(200)
+        .json({ Message: "Order Assigned !", Data: 1, IsSuccess: true });
+    } else {
+      res
+        .status(200)
+        .json({ Message: "Order Not Assigned!", Data: 0, IsSuccess: true });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
