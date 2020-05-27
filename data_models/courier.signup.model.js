@@ -34,6 +34,9 @@ const courierSchema = mongoose.Schema({
   panCardImg: {
     type: String,
   },
+  electricityImg:{
+    type: String,
+  },
   fcmToken: {
     type: String,
   },

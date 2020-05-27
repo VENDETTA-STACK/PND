@@ -26,6 +26,7 @@ var fieldset = finalstorage.fields([
   { name: "poaFrontImg", maxCount: 1 },
   { name: "poaBackImg", maxCount: 1 },
   { name: "panCardImg", maxCount: 1 },
+  { name: "electricityImg", maxCount: 1 },
 ]);
 
 /* Data Models */
@@ -94,6 +95,7 @@ router.post("/signup", async function (req, res, next) {
         poaFrontImg: "",
         poaBackImg: "",
         panCardImg: "",
+        electricityImg:"",
       });
       await newCourier.save();
       res

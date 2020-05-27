@@ -14,6 +14,7 @@ var settingsSchema = require("../data_models/settings.model");
 var orderSchema = require("../data_models/order.model");
 var courierSchema = require("../data_models/courier.signup.model");
 var ExtatimeSchema = require("../data_models/extratime.model");
+var customerSchema = require("../data_models/customer.signup.model");
 
 async function currentLocation(id) {
   var CourierRef = config.docref.child(id);
@@ -74,6 +75,44 @@ router.post("/login", async function (req, res, next) {
         IsSuccess: true,
       });
     }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//get dashboard counters
+router.post("/dashcounters", async function (req, res, next) {
+  try {
+    let admins = await adminSchema.countDocuments();
+    let couriers = await courierSchema.countDocuments();
+    let totalOrders = await orderSchema.countDocuments();
+    let customers = await customerSchema.countDocuments();
+    let datalist = [];
+    datalist.push({
+      admins: admins,
+      couriers: couriers,
+      totalOrders: totalOrders,
+      customers: customers,
+    });
+    res
+      .status(200)
+      .json({ Message: "Counters Found!", Data: datalist, IsSuccess: true });
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//get verfied couriers for admin panel map
+router.post("/getVerifiedCouriers", async function (req, res, next) {
+  try {
+    let dataset = await courierSchema.find({
+      isActive: true,
+      isVerified: true,
+      "accStatus.flag": true,
+    }).select("id cId firstName lastName");
+    res
+      .status(200)
+      .json({ Message: "Counters Found!", Data: dataset, IsSuccess: true });
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
