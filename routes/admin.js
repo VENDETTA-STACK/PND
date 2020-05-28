@@ -152,7 +152,7 @@ router.post("/adminusers", async function (req, res, next) {
 
 //update settings by admin panel
 router.post("/updatesetttings", async function (req, res, next) {
-  const { PerUnder5KM, PerKM, ExpDelivery, ReferalPoint,WhatsaAppNo } = req.body;
+  const { PerUnder5KM, PerKM, ExpDelivery, ReferalPoint,WhatsAppNo } = req.body;
   try {
     var existData = await settingsSchema.find({});
     if (existData.length == 1) {
@@ -162,7 +162,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         PerKM: PerKM,
         ExpDelivery: ExpDelivery,
         ReferalPoint: ReferalPoint,
-        WhatsaAppNo:WhatsaAppNo
+        WhatsAppNo:WhatsAppNo
       };
       await settingsSchema.findByIdAndUpdate(id, updatedsettings);
       res
@@ -175,7 +175,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         PerKM: PerKM,
         ExpDelivery: ExpDelivery,
         ReferalPoint: ReferalPoint,
-        WhatsaAppNo:WhatsaAppNo
+        WhatsAppNo:WhatsAppNo
       });
       await newsettings.save();
       res
