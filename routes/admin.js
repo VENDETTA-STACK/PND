@@ -175,6 +175,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         PerKM: PerKM,
         ExpDelivery: ExpDelivery,
         ReferalPoint: ReferalPoint,
+        WhatsaAppNo:WhatsaAppNo
       });
       await newsettings.save();
       res
