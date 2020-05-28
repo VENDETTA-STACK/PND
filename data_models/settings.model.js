@@ -6,6 +6,7 @@ const orderSettingsSchema = mongoose.Schema({
   PerKM: { type: Number, required: true },
   ExpDelivery: { type: Number, required: true },
   ReferalPoint: { type: Number, required: true },
+  WhatsaAppNo: { type: String},
 });
 
 module.exports = mongoose.model("Settings", orderSettingsSchema);
