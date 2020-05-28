@@ -162,7 +162,9 @@ router.post("/updatesetttings", async function (req, res, next) {
         PerKM: PerKM,
         ExpDelivery: ExpDelivery,
         ReferalPoint: ReferalPoint,
-        WhatsAppNo:WhatsAppNo
+        WhatsAppNo:WhatsAppNo,
+        DefaultWMessage:DefaultWMessage,
+        AppLink:AppLink
       };
       await settingsSchema.findByIdAndUpdate(id, updatedsettings);
       res
@@ -175,7 +177,9 @@ router.post("/updatesetttings", async function (req, res, next) {
         PerKM: PerKM,
         ExpDelivery: ExpDelivery,
         ReferalPoint: ReferalPoint,
-        WhatsAppNo:WhatsAppNo
+        WhatsAppNo:WhatsAppNo,
+        DefaultWMessage:DefaultWMessage,
+        AppLink:AppLink
       });
       await newsettings.save();
       res

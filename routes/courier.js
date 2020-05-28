@@ -95,7 +95,7 @@ router.post("/signup", async function (req, res, next) {
         poaFrontImg: "",
         poaBackImg: "",
         panCardImg: "",
-        electricityImg:"",
+        electricityImg: "",
       });
       await newCourier.save();
       res
@@ -301,7 +301,9 @@ router.post("/updatetransport", async function (req, res, next) {
 router.post("/notificationCount", async function (req, res, next) {
   const courierId = req.body;
   try {
-    let dataset = await courierNotificationSchema.find({courierId:courierId}).countDocuments();
+    let dataset = await courierNotificationSchema
+      .find({ courierId: courierId })
+      .countDocuments();
     res.json({
       Message: "Total Notification Found!",
       Data: dataset,
@@ -313,11 +315,13 @@ router.post("/notificationCount", async function (req, res, next) {
 });
 
 //get notification list of couriers
-router.post("/courierNotification",async function(req,res,next){
+router.post("/courierNotification", async function (req, res, next) {
   const courierId = req.body.courierId;
-  var set = await courierNotificationSchema.find({courierId:courierId});
-  res.status(200).json({Message:"Notification Found!",Data:set,IsSuccess:true});
-})
+  var set = await courierNotificationSchema.find({ courierId: courierId });
+  res
+    .status(200)
+    .json({ Message: "Notification Found!", Data: set, IsSuccess: true });
+});
 
 router.post("/sendNotification", async function (req, res, next) {
   const { courierId, title, description } = req.body;

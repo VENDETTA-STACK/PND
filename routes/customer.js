@@ -21,6 +21,7 @@ var uploadpic = multer({ storage: upload });
 /* Data Models */
 var customerSchema = require("../data_models/customer.signup.model");
 var pickupAddressSchema = require("../data_models/pickupaddresses.model");
+var settingsSchema = require("../data_models/settings.model");
 
 /* Routes. */
 router.get("/", function (req, res, next) {
@@ -226,6 +227,34 @@ router.post("/pickupAddress", async function (req, res, next) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
 });
+
+router.post("/sendWhatsApp", async function (req, res, next) {
+  try {
+    var dataset = await settingsSchema.find();
+    if (dataset.length != 0) {
+      
+      let mobileNo = dataset[0].WhatsAppNo;
+      let message = dataset[0].DefaultWMessage;
+      let wappcall = await axios.get("https://api.whatsapp.com/send?phone=91"+mobileNo+"&text="+message);
+
+      res.status(200).json({
+        Message: "Pickup Address Found!",
+        Data: wappcall,
+        IsSuccess: true,
+      });
+    } else {
+      res.status(200).json({
+        Message: "Pickup Address Not Added!",
+        Data: 0,
+        IsSuccess: true,
+      });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+
 
 function registrationCode() {
   var result = "";
