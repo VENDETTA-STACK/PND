@@ -152,7 +152,7 @@ router.post("/adminusers", async function (req, res, next) {
 
 //update settings by admin panel
 router.post("/updatesetttings", async function (req, res, next) {
-  const { PerUnder5KM, PerKM, ExpDelivery, ReferalPoint,WhatsAppNo } = req.body;
+  const { PerUnder5KM, PerKM, ExpDelivery, ReferalPoint,WhatsAppNo,DefaultWMessage,AppLink } = req.body;
   try {
     var existData = await settingsSchema.find({});
     if (existData.length == 1) {
