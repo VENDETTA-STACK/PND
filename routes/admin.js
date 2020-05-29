@@ -18,6 +18,7 @@ var ExtatimeSchema = require("../data_models/extratime.model");
 var customerSchema = require("../data_models/customer.signup.model");
 var requestSchema = require("../data_models/order.request.model");
 var locationLoggerSchema = require("../data_models/location.logger.model");
+var promocodeSchema = require("../data_models/promocode.model");
 
 async function currentLocation(id) {
   var CourierRef = config.docref.child(id);
@@ -152,7 +153,15 @@ router.post("/adminusers", async function (req, res, next) {
 
 //update settings by admin panel
 router.post("/updatesetttings", async function (req, res, next) {
-  const { PerUnder5KM, PerKM, ExpDelivery, ReferalPoint,WhatsAppNo,DefaultWMessage,AppLink } = req.body;
+  const {
+    PerUnder5KM,
+    PerKM,
+    ExpDelivery,
+    ReferalPoint,
+    WhatsAppNo,
+    DefaultWMessage,
+    AppLink,
+  } = req.body;
   try {
     var existData = await settingsSchema.find({});
     if (existData.length == 1) {
@@ -162,9 +171,9 @@ router.post("/updatesetttings", async function (req, res, next) {
         PerKM: PerKM,
         ExpDelivery: ExpDelivery,
         ReferalPoint: ReferalPoint,
-        WhatsAppNo:WhatsAppNo,
-        DefaultWMessage:DefaultWMessage,
-        AppLink:AppLink
+        WhatsAppNo: WhatsAppNo,
+        DefaultWMessage: DefaultWMessage,
+        AppLink: AppLink,
       };
       await settingsSchema.findByIdAndUpdate(id, updatedsettings);
       res
@@ -177,9 +186,9 @@ router.post("/updatesetttings", async function (req, res, next) {
         PerKM: PerKM,
         ExpDelivery: ExpDelivery,
         ReferalPoint: ReferalPoint,
-        WhatsAppNo:WhatsAppNo,
-        DefaultWMessage:DefaultWMessage,
-        AppLink:AppLink
+        WhatsAppNo: WhatsAppNo,
+        DefaultWMessage: DefaultWMessage,
+        AppLink: AppLink,
       });
       await newsettings.save();
       res
@@ -598,6 +607,67 @@ router.post("/notificationToCustomers", async function (req, res, next) {
   const { customerId, title, message, checkins } = req.body;
   try {
     res.json(req.body);
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+router.post("/addpromocode", async function (req, res, next) {
+  const { id, title, description, code, discount, expiryDate } = req.body;
+  try {
+    let dataset = await promocodeSchema.find({ _id: id });
+    if (dataset.length == 1) {
+      let newPromo = {
+        title: title,
+        description: description,
+        code: code,
+        discount: discount,
+        expiryDate: expiryDate,
+      };
+      await promocodeSchema.findByIdAndUpdate(id, newPromo);
+    } else {
+      let newPromo = new promocodeSchema({
+        _id: new config.mongoose.Types.ObjectId(),
+        title: title,
+        description: description,
+        code: code,
+        discount: discount,
+        expiryDate: expiryDate,
+      });
+      await newPromo.save();
+    }
+    res
+      .status(200)
+      .json({ Message: "Promocode Added!", Data: 1, IsSuccess: true });
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+router.post("/promocodes", async function (req, res, next) {
+  try {
+    let dataset = await promocodeSchema.find({});
+    res
+      .status(200)
+      .json({ Message: "Promocode List!", Data: dataset, IsSuccess: true });
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+router.post("/deletepromocode", async function (req, res, next) {
+  const { id } = req.body;
+  try {
+    let dataset = await promocodeSchema.findByIdAndDelete(id);
+    if (dataset != null) {
+      res
+        .status(200)
+        .json({ Message: "Promocode List!", Data: 1, IsSuccess: true });
+    } else {
+      res
+        .status(200)
+        .json({ Message: "Promocode List!", Data: 0, IsSuccess: true });
+    }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
