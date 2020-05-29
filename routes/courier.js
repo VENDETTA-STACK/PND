@@ -33,20 +33,6 @@ var fieldset = finalstorage.fields([
 var courierSchema = require("../data_models/courier.signup.model");
 var courierNotificationSchema = require("../data_models/courier.notification.model");
 
-function cidgenerator() {
-  let pnd = "PND";
-  let pndno = pnd + "" + (Math.floor(Math.random() * 90000) + 10000).toString();
-  return pndno;
-}
-
-async function getcuurentlocation(id) {
-  var CourierRef = config.docref.child(id);
-  const data = await CourierRef.once("value")
-    .then((snapshot) => snapshot.val())
-    .catch((err) => err);
-  return data;
-}
-
 /* Routes. */
 router.get("/", function (req, res, next) {
   res.render("index", { title: "Invalid URL" });
@@ -298,8 +284,8 @@ router.post("/updatetransport", async function (req, res, next) {
 });
 
 //get unreaded notification list of couriers
-router.post("/notificationCount", async function (req, res, next) {
-  const courierId = req.body;
+router.post("/notificationCounter", async function (req, res, next) {
+  const courierId = req.body.courierId;
   try {
     let dataset = await courierNotificationSchema
       .find({ courierId: courierId })
@@ -373,6 +359,20 @@ async function sendPopupNotification(fcmtoken, title, body, data) {
     .messaging()
     .sendToDevice(fcmtoken, payload, options);
   return response;
+}
+
+function cidgenerator() {
+  let pnd = "PND";
+  let pndno = pnd + "" + (Math.floor(Math.random() * 90000) + 10000).toString();
+  return pndno;
+}
+
+async function getcuurentlocation(id) {
+  var CourierRef = config.docref.child(id);
+  const data = await CourierRef.once("value")
+    .then((snapshot) => snapshot.val())
+    .catch((err) => err);
+  return data;
 }
 
 module.exports = router;
