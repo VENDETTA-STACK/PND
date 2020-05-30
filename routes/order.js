@@ -623,7 +623,7 @@ router.post("/reachPickPoint", async function (req, res, next) {
           data
         );
         let send = await sendMessages(checkif[0].customerId.mobileNo,"Your Delivery Boy Reached To Pickup Point.");
-        let send = await sendMessages(checkif[0].deliveryPoint.mobileNo,"Your Delivery Boy Reached To Pickup Point. He will Reach to you shortly.");
+        let senddsa = await sendMessages(checkif[0].deliveryPoint.mobileNo,"Your Delivery Boy Reached To Pickup Point. He will Reach to you shortly.");
         console.log(send);
         res
           .status(200)
@@ -655,7 +655,7 @@ router.post("/reachDropPoint", async function (req, res, next) {
         { note: "Order Delivered", isActive: false }
       );
       let send = await sendMessages(checkif[0].customerId.mobileNo,"Your Order Has Been Delivered.");
-      let send = await sendMessages(checkif[0].deliveryPoint.mobileNo,"Your Order Has Been Delivered.");
+      let ase = await sendMessages(checkif[0].deliveryPoint.mobileNo,"Your Order Has Been Delivered.");
       res
         .status(200)
         .json({ Message: "Order Delivered!", Data: 1, IsSuccess: true });
