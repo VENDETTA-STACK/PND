@@ -651,6 +651,7 @@ router.post("/c_activeOrder", async function (req, res, next) {
         courierId: courierId,
         isActive: true,
       });
+      if(orderdata!=null)
       datalist.push(orderdata);
     }
     console.log(datalist);
