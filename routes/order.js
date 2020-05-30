@@ -28,32 +28,30 @@ router.post("/settings", async function (req, res, next) {
   try {
     var getsettings = await settingsSchema.find({});
     if (getsettings.length == 1) {
-
-      let orders = await orderSchema.find({customerId:customerId});
-      if(orders.length != 0){
-        res.status(200).json({
-          Message: "Settings Found!",
-          Data: getsettings,
-          IsSuccess: true,
-        });
-      }else{
-        let dataset = [{
-          _id:getsettings[0]._id,
-          PerUnder5KM:0,
-          PerKM:0,
-          ExpDelivery:0,
-          ReferalPoint:getsettings[0].ReferalPoint,
-          WhatsAppNo:getsettings[0].WhatsAppNo,
-          AppLink:getsettings[0].AppLink,
-          DefaultWMessage:getsettings[0].DefaultWMessage
-        }];
-
-        res.status(200).json({
-          Message: "Settings Found!",
-          Data: dataset,
-          IsSuccess: true,
-        });
-      }  
+      // let orders = await orderSchema.find({customerId:customerId});
+      // if(orders.length != 0){
+      //   res.status(200).json({
+      //     Message: "Settings Found!",
+      //     Data: getsettings,
+      //     IsSuccess: true,
+      //   });
+      // }else{
+      //   let dataset = [{
+      //     _id:getsettings[0]._id,
+      //     PerUnder5KM:0,
+      //     PerKM:0,
+      //     ExpDelivery:0,
+      //     ReferalPoint:getsettings[0].ReferalPoint,
+      //     WhatsAppNo:getsettings[0].WhatsAppNo,
+      //     AppLink:getsettings[0].AppLink,
+      //     DefaultWMessage:getsettings[0].DefaultWMessage
+      //   }];
+      // }
+      res.status(200).json({
+        Message: "Settings Found!",
+        Data: getsettings,
+        IsSuccess: true,
+      });
     } else {
       res.status(200).json({
         Message: "Settings Not Found!",
@@ -673,8 +671,7 @@ router.post("/c_activeOrder", async function (req, res, next) {
         courierId: courierId,
         isActive: true,
       });
-      if(orderdata!=null)
-      datalist.push(orderdata);
+      if (orderdata != null) datalist.push(orderdata);
     }
     console.log(datalist);
     if (datalist.length != 0) {

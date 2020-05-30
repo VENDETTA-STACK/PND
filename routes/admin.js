@@ -628,6 +628,7 @@ router.post("/notificationToCustomers", async function (req, res, next) {
   }
 });
 
+//Prmocode Management
 router.post("/addpromocode", async function (req, res, next) {
   const { id, title, description, code, discount, expiryDate } = req.body;
   try {
@@ -691,6 +692,7 @@ router.post("/deletepromocode", async function (req, res, next) {
   }
 });
 
+//Banner Management
 router.post("/addbanner", uploadbanner.single("image"), async function (
   req,
   res,
@@ -751,6 +753,7 @@ router.post("/deletebanner", async function (req, res, next) {
   }
 });
 
+//Message Creator
 router.post("/messages", async function (req, res, next) {
   try {
     let dataset = await messageSchema.find({});
@@ -814,6 +817,40 @@ router.post("/deleteMessage", async function (req, res, next) {
       res
         .status(200)
         .json({ Message: "Message Not Deleted!", Data: 0, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//coustomer
+router.post("/customers", async function (req, res, next) {
+  try {
+    let dataset = await customerSchema.find({});
+    res
+      .status(200)
+      .json({
+        Message: "Customer List Found!",
+        Data: dataset,
+        IsSuccess: true,
+      });
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+router.post("/customersDelete", async function (req, res, next) {
+  const id = req.body.id;
+  try {
+    let dataset = await customerSchema.findByIdAndDelete(id);
+    if (dataset != null) {
+      res
+        .status(200)
+        .json({ Message: "Customer Deleted!", Data: 1, IsSuccess: true });
+    } else {
+      res
+        .status(200)
+        .json({ Message: "Customer Not Deleted!", Data: 0, IsSuccess: true });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
