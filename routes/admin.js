@@ -615,7 +615,18 @@ router.post("/notificationToCustomers", async function (req, res, next) {
 router.post("/addpromocode", async function (req, res, next) {
   const { id, title, description, code, discount, expiryDate } = req.body;
   try {
+
     if(id==0){
+      let newPromo = new promocodeSchema({
+        _id: new config.mongoose.Types.ObjectId(),
+        title: title,
+        description: description,
+        code: code,
+        discount: discount,
+        expiryDate: expiryDate,
+      });
+      await newPromo.save();
+    }else{
       let dataset = await promocodeSchema.find({ _id: id });
       if (dataset.length == 1) {
         let newPromo = {
@@ -626,16 +637,6 @@ router.post("/addpromocode", async function (req, res, next) {
           expiryDate: expiryDate,
         };
         await promocodeSchema.findByIdAndUpdate(id, newPromo);
-      } else {
-        let newPromo = new promocodeSchema({
-          _id: new config.mongoose.Types.ObjectId(),
-          title: title,
-          description: description,
-          code: code,
-          discount: discount,
-          expiryDate: expiryDate,
-        });
-        await newPromo.save();
       }
     }
     res
