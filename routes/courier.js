@@ -178,7 +178,7 @@ router.post("/updateFcmToken", async function (req, res, next) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
   }
 });
-
+ 
 //couriers Login
 router.post("/signin", async function (req, res, next) {
   const { mobileNo } = req.body;
