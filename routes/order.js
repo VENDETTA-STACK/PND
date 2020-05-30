@@ -354,6 +354,8 @@ router.post("/applyPromoCode", async function (req, res, next) {
 router.post("/acceptOrder", async function (req, res, next) {
   const { courierId, orderId } = req.body;
   try {
+    let cusdata = await orderSchema.find({'_id':orderId}).populate('customerId');
+    let cudata = await courierSchema.find({'_id':courierId});
     var checkif = await requestSchema.find({
       orderId: orderId,
       status: "Accept",
@@ -362,6 +364,7 @@ router.post("/acceptOrder", async function (req, res, next) {
     if (checkif.length == 0) {
       var location = await currentLocation(courierId);
       if (location.duty == "ON") {
+        
         let locationfinder = location.latitude + "," + location.longitude;
         let description = orderId + " had Been Accepted";
         let logger = new locationLoggerSchema({
@@ -377,7 +380,9 @@ router.post("/acceptOrder", async function (req, res, next) {
           { new: true }
         );
         if (data.status == "Accept") {
-          console.log(data);
+          let message = "Your Order has been accepted by our delivery boy: "+cudata[0].firstName+" "+cudata[0].lastName+"--"+cudata[0].mobileNo;
+          let send = await sendMessages(cusdata[0].customerId.mobileNo,message);
+          console.log(send);
           await orderSchema.findByIdAndUpdate(orderId, {
             courierId: courierId,
             status: "Order Assigned",
@@ -410,6 +415,7 @@ router.post("/acceptOrder", async function (req, res, next) {
 router.post("/takeThisOrder", async function (req, res, next) {
   const { courierId, orderId } = req.body;
   try {
+    let cusdata = await orderSchema.find({'_id':orderId}).populate('customerId');
     var location = await currentLocation(courierId);
     if (location.duty == "ON") {
       var updatetakeOrder = await requestSchema.findOneAndUpdate(
@@ -425,6 +431,8 @@ router.post("/takeThisOrder", async function (req, res, next) {
           blong: location.longitude,
         });
         await prepare.save();
+        let send = await sendMessages(cusdata[0].customerId.mobileNo,"Your Delivery Boy is on his way.");
+          console.log(send);
         res
           .status(200)
           .json({ Message: "Order Taking Success!", Data: 1, IsSuccess: true });
@@ -603,7 +611,7 @@ router.post("/reachPickPoint", async function (req, res, next) {
   try {
     var location = await currentLocation(courierId);
     if (location.duty == "ON") {
-      var checkif = await orderSchema.find({ _id: orderId, isActive: true });
+      var checkif = await orderSchema.find({ _id: orderId, isActive: true }).populate('customerId');
       if (checkif.length != 0) {
         await orderSchema.findOneAndUpdate(
           { _id: orderId, courierId: courierId },
@@ -614,6 +622,9 @@ router.post("/reachPickPoint", async function (req, res, next) {
           { courierId: courierId, orderId: orderId },
           data
         );
+        let send = await sendMessages(checkif[0].customerId.mobileNo,"Your Delivery Boy Reached To Pickup Point.");
+        let send = await sendMessages(checkif[0].deliveryPoint.mobileNo,"Your Delivery Boy Reached To Pickup Point. He will Reach to you shortly.");
+        console.log(send);
         res
           .status(200)
           .json({ Message: "Reached Pickup Point!", Data: 1, IsSuccess: true });
@@ -637,13 +648,14 @@ router.post("/reachPickPoint", async function (req, res, next) {
 router.post("/reachDropPoint", async function (req, res, next) {
   const { courierId, orderId } = req.body;
   try {
-    var checkif = await orderSchema.find({ _id: orderId, isActive: true });
+    var checkif = await orderSchema.find({ _id: orderId, isActive: true }).populate('customerId');
     if (checkif.length != 0) {
       await orderSchema.findOneAndUpdate(
         { _id: orderId, courierId: courierId },
         { note: "Order Delivered", isActive: false }
       );
-
+      let send = await sendMessages(checkif[0].customerId.mobileNo,"Your Order Has Been Delivered.");
+      let send = await sendMessages(checkif[0].deliveryPoint.mobileNo,"Your Order Has Been Delivered.");
       res
         .status(200)
         .json({ Message: "Order Delivered!", Data: 1, IsSuccess: true });
@@ -771,6 +783,23 @@ async function sendPushNotification(fcmtoken, title, body) {
     .messaging()
     .sendToDevice(fcmtoken, payload, options);
   return response;
+}
+
+async function sendMessages(mobileNo, message) {
+  let msgportal =
+    "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
+    process.env.SMS_USER +
+    "&password=" +
+    process.env.SMS_PASS +
+    "&msisdn=" +
+    mobileNo +
+    "&sid=" +
+    process.env.SMS_SID +
+    "&msg=" +
+    message +
+    "&fl=0&gwid=2";
+    var data = await axios.get(msgportal);
+    return data;
 }
 
 async function sendPopupNotification(fcmtoken, title, body, data) {
