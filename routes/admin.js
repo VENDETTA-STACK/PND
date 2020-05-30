@@ -408,27 +408,27 @@ router.post("/couriersDelete", async function (req, res, next) {
 });
 
 //get live location of courier boys whose duty is on: used in dashboard adminpanel
-router.post("/getLiveLocation", async function (req, res, next) {
-  var list_courier = [];
-  var listIds = await courierSchema
-    .find({ isActive: true, "accStatus.flag": true, isVerified: true })
-    .select("id firstName lastName");
-  var counter = 0;
-  for (let i = 0; i < listIds.length; i++) {
-    let location = await currentLocation(listIds[i].id);
-    console.log(location);
-    if (location != null && location.duty == "ON") {
-      counter++;
-      let name = listIds[i].firstName + " " + listIds[i].lastName;
-      let lat = Number(location.latitude);
-      let long = Number(location.longitude);
-      var data = [name, lat, long, counter];
-      list_courier.push(data);
-      console.log(data);
-    }
-  }
-  res.status(200).json(list_courier);
-});
+// router.post("/getLiveLocation", async function (req, res, next) {
+//   var list_courier = [];
+//   var listIds = await courierSchema
+//     .find({ isActive: true, "accStatus.flag": true, isVerified: true })
+//     .select("id firstName lastName");
+//   var counter = 0;
+//   for (let i = 0; i < listIds.length; i++) {
+//     let location = await currentLocation(listIds[i].id);
+//     console.log(location);
+//     if (location != null && location.duty == "ON") {
+//       counter++;
+//       let name = listIds[i].firstName + " " + listIds[i].lastName;
+//       let lat = Number(location.latitude);
+//       let long = Number(location.longitude);
+//       var data = [name, lat, long, counter];
+//       list_courier.push(data);
+//       console.log(data);
+//     }
+//   }
+//   res.status(200).json(list_courier);
+// });
 
 //get todays extra kilometers done by courier boys during orders
 router.post("/todaysExtraKms", async function (req, res, next) {
