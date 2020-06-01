@@ -148,8 +148,6 @@ router.post("/newoder", async function (req, res, next) {
         reason: courierfound[0].reason,
         fcmToken: courierfound[0].fcmToken,
       });
-      let dataset = [];
-      dataset.push(placedorder);
       await newrequest.save();
       var payload = {
         notification: {
@@ -157,8 +155,7 @@ router.post("/newoder", async function (req, res, next) {
           body: "New Order Alert Found For You.",
         },
         data: {
-          type: "orders",
-          orderData: dataset,
+          orderid: courierfound[0].orderId.toString(),
           distance: courierfound[0].distance.toString(),
           click_action: "FLUTTER_NOTIFICATION_CLICK",
         },
@@ -468,12 +465,14 @@ router.post("/rejectOrder", async function (req, res, next) {
             });
             await newrequest.save();
             let data = {
-              orderData: orderData,
+              orderid: orderId.toString(),
               distance: courierfound[0].distance.toString(),
               click_action: "FLUTTER_NOTIFICATION_CLICK",
             };
             let test=  await sendPopupNotification(nearby[0].fcmToken, "Order Alert!", "New Order Found", data);
-            console.log(test);         
+            console.log(test);
+            console.log("---Order Rejected--");
+            res.status(200).json({ Message: "Order Has Been Rejected!", Data: 1, IsSuccess: true });
           }else{
 
             console.log("All Courier Boys Are Busy");
@@ -482,6 +481,8 @@ router.post("/rejectOrder", async function (req, res, next) {
               status: "Admin",
             };
             await orderSchema.findByIdAndUpdate(placedorder.id, updateorder);
+            console.log("---Order Rejected--");
+            res.status(200).json({ Message: "Order Has Been Rejected!", Data: 1, IsSuccess: true });
           }
 
         }else{
@@ -534,8 +535,7 @@ router.post("/noResponseOrder", async function (req, res, next) {
           let title = "New Order Alert";
           let body = "New Order Found For You!";
           let data = {
-            type: "orders",
-            orderid: courierfound[0].orderId,
+            orderid: courierfound[0].orderId.toString(),
             distance: courierfound[0].distance.toString(),
             click_action: "FLUTTER_NOTIFICATION_CLICK",
           };
@@ -741,6 +741,26 @@ router.post("/orderDetails", async function (req, res, next) {
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//testing Apis
+router.post("/sendOrderNotification",async function(req,res,next){
+  try{
+    let orderId = "5ed242aba0e6f600246246a2";
+    let fcm ="eAt0t9L-QWyiGx2rCS_VaC:APA91bFUx2w1FPNhGTxJiKZonXrGKRUnKax0jsNwIZU6kssvpiIloCvFsABzfSYgV280ULMjai7WAeCroOUHd-ij8iQV-hSWFn-fQURp8nfzGTK-5AFyKRPbBxqKIdJcA0sebYVX7lIT";
+    var orderDatas = await orderSchema.find({'_id': orderId,isActive: true,});
+    
+    let data = {
+      orderid: orderId,
+      distance: "5",
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+    };
+    let test=  await sendPopupNotification(fcm, "Order Alert!", "New Order Found", data);
+    console.log(test);
+    res.status(200).json({ Message: "Notification Sent!", Data: 1, IsSuccess: true });
+  }catch(err){
+    res.status(500).json({ Message:err.message, Data: 0, IsSuccess: false });
   }
 });
 
