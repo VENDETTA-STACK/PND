@@ -303,11 +303,15 @@ router.post("/notificationCounter", async function (req, res, next) {
 //get notification list of couriers
 router.post("/courierNotification", async function (req, res, next) {
   const courierId = req.body.courierId;
-  var set = await courierNotificationSchema.find({ courierId: courierId,isRead:false });
-  if(set.length!=0)
-  {
-    for(let i = 0;i<set.length;i++){
-      await courierNotificationSchema.findByIdAndUpdate(set[0]._id,{isRead:true});
+  var set = await courierNotificationSchema.find({
+    courierId: courierId,
+    isRead: false,
+  });
+  if (set.length != 0) {
+    for (let i = 0; i < set.length; i++) {
+      await courierNotificationSchema.findByIdAndUpdate(set[0]._id, {
+        isRead: true,
+      });
     }
   }
   res
