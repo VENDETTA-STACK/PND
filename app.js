@@ -10,7 +10,7 @@ var adminRouter = require("./routes/admin");
 var customersRouter = require("./routes/customer");
 var courierRouter = require("./routes/courier");
 var orderRouter = require("./routes/order");
-
+ 
 var app = express();
 app.use(cors());
 // view engine setup
