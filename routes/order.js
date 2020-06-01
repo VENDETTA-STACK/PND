@@ -148,6 +148,8 @@ router.post("/newoder", async function (req, res, next) {
         reason: courierfound[0].reason,
         fcmToken: courierfound[0].fcmToken,
       });
+      let dataset = [];
+      dataset.push(placedorder);
       await newrequest.save();
       var payload = {
         notification: {
@@ -156,7 +158,7 @@ router.post("/newoder", async function (req, res, next) {
         },
         data: {
           type: "orders",
-          orderid: courierfound[0].orderId,
+          orderData: dataset,
           distance: courierfound[0].distance.toString(),
           click_action: "FLUTTER_NOTIFICATION_CLICK",
         },
