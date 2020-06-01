@@ -353,62 +353,10 @@ router.post("/applyPromoCode", async function (req, res, next) {
 //COURIER BOY APP API
 router.post("/acceptOrder", async function (req, res, next) {
   const { courierId, orderId } = req.body;
-  try {
-    let cusdata = await orderSchema.find({'_id':orderId}).populate('customerId');
-    let cudata = await courierSchema.find({'_id':courierId});
-    var checkif = await requestSchema.find({
-      orderId: orderId,
-      status: "Accept",
-    });
+  try{
 
-    if (checkif.length == 0) {
-      var location = await currentLocation(courierId);
-      if (location.duty == "ON") {
-        
-        let locationfinder = location.latitude + "," + location.longitude;
-        let description = orderId + " had Been Accepted";
-        let logger = new locationLoggerSchema({
-          _id: new config.mongoose.Types.ObjectId(),
-          courierId: courierId,
-          latlong: locationfinder,
-          description: description,
-        });
-
-        var data = await requestSchema.findOneAndUpdate(
-          { orderId: orderId, courierId: courierId },
-          { status: "Accept" },
-          { new: true }
-        );
-        if (data.status == "Accept") {
-          let message = "Your Order has been accepted by our delivery boy: "+cudata[0].firstName+" "+cudata[0].lastName+"--"+cudata[0].mobileNo;
-          let send = await sendMessages(cusdata[0].customerId.mobileNo,message);
-          console.log(send);
-          await orderSchema.findByIdAndUpdate(orderId, {
-            courierId: courierId,
-            status: "Order Assigned",
-            note: "Order Has Been Assigned",
-          });
-          logger.save();
-          res
-            .status(200)
-            .json({ Message: "Order Accepted!", Data: 1, IsSuccess: true });
-        } else {
-          res
-            .status(200)
-            .json({ Message: "Order No Accepted!", Data: 0, IsSuccess: true });
-        }
-      } else {
-        res
-          .status(200)
-          .json({ Message: "Please Your Duty On!", Data: 0, IsSuccess: true });
-      }
-    } else {
-      res
-        .status(200)
-        .json({ Message: "Order Not Available!", Data: 0, IsSuccess: true });
-    }
-  } catch (err) {
-    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }catch(err){
+    
   }
 });
 
