@@ -7,7 +7,21 @@ var express = require("express");
 var config = require("../config");
 var router = express.Router();
 var cors = require("cors");
+var multer = require("multer");
 const { getDistance, convertDistance } = require("geolib");
+
+var bannerlocation = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/banners");
+  },
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "_" + Date.now() + path.extname(file.originalname)
+    );
+  },
+});
+var uploadbanner = multer({ storage: bannerlocation });
 
 /* Data Models */
 var adminSchema = require("../data_models/admin.signup.model");
@@ -19,6 +33,8 @@ var customerSchema = require("../data_models/customer.signup.model");
 var requestSchema = require("../data_models/order.request.model");
 var locationLoggerSchema = require("../data_models/location.logger.model");
 var promocodeSchema = require("../data_models/promocode.model");
+var bannerSchema = require("../data_models/banner.model");
+var messageSchema = require("../data_models/message.creator.model");
 
 async function currentLocation(id) {
   var CourierRef = config.docref.child(id);
@@ -612,20 +628,11 @@ router.post("/notificationToCustomers", async function (req, res, next) {
   }
 });
 
+//Prmocode Management
 router.post("/addpromocode", async function (req, res, next) {
   const { id, title, description, code, discount, expiryDate } = req.body;
   try {
-    let dataset = await promocodeSchema.find({ _id: id });
-    if (dataset.length == 1) {
-      let newPromo = {
-        title: title,
-        description: description,
-        code: code,
-        discount: discount,
-        expiryDate: expiryDate,
-      };
-      await promocodeSchema.findByIdAndUpdate(id, newPromo);
-    } else {
+    if (id == 0) {
       let newPromo = new promocodeSchema({
         _id: new config.mongoose.Types.ObjectId(),
         title: title,
@@ -635,6 +642,18 @@ router.post("/addpromocode", async function (req, res, next) {
         expiryDate: expiryDate,
       });
       await newPromo.save();
+    } else {
+      let dataset = await promocodeSchema.find({ _id: id });
+      if (dataset.length == 1) {
+        let newPromo = {
+          title: title,
+          description: description,
+          code: code,
+          discount: discount,
+          expiryDate: expiryDate,
+        };
+        await promocodeSchema.findByIdAndUpdate(id, newPromo);
+      }
     }
     res
       .status(200)
@@ -667,6 +686,171 @@ router.post("/deletepromocode", async function (req, res, next) {
       res
         .status(200)
         .json({ Message: "Promocode List!", Data: 0, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//Banner Management
+router.post("/addbanner", uploadbanner.single("image"), async function (
+  req,
+  res,
+  next
+) {
+  const { id, title, description } = req.body;
+  try {
+    const file = req.file;
+    if (id == 0) {
+      let newbanner = new bannerSchema({
+        _id: new config.mongoose.Types.ObjectId(),
+        title: title,
+        description: description,
+        image: file == undefined ? null : file.path,
+      });
+      await newbanner.save();
+      res
+        .status(200)
+        .json({ Message: "Banner Added!", Data: 1, IsSuccess: true });
+    } else {
+      let exitData = await bannerSchema.find({ _id: id });
+      if (exitData.length == 1) {
+        let Exitbanner = {
+          title: title,
+          description: description,
+          image: file == undefined ? null : file.path,
+        };
+        await bannerSchema.findByIdAndUpdate(id, Exitbanner);
+        res
+          .status(200)
+          .json({ Message: "Banner Edited!", Data: 1, IsSuccess: true });
+      }
+    }
+  } catch (err) {
+    res.json({
+      Message: err.message,
+      Data: 0,
+      IsSuccess: false,
+    });
+  }
+});
+
+router.post("/deletebanner", async function (req, res, next) {
+  const { id } = req.body;
+  try {
+    let dataset = await bannerSchema.findByIdAndDelete(id);
+    if (dataset != null) {
+      res
+        .status(200)
+        .json({ Message: "Banner Deleted!", Data: 1, IsSuccess: true });
+    } else {
+      res
+        .status(200)
+        .json({ Message: "Banner Not Deleted!", Data: 0, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//Message Creator
+router.post("/messages", async function (req, res, next) {
+  try {
+    let dataset = await messageSchema.find({});
+    res
+      .status(200)
+      .json({ Message: "Messages Fetched!", Data: dataset, IsSuccess: true });
+  } catch (err) {
+    res.json({
+      Message: err.message,
+      Data: 0,
+      IsSuccess: false,
+    });
+  }
+});
+
+router.post("/addMessage", async function (req, res, next) {
+  const { id, title, description } = req.body;
+  try {
+    if (id == 0) {
+      let newMessage = new messageSchema({
+        _id: new config.mongoose.Types.ObjectId(),
+        title: title,
+        description: description,
+      });
+      await newMessage.save();
+      res.status(200).json({
+        Message: "Message Saved!",
+        Data: 1,
+        IsSuccess: true,
+      });
+    } else {
+      let oldMessage = {
+        title: title,
+        description: description,
+      };
+      await messageSchema.findByIdAndUpdate(id, oldMessage);
+      res.status(200).json({
+        Message: "Message Edited!",
+        Data: 1,
+        IsSuccess: true,
+      });
+    }
+  } catch (err) {
+    res.json({
+      Message: err.message,
+      Data: 0,
+      IsSuccess: false,
+    });
+  }
+});
+
+router.post("/deleteMessage", async function (req, res, next) {
+  const id = req.body.id;
+  try {
+    let dataset = await messageSchema.findByIdAndDelete(id);
+    if (dataset != null) {
+      res
+        .status(200)
+        .json({ Message: "Message Deleted!", Data: 1, IsSuccess: true });
+    } else {
+      res
+        .status(200)
+        .json({ Message: "Message Not Deleted!", Data: 0, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+//coustomer
+router.post("/customers", async function (req, res, next) {
+  try {
+    let dataset = await customerSchema.find({});
+    res
+      .status(200)
+      .json({
+        Message: "Customer List Found!",
+        Data: dataset,
+        IsSuccess: true,
+      });
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+router.post("/customersDelete", async function (req, res, next) {
+  const id = req.body.id;
+  try {
+    let dataset = await customerSchema.findByIdAndDelete(id);
+    if (dataset != null) {
+      res
+        .status(200)
+        .json({ Message: "Customer Deleted!", Data: 1, IsSuccess: true });
+    } else {
+      res
+        .status(200)
+        .json({ Message: "Customer Not Deleted!", Data: 0, IsSuccess: true });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
