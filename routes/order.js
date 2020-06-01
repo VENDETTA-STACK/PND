@@ -353,142 +353,149 @@ router.post("/applyPromoCode", async function (req, res, next) {
 //COURIER BOY APP API
 router.post("/acceptOrder", async function (req, res, next) {
   const { courierId, orderId } = req.body;
-  try{
+  try {
+    let orderData = await orderSchema.find({ '_id': orderId }).populate('customerId');
+    let courierData = await courierSchema.find({'_id':courierId});
+    let request = await requestSchema.find({orderId:orderId,status:"Accept"});
 
-  }catch(err){
-    
+    if(request.length == 0){
+      let getlocation = await currentLocation(courierId);
+      if(getlocation.duty == "ON"){
+        
+        let updaterequest = await requestSchema.findOneAndUpdate(
+          {orderId:orderId,courierId:courierId},
+          {status:"Accept"},
+          {new:true});
+        if(updaterequest.status == "Accept"){
+          await orderSchema.findByIdAndUpdate(orderId,{courierId:courierId});
+          //send Message to customer
+          let createMsg = "Your order has been accepted by our delivery boy "+courierData[0].firstName+" "+courierData[0].lastName+"--"+courierData[0].mobileNo;
+          sendMessages(orderData[0].customerId.mobileNo,createMsg);
+
+          //send Notification to customer
+          let data = {
+            click_action: "FLUTTER_NOTIFICATION_CLICK",
+          };
+          let notchecker = await sendPopupNotification(orderData[0].customerId.fcmToken,"Order Accepted","Your Order Has Been Accepted!",data);
+          console.log("---Order Accepted--");
+          console.log(notchecker);
+
+          res.status(200).json({ Message: "Order accepted!", Data: 1, IsSuccess: true });
+        }else{
+          console.log("---Unable Order Accepted--");
+          res.status(200).json({ Message: "Unable to accepted order!", Data: 0, IsSuccess: true });
+        }
+      }else{
+        console.log("---Please Turn On Your Duty--");
+        res.status(200).json({ Message: "Please turn on your duty!", Data: 0, IsSuccess: true });
+      }
+    }else{
+      console.log("---Order Might Be Cancelled By Customer--");
+      res.status(200).json({ Message: "Sorry! Order Not Available", Data: 0, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message:err.message, Data: 0, IsSuccess: false });
   }
 });
 
 router.post("/takeThisOrder", async function (req, res, next) {
   const { courierId, orderId } = req.body;
-  try {
-    let cusdata = await orderSchema.find({'_id':orderId}).populate('customerId');
-    var location = await currentLocation(courierId);
-    if (location.duty == "ON") {
-      var updatetakeOrder = await requestSchema.findOneAndUpdate(
-        { courierId: courierId, orderId: orderId },
-        { status: "TakeThisOrder" }
-      );
-      if (updatetakeOrder != null) {
-        var prepare = new ExtatimeSchema({
+  try{
+    let orderData = await orderSchema.find({ '_id': orderId }).populate('customerId');
+    let getlocation = await currentLocation(courierId);
+    if(getlocation.duty == "ON"){
+      let updateorder = await requestSchema.findOneAndUpdate(
+        {courierId:courierId,orderId:orderId},
+        {status:"Takethisorder"});
+      if(updateorder!=null){
+        let extrakm = new ExtatimeSchema({
           _id: new config.mongoose.Types.ObjectId(),
           courierId: courierId,
           orderId: orderId,
-          blat: location.latitude,
-          blong: location.longitude,
+          blat: getlocation.latitude,
+          blong: getlocation.longitude,
         });
-        await prepare.save();
-        let send = await sendMessages(cusdata[0].customerId.mobileNo,"Your Delivery Boy is on his way.");
-          console.log(send);
-        res
-          .status(200)
-          .json({ Message: "Order Taking Success!", Data: 1, IsSuccess: true });
-      } else {
-        res
-          .status(200)
-          .json({ Message: "Order Taking Failed!", Data: 0, IsSuccess: true });
+        extrakm.save();
+
+        //calculate Time
+        let emplocation = {latitude:getlocation.latitude,longitude:getlocation.longitude};
+        let picklocation = {latitude:orderData[0].pickupPoint.lat,longitude:orderData[0].pickupPoint.long};
+        let distanceKM = convertDistance(getDistance(emplocation, picklocation, 1000),"km");
+        let approxtime = (Number(distanceKM)/40)*60;
+        sendMessages(orderData[0].customerId.mobileNo,"Your delivery boy will reach to pickup point in approx "+approxtime+" min.");
+
+      }else{
+        console.log("---Order Taking Failed--");
+        res.status(200).json({ Message: "Order Taking Failed!", Data: 0, IsSuccess: true });
       }
-    } else {
-      res.status(200).json({
-        Message: "Please Turn ON Your Duty!",
-        Data: 0,
-        IsSuccess: true,
-      });
+    }else{
+      console.log("---Please Turn On Your Duty--");
+      res.status(200).json({ Message: "Please turn on your duty!", Data: 0, IsSuccess: true });
     }
-  } catch (err) {
-    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }catch(err){
+    res.status(500).json({ Message:err.message, Data: 0, IsSuccess: false });
   }
 });
 
 router.post("/rejectOrder", async function (req, res, next) {
   const { courierId, orderId, reason } = req.body;
-  try {
-    var updateRejection = await requestSchema.findOneAndUpdate(
-      { courierId: courierId, orderId: orderId },
-      { status: "Reject", reason: reason }
-    );
-    var location = await currentLocation(courierId);
-    if (location.duty == "ON") {
-      if (updateRejection != null) {
-        var orderData = await orderSchema.find({
-          _id: orderId,
-          isActive: true,
-        });
-        if (orderData.length != 0) {
-          var avlcourier = await findCourierBoy(
-            orderData[0].pickupPoint.lat,
-            orderData[0].pickupPoint.long,
-            orderId
-          );
-          if (avlcourier.length != 0) {
-            console.log("Total Found: " + avlcourier.length);
-            let courierfound = arraySort(avlcourier, "distance");
+  try{
+    var orderData = await orderSchema.find({'_id': orderId,isActive: true,});
+    if(orderData.length != 0){
+      let getlocation = await currentLocation(courierId);
+      if(getlocation.duty == "ON"){
+        let updateRejection = await requestSchema.findOneAndUpdate(
+          { courierId: courierId, orderId: orderId },
+          { status: "Reject", reason: reason }
+        );
+        if(updateRejection!=null){
+          var avlcourier = await findCourierBoy(orderData[0].pickupPoint.lat,orderData[0].pickupPoint.long,orderId);
+          
+          if(avlcourier.length!=0)
+          {
+          
+            let nearby = arraySort(avlcourier, "distance");
             let newrequest = new requestSchema({
               _id: new config.mongoose.Types.ObjectId(),
-              courierId: courierfound[0].courierId,
-              orderId: courierfound[0].orderId,
-              distance: courierfound[0].distance,
-              status: courierfound[0].status,
-              reason: courierfound[0].reason,
-              fcmToken: courierfound[0].fcmToken,
+              courierId: nearby[0].courierId,
+              orderId: nearby[0].orderId,
+              distance: nearby[0].distance,
+              status: nearby[0].status,
+              reason: nearby[0].reason,
+              fcmToken: nearby[0].fcmToken,
             });
             await newrequest.save();
-            var payload = {
-              notification: {
-                title: "Order Alert",
-                body: "New Order Alert Found For You.",
-              },
-              data: {
-                type: "orders",
-                orderid: courierfound[0].orderId,
-                distance: courierfound[0].distance.toString(),
-                click_action: "FLUTTER_NOTIFICATION_CLICK",
-              },
+            let data = {
+              orderData: orderData,
+              distance: courierfound[0].distance.toString(),
+              click_action: "FLUTTER_NOTIFICATION_CLICK",
             };
-            var options = {
-              priority: "high",
-              timeToLive: 60 * 60 * 24,
-            };
-            config.firebase
-              .messaging()
-              .sendToDevice(courierfound[0].fcmToken, payload, options)
-              .then((doc) => {
-                console.log("Sending Notification");
-                console.log(doc);
-              });
-            res
-              .status(200)
-              .json({ Message: "Order Rejected!", Data: 1, IsSuccess: true });
-          } else {
-            console.log(
-              "No Courier Boys Available:: Waiting For Admin Response"
-            );
+            let test=  await sendPopupNotification(nearby[0].fcmToken, "Order Alert!", "New Order Found", data);
+            console.log(test);         
+          }else{
+
+            console.log("All Courier Boys Are Busy");
             var updateorder = {
-              note: "All Courier Boys Are Busy. Please wait for response.",
+              note: "Order is Processing",
               status: "Admin",
             };
             await orderSchema.findByIdAndUpdate(placedorder.id, updateorder);
-
-            res
-              .status(200)
-              .json({ Message: "Order Rejected!", Data: 1, IsSuccess: true });
           }
-        } else {
-          res
-            .status(200)
-            .json({ Message: "Order Not Found!", Data: 0, IsSuccess: true });
+
+        }else{
+          console.log("---Unable to Reject Order--");
+          res.status(200).json({ Message: "Unable to Reject Order!", Data: 0, IsSuccess: true });
         }
+      }else{
+        console.log("---Please Turn On Your Duty--");
+        res.status(200).json({ Message: "Please turn on your duty!", Data: 0, IsSuccess: true });
       }
-    } else {
-      res.status(200).json({
-        Message: "Please Turn ON Your Duty!",
-        Data: 0,
-        IsSuccess: true,
-      });
+    }else{
+      console.log("---Order Might Be Cancelled By Customer--");
+      res.status(200).json({ Message: "Sorry! Order Not Available", Data: 0, IsSuccess: true });
     }
-  } catch (err) {
-    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }catch(err){
+    res.status(500).json({ Message:err.message, Data: 0, IsSuccess: false });
   }
 });
 
@@ -559,19 +566,27 @@ router.post("/reachPickPoint", async function (req, res, next) {
   try {
     var location = await currentLocation(courierId);
     if (location.duty == "ON") {
-      var checkif = await orderSchema.find({ _id: orderId, isActive: true }).populate('customerId');
+      var checkif = await orderSchema
+        .find({ _id: orderId, isActive: true })
+        .populate("customerId");
       if (checkif.length != 0) {
         await orderSchema.findOneAndUpdate(
           { _id: orderId, courierId: courierId },
-          { note: "Delivery boy reached to Pickup Point" }
+          { note: "Delivery boy reached to pickup point" }
         );
         var data = { plat: location.latitude, plong: location.longitude };
         await ExtatimeSchema.findOneAndUpdate(
           { courierId: courierId, orderId: orderId },
           data
         );
-        let send = await sendMessages(checkif[0].customerId.mobileNo,"Your Delivery Boy Reached To Pickup Point.");
-        let senddsa = await sendMessages(checkif[0].deliveryPoint.mobileNo,"Your Delivery Boy Reached To Pickup Point. He will Reach to you shortly.");
+        let send = await sendMessages(
+          checkif[0].customerId.mobileNo,
+          "Your delivery boy reached To pickup Point."
+        );
+        let senddsa = await sendMessages(
+          checkif[0].deliveryPoint.mobileNo,
+          "Your delivery boy reached To pickup point. He will reach to you shortly."
+        );
         console.log(send);
         res
           .status(200)
@@ -596,14 +611,22 @@ router.post("/reachPickPoint", async function (req, res, next) {
 router.post("/reachDropPoint", async function (req, res, next) {
   const { courierId, orderId } = req.body;
   try {
-    var checkif = await orderSchema.find({ _id: orderId, isActive: true }).populate('customerId');
+    var checkif = await orderSchema
+      .find({ _id: orderId, isActive: true })
+      .populate("customerId");
     if (checkif.length != 0) {
       await orderSchema.findOneAndUpdate(
         { _id: orderId, courierId: courierId },
         { note: "Order Delivered", isActive: false }
       );
-      let send = await sendMessages(checkif[0].customerId.mobileNo,"Your Order Has Been Delivered.");
-      let ase = await sendMessages(checkif[0].deliveryPoint.mobileNo,"Your Order Has Been Delivered.");
+      let send = await sendMessages(
+        checkif[0].customerId.mobileNo,
+        "Your Order Has Been Delivered."
+      );
+      let ase = await sendMessages(
+        checkif[0].deliveryPoint.mobileNo,
+        "Your Order Has Been Delivered."
+      );
       res
         .status(200)
         .json({ Message: "Order Delivered!", Data: 1, IsSuccess: true });
@@ -621,7 +644,7 @@ router.post("/c_activeOrder", async function (req, res, next) {
   const { courierId } = req.body;
   var data = await requestSchema.find({
     courierId: courierId,
-    status: "TakeThisOrder",
+    status: "Takethisorder",
   });
   var datalist = [];
   if (data.length != 0) {
@@ -724,15 +747,6 @@ function getOrderNumber() {
   return orderNo;
 }
 
-async function sendPushNotification(fcmtoken, title, body) {
-  let payload = { notification: { title: title, body: body } };
-  let options = { priority: "high", timeToLive: 60 * 60 * 24 };
-  let response = await config.firebase
-    .messaging()
-    .sendToDevice(fcmtoken, payload, options);
-  return response;
-}
-
 async function sendMessages(mobileNo, message) {
   let msgportal =
     "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
@@ -746,8 +760,8 @@ async function sendMessages(mobileNo, message) {
     "&msg=" +
     message +
     "&fl=0&gwid=2";
-    var data = await axios.get(msgportal);
-    return data;
+  var data = await axios.get(msgportal);
+  return data;
 }
 
 async function sendPopupNotification(fcmtoken, title, body, data) {
