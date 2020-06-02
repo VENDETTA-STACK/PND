@@ -242,8 +242,9 @@ router.post("/settings", async function (req, res, next) {
 router.post("/orders", async function (req, res, next) {
   try {
     let newdataset = [];
-    let totalorders = await orderSchema
-      .find({})
+    
+    let cancelledOrders = await orderSchema
+      .find({status:"Order Cancelled"})
       .populate(
         "courierId",
         "firstName lastName fcmToken mobileNo accStatus transport isVerified"
@@ -258,9 +259,16 @@ router.post("/orders", async function (req, res, next) {
       )
       .populate("customerId");
 
+    let runningOrders = await orderSchema
+      .find({ status: "Admin" })
+      .populate(
+        "courierId",
+        "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+      )
+      .populate("customerId");
+
     newdataset.push({
-      totalOrders: totalorders,
-      pendingOrders: pendingOrders,
+      totalOrders: pendingOrders
     });
 
     res

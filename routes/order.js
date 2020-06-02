@@ -174,7 +174,6 @@ router.post("/newoder", async function (req, res, next) {
     } else {
       console.log("No Courier Boys Available:: Waiting For Admin Response");
       var updateorder = {
-        note: "All Courier Boys Are Busy. Please wait for response.",
         status: "Admin",
       };
       await orderSchema.findByIdAndUpdate(placedorder.id, updateorder);
@@ -366,7 +365,7 @@ router.post("/acceptOrder", async function (req, res, next) {
           {status:"Accept"},
           {new:true});
         if(updaterequest.status == "Accept"){
-          await orderSchema.findByIdAndUpdate(orderId,{courierId:courierId});
+          await orderSchema.findByIdAndUpdate(orderId,{courierId:courierId,status:"Order Assigned",note:"Order Has Been Assigned"});
           //send Message to customer
           let createMsg = "Your order has been accepted by our delivery boy "+courierData[0].firstName+" "+courierData[0].lastName+"--"+courierData[0].mobileNo;
           sendMessages(orderData[0].customerId.mobileNo,createMsg);
@@ -574,7 +573,7 @@ router.post("/reachPickPoint", async function (req, res, next) {
       if (checkif.length != 0) {
         await orderSchema.findOneAndUpdate(
           { _id: orderId, courierId: courierId },
-          { note: "Delivery boy reached to pickup point" }
+          { status:"Order Picked",note: "Delivery boy reached to pickup point" }
         );
         var data = { plat: location.latitude, plong: location.longitude };
         await ExtatimeSchema.findOneAndUpdate(
@@ -619,7 +618,7 @@ router.post("/reachDropPoint", async function (req, res, next) {
     if (checkif.length != 0) {
       await orderSchema.findOneAndUpdate(
         { _id: orderId, courierId: courierId },
-        { note: "Order Delivered", isActive: false }
+        { status:"Order Delivered",note: "Order Delivered", isActive: false }
       );
       let send = await sendMessages(
         checkif[0].customerId.mobileNo,
@@ -730,6 +729,24 @@ router.post("/orderDetails", async function (req, res, next) {
   const { id } = req.body;
   try {
     var order = await orderSchema.find({ _id: id });
+    if (order.length == 1) {
+      res
+        .status(200)
+        .json({ Message: "Orders Found!", Data: order, IsSuccess: true });
+    } else {
+      res
+        .status(200)
+        .json({ Message: "Orders Not Found!", Data: order, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+router.post("/orderStatus", async function (req, res, next) {
+  const { id } = req.body;
+  try {
+    var order = await orderSchema.find({ _id: id }).select("isActive status");
     if (order.length == 1) {
       res
         .status(200)
