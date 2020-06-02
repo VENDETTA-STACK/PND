@@ -290,7 +290,21 @@ router.post("/orders", async function (req, res, next) {
   }
 });
 
-//assign order
+//cancel Order
+router.post("/cancelOrder",async function(req,res,next){
+  const id = req.body.id;
+  try{
+    let orderupdate = await orderSchema.find({'_id':id,isActive:true});
+    if(orderupdate.length == 1){
+      await orderSchema.findOneAndUpdate({'_id':id},{status:"Order Cancelled",isActive:false});
+      res.status(200).json({ Message: "Order Cancelled!", Data: 1, IsSuccess: true });
+    }{
+      res.status(200).json({ Message: "Unable to Cancell Order!", Data: 0, IsSuccess: true });
+    }
+  }catch{
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+})
 
 //list of couriers boys
 router.post("/couriers", async function (req, res, next) {

@@ -420,8 +420,8 @@ router.post("/takeThisOrder", async function (req, res, next) {
         let picklocation = {latitude:orderData[0].pickupPoint.lat,longitude:orderData[0].pickupPoint.long};
         let distanceKM = convertDistance(getDistance(emplocation, picklocation, 1000),"km");
         let approxtime = (Number(distanceKM)/40)*60;
-        sendMessages(orderData[0].customerId.mobileNo,"Your delivery boy will reach to pickup point in approx "+approxtime+" min.");
-
+        let data = sendMessages(orderData[0].customerId.mobileNo,"Your delivery boy will reach to pickup point in approx "+approxtime+" min.");
+        console.log()
       }else{
         console.log("---Order Taking Failed--");
         res.status(200).json({ Message: "Order Taking Failed!", Data: 0, IsSuccess: true });
