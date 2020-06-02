@@ -244,7 +244,7 @@ router.post("/orders", async function (req, res, next) {
     let newdataset = [];
     
     let cancelledOrders = await orderSchema
-      .find({status:"Order Cancelled"})
+      .find({status:"Order Cancelled",isActive:false})
       .populate(
         "courierId",
         "firstName lastName fcmToken mobileNo accStatus transport isVerified"
@@ -260,7 +260,15 @@ router.post("/orders", async function (req, res, next) {
       .populate("customerId");
 
     let runningOrders = await orderSchema
-      .find({ status: "Admin" })
+      .find({$or:[{status: "Finding"},{status: "Scheduled"},{status: "Order Picked"},{status:"Order Assigned"}]})
+      .populate(
+        "courierId",
+        "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+      )
+      .populate("customerId");
+
+    let completeOrders = await orderSchema
+      .find({status: "Order Delivered",isActive:false})
       .populate(
         "courierId",
         "firstName lastName fcmToken mobileNo accStatus transport isVerified"
@@ -268,7 +276,10 @@ router.post("/orders", async function (req, res, next) {
       .populate("customerId");
 
     newdataset.push({
-      totalOrders: pendingOrders
+      runningOrders: runningOrders,
+      cancelledOrders:cancelledOrders,
+      pendingOrders:pendingOrders,
+      completeOrders:completeOrders
     });
 
     res
