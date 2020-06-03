@@ -591,15 +591,15 @@ router.post("/reachPickPoint", async function(req, res, next) {
                 await ExtatimeSchema.findOneAndUpdate({ courierId: courierId, orderId: orderId },
                     data
                 );
-                let send = await sendMessages(
+                sendMessages(
                     checkif[0].customerId.mobileNo,
                     "Your delivery boy reached To pickup Point."
                 );
-                let senddsa = await sendMessages(
+                sendMessages(
                     checkif[0].deliveryPoint.mobileNo,
                     "Your delivery boy reached To pickup point. He will reach to you shortly."
                 );
-                console.log(send);
+
                 res
                     .status(200)
                     .json({ Message: "Reached Pickup Point!", Data: 1, IsSuccess: true });
