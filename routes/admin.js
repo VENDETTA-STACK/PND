@@ -882,4 +882,19 @@ router.post("/customersDelete", async function(req, res, next) {
     }
 });
 
+//Location Logs
+router.post("/courierlogs", async function(req, res, next) {
+    try {
+        let dataset = await locationLoggerSchema.find({}).populate("courierId").sort({ dateTime: -1 });
+        res
+            .status(200)
+            .json({
+                Message: "Log List Found!",
+                Data: dataset,
+                IsSuccess: true,
+            });
+    } catch (err) {
+        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
 module.exports = router;

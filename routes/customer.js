@@ -77,9 +77,11 @@ router.post("/signup2", async function(req, res, next) {
                 regCode: registrationCode(),
             });
             let data = await newCustomer.save();
-            res
-                .status(200)
-                .json({ Message: "Customer Registered!", Data: data, IsSuccess: true });
+            if (data != null) {
+                let newdata = [data];
+                res.status(200).json({ Message: "Customer Registered!", Data: newdata, IsSuccess: true });
+            }
+
         }
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -87,9 +89,9 @@ router.post("/signup2", async function(req, res, next) {
 });
 
 router.post("/sendotp", async function(req, res, next) {
-    const { mobileNo, code } = req.body;
+    const { mobileNo, code, appSignature } = req.body;
     try {
-        let message = "Your verification code is " + code;
+        let message = "Your verification code is " + code + " " + appSignature;
         let msgportal =
             "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
             process.env.SMS_USER +
