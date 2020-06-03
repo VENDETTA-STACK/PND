@@ -741,7 +741,7 @@ router.post("/addbanner", uploadbanner.single("image"), async function(req, res,
         res.json({
             Message: err.message,
             Data: 0,
-            IsSuccess: false,
+            IsdSuccess: false,
         });
     }
 });
