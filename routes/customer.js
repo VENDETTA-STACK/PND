@@ -62,9 +62,10 @@ router.post("/signup2", async function(req, res, next) {
     try {
         let existCustomer = await customerSchema.find({ mobileNo: mobileNo });
         if (existCustomer.length == 1) {
+            let b = [];
             res.status(200).json({
                 Message: "Customer Already Registered!",
-                Data: 0,
+                Data: b,
                 IsSuccess: true,
             });
         } else {
@@ -84,7 +85,8 @@ router.post("/signup2", async function(req, res, next) {
 
         }
     } catch (err) {
-        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+        let b = [];
+        res.status(500).json({ Message: err.message, Data: b, IsSuccess: false });
     }
 });
 
