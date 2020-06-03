@@ -626,13 +626,12 @@ router.post("/AssignOrder", async function(req, res, next) {
                 status: "Order Assigned",
                 note: "Order Has Been Assigned",
             });
-
-            let locationfinder = location.latitude + "," + location.longitude;
-            let description = orderId + " Assigned By Admin";
+            let description = courierboy[0].cId + " Accepted Order " + OrderData[0].orderNo + " Assigned By Admin";
             let logger = new locationLoggerSchema({
                 _id: new config.mongoose.Types.ObjectId(),
                 courierId: courierId,
-                latlong: locationfinder,
+                lat: location.latitude,
+                long: location.longitude,
                 description: description,
             });
             await logger.save();
