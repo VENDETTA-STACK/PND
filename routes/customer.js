@@ -69,6 +69,7 @@ router.post("/signup2", async function(req, res, next) {
                 IsSuccess: true,
             });
         } else {
+            let banks = [];
             let newCustomer = new customerSchema({
                 _id: new config.mongoose.Types.ObjectId(),
                 name: name,
