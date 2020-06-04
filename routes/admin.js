@@ -406,8 +406,8 @@ router.post("/couriersIsActive", async function(req, res, next) {
 router.post("/couriersDelete", async function(req, res, next) {
     const id = req.body.id;
     try {
-        var data = await courierSchema.find({ _id: id });
-        if (data.length == 1) {
+        let data = await courierSchema.find({ _id: id });
+        if (data.length === 1) {
             //Removing Uploaded Files
             var old = data[0].profileImg;
             if (fs.existsSync(old.replace("\\g", "/"))) {
