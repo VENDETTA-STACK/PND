@@ -470,14 +470,29 @@ router.post("/rejectOrder", async function(req, res, next) {
                             fcmToken: nearby[0].fcmToken,
                         });
                         await newrequest.save();
-                        let data = {
-                            orderid: orderId.toString(),
-                            distance: courierfound[0].distance.toString(),
-                            click_action: "FLUTTER_NOTIFICATION_CLICK",
+
+                        var payload = {
+                            notification: {
+                                title: "Order Alert",
+                                body: "New Order Alert Found For You.",
+                            },
+                            data: {
+                                orderid: orderId.toString(),
+                                distance: courierfound[0].distance.toString(),
+                                click_action: "FLUTTER_NOTIFICATION_CLICK",
+                            },
                         };
-                        let test = await sendPopupNotification(nearby[0].fcmToken, "Order Alert!", "New Order Found", data);
-                        console.log(test);
-                        console.log("---Order Rejected--");
+                        var options = {
+                            priority: "high",
+                            timeToLive: 60 * 60 * 24,
+                        };
+                        config.firebase
+                            .messaging()
+                            .sendToDevice(nearby[0].fcmToken, payload, options)
+                            .then((doc) => {
+                                console.log("Sending Notification");
+                                console.log(doc);
+                            });
 
                         //add Logger
                         let logger = new locationLoggerSchema({
