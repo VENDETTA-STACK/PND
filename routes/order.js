@@ -191,11 +191,7 @@ async function findCourierBoy(pick_lat, pick_long, orderid) {
         .select("id fcmToken");
     for (let i = 0; i < getCourier.length; i++) {
         let location = await currentLocation(getCourier[i].id);
-        if (
-            location != null &&
-            location.duty == "ON" &&
-            Number(location.parcel) < 3
-        ) {
+        if (location != null && location.duty == "ON" && Number(location.parcel) < 3) {
             let counter = await requestSchema.countDocuments({ orderId: orderid });
             let exist = await requestSchema.find({
                 courierId: getCourier[i].id,
@@ -449,6 +445,8 @@ router.post("/takeThisOrder", async function(req, res, next) {
 
 router.post("/rejectOrder", async function(req, res, next) {
     const { courierId, orderId, reason } = req.body;
+    console.log("Data for Reject Order");
+    console.log(req.body);
     try {
         var orderData = await orderSchema.find({ '_id': orderId, isActive: true, });
         let courierData = await courierSchema.find({ '_id': courierId });

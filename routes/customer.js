@@ -259,9 +259,6 @@ router.post("/pickupAddress", async function(req, res, next) {
     }
 });
 
-
-
-
 function registrationCode() {
     var result = "";
     var fourdigitsrandom = Math.floor(1000 + Math.random() * 9000);
