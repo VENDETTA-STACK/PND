@@ -107,6 +107,7 @@ router.post("/dashcounters", async function(req, res, next) {
         let couriers = await courierSchema.countDocuments();
         let totalOrders = await orderSchema.countDocuments();
         let customers = await customerSchema.countDocuments();
+        let disapporved = await courierSchema.find({ "accStatus.flag": false }).countDocuments();
         let pendingOrders = await orderSchema
             .find({
                 status: "Admin",
@@ -120,6 +121,7 @@ router.post("/dashcounters", async function(req, res, next) {
             totalOrders: totalOrders,
             customers: customers,
             pendingOrders: pendingOrders,
+            disapporved: disapporved
         });
         res
             .status(200)
@@ -260,7 +262,7 @@ router.post("/orders", async function(req, res, next) {
             .populate("customerId");
 
         let runningOrders = await orderSchema
-            .find({ $or: [{ status: "Finding" }, { status: "Scheduled" }, { status: "Order Picked" }, { status: "Order Assigned" }] })
+            .find({ $or: [{ status: "Order Processing" }, { status: "Order Picked" }, { status: "Order Assigned" }] })
             .populate(
                 "courierId",
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified"

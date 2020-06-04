@@ -126,9 +126,8 @@ router.post("/newoder", async function(req, res, next) {
             discount: discount,
             additionalAmount: additionalAmount,
             finalAmount: finalAmount,
-            status: pkArriveType == "rightnow" ? "Finding" : "Scheduled",
-            note: pkArriveType == "rightnow" ?
-                "Your order is processing!" : "Your Order is Scheduled",
+            status: "Order Processing",
+            note: "Your order is processing!",
         });
 
         var placedorder = await newOrder.save();
