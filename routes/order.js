@@ -478,7 +478,7 @@ router.post("/rejectOrder", async function(req, res, next) {
                             },
                             data: {
                                 orderid: orderId.toString(),
-                                distance: courierfound[0].distance.toString(),
+                                distance: nearby[0].distance.toString(),
                                 click_action: "FLUTTER_NOTIFICATION_CLICK",
                             },
                         };
@@ -512,7 +512,7 @@ router.post("/rejectOrder", async function(req, res, next) {
                             note: "Order is Processing",
                             status: "Admin",
                         };
-                        await orderSchema.findByIdAndUpdate(placedorder.id, updateorder);
+                        await orderSchema.findByIdAndUpdate(orderId, updateorder);
                         console.log("---Order Rejected--");
                         res.status(200).json({ Message: "Order Has Been Rejected!", Data: 1, IsSuccess: true });
                     }
