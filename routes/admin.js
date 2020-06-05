@@ -898,4 +898,34 @@ router.post("/courierlogs", async function(req, res, next) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
+
+//send Notification to PND Delivery Boys
+router.post("/sendNToPND", async function(req, res, next) {
+    try {
+        const { ids, title, message } = req.body;
+        let courierIds = ids.split(',');
+        for (let i = 0; i < courierIds.length; i++) {
+            let fcmFinder = await courierSchema.find({ '_id': courierIds[i] }).select("id fcmToken");
+            if (fcmFinder.length != 0) {
+                let payload = {
+                    notification: {
+                        title: title,
+                        body: message,
+                    },
+                    data: { type: "message", click_action: "FLUTTER_NOTIFICATION_CLICK", },
+                };
+                let options = { priority: "high", timeToLive: 60 * 60 * 24, };
+                config.firebase.messaging().sendToDevice(fcmFinder[0].fcmToken, payload, options).then((doc) => {
+                    console.log("Sending Notification");
+                    console.log(doc);
+                });
+            }
+        }
+        res.json({ Message: "Notification Sent Successfull!", Data: 1, IsSuccess: true });
+    } catch (err) {
+        res.json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
+
+
 module.exports = router;
