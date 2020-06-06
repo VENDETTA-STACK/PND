@@ -133,7 +133,6 @@ async function currentLocation(courierId) {
     return data;
 }
 
-
 //customers app APIs
 router.post("/settings", async function(req, res, next) {
     const customerId = req.body.customerId;
@@ -224,10 +223,16 @@ router.post("/newoder",orderimg.single('orderimg'), async function(req, res, nex
             status: "Order Processing",
             note: "Your order is processing!",
         });
-
         var placedorder = await newOrder.save();
         var avlcourier = await PNDfinder(pkLat, pkLong, placedorder.id,placedorder.deliveryType);
-
+        if(promoCode!=""){
+               let usedpromo = new usedpromoSchema({
+                   _id: new config.mongoose.Types.ObjectId(),
+                   customer:customerId,
+                   code:promoCode
+               });
+               usedpromo.save();
+        }
         if (placedorder != null && avlcourier.length != 0) {
             console.log("Total Found:" + avlcourier.length);
             let courierfound = arraySort(avlcourier, "distance");
