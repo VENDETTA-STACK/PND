@@ -23,6 +23,19 @@ var bannerlocation = multer.diskStorage({
 });
 var uploadbanner = multer({ storage: bannerlocation });
 
+var promocodelocation = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, "uploads/promocodes");
+    },
+    filename: function(req, file, cb) {
+        cb(
+            null,
+            file.fieldname + "_" + Date.now() + path.extname(file.originalname)
+        );
+    },
+});
+var uploadpromocode = multer({ storage: promocodelocation });
+
 /* Data Models */
 var adminSchema = require("../data_models/admin.signup.model");
 var settingsSchema = require("../data_models/settings.model");
@@ -663,8 +676,9 @@ router.post("/notificationToCustomers", async function(req, res, next) {
 });
 
 //Prmocode Management
-router.post("/addpromocode", async function(req, res, next) {
-    const { id, title, description, code, discount, expiryDate } = req.body;
+router.post("/addpromocode", uploadpromocode.single('image'),async function(req, res, next) {
+    const { id, title, description, code, discount, validfrom, validupto } = req.body;
+    const file = req.file;
     try {
         if (id == 0) {
             let newPromo = new promocodeSchema({
@@ -673,20 +687,36 @@ router.post("/addpromocode", async function(req, res, next) {
                 description: description,
                 code: code,
                 discount: discount,
-                expiryDate: expiryDate,
+                validfrom: validfrom,
+                validupto: validupto,
+                image:file!=undefined?file.path:""
             });
             await newPromo.save();
         } else {
             let dataset = await promocodeSchema.find({ _id: id });
             if (dataset.length == 1) {
-                let newPromo = {
-                    title: title,
-                    description: description,
-                    code: code,
-                    discount: discount,
-                    expiryDate: expiryDate,
-                };
-                await promocodeSchema.findByIdAndUpdate(id, newPromo);
+                if(file!=undefined){
+                    let newPromo = {
+                        title: title,
+                        description: description,
+                        code: code,
+                        discount: discount,
+                        validfrom: validfrom,
+                        validupto: validupto,
+                        image:file.path
+                    };    
+                    await promocodeSchema.findByIdAndUpdate(id, newPromo);
+                }else{
+                    let newPromo = {
+                        title: title,
+                        description: description,
+                        code: code,
+                        discount: discount,
+                        validfrom: validfrom,
+                        validupto: validupto
+                    };
+                    await promocodeSchema.findByIdAndUpdate(id, newPromo);
+                }
             }
         }
         res
@@ -700,9 +730,7 @@ router.post("/addpromocode", async function(req, res, next) {
 router.post("/promocodes", async function(req, res, next) {
     try {
         let dataset = await promocodeSchema.find({});
-        res
-            .status(200)
-            .json({ Message: "Promocode List!", Data: dataset, IsSuccess: true });
+        res.status(200).json({ Message: "Promocode List!", Data: dataset, IsSuccess: true });
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
@@ -713,13 +741,9 @@ router.post("/deletepromocode", async function(req, res, next) {
     try {
         let dataset = await promocodeSchema.findByIdAndDelete(id);
         if (dataset != null) {
-            res
-                .status(200)
-                .json({ Message: "Promocode List!", Data: 1, IsSuccess: true });
+            res.status(200).json({ Message: "Promocode List!", Data: 1, IsSuccess: true });
         } else {
-            res
-                .status(200)
-                .json({ Message: "Promocode List!", Data: 0, IsSuccess: true });
+            res.status(200).json({ Message: "Promocode List!", Data: 0, IsSuccess: true });
         }
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
