@@ -22,31 +22,113 @@ var promoCodeSchema = require("../data_models/promocode.model");
 var locationLoggerSchema = require("../data_models/location.logger.model");
 var courierNotificationSchema = require("../data_models/courier.notification.model");
 
-//CUSTOMER APP API
+
+//required functions
+async function GoogleMatrix(fromlocation,tolocation){
+    let link = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&mode=driving&origins="+fromlocation.latitude+","+fromlocation.longitude+
+    "&destinations="+tolocation.latitude+","+tolocation.longitude+"&key="+process.env.GOOGLE_API;
+    let result = await axios.get(link);
+    let distancebe = results.data.rows[0].elements[0].distance.value;
+    return distancebe / 1000;
+}
+
+async function PNDfinder(pickuplat,pickuplong,orderid,deliveryType){
+    let available = [];
+    let getpndpartners = await courierSchema.find({
+        isActive: true,isVerified: true,"accStatus.flag":true
+    }).select("id fcmToken");
+    
+    if(deliveryType == "Normal Delivery"){
+        for(let i=0;i<getpndpartners.length; i++){
+            let partnerlocation = await currentLocation(getpndpartners[i].id);
+            if(partnerlocation.duty == "ON" & Number(partnerlocation.parcel)< 3){
+                let totalrequests = await requestSchema.countDocuments({orderId:orderid});
+                let partnerrequest = await requestSchema.find({
+                    courierId:getpndpartners[i].id,
+                    orderId:orderid
+                });
+                if(totalrequests <= 3){
+                    if(partnerrequest.length == 0){
+                        let pickupcoords = {latitude:pickuplat,longitude:pickuplong};
+                        let partnercoords = {latitude:partnerlocation.latitude,longitude:partnerlocation.longitude};
+                        let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
+                        if(distancebtnpp <= 15){
+                            available.push({
+                                courierId: getCourier[i].id,
+                                orderId: orderid,
+                                distance: distanceKM,
+                                status: "Pending",
+                                fcmToken: getCourier[i].fcmToken,
+                                reason: "",
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }else{
+        for(let i=0;i<getpndpartners.length; i++){
+            let partnerlocation = await currentLocation(getpndpartners[i].id);
+            if(partnerlocation.duty == "ON" & Number(partnerlocation.parcel)==0){
+                let totalrequests = await requestSchema.countDocuments({orderId:orderid});
+                let partnerrequest = await requestSchema.find({
+                    courierId:getpndpartners[i].id,
+                    orderId:orderid
+                });
+                if(totalrequests <= 3){
+                    if(partnerrequest.length == 0){
+                        let pickupcoords = {latitude:pickuplat,longitude:pickuplong};
+                        let partnercoords = {latitude:partnerlocation.latitude,longitude:partnerlocation.longitude};
+                        let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
+                        if(distancebtnpp <= 15){
+                            available.push({
+                                courierId: getCourier[i].id,
+                                orderId: orderid,
+                                distance: distanceKM,
+                                status: "Pending",
+                                fcmToken: getCourier[i].fcmToken,
+                                reason: "",
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return available;
+}
+
+function getOrderNumber() {
+    let orderNo = "ORD-" + Math.floor(Math.random() * 90000) + 10000;
+    return orderNo;
+}
+
+async function sendMessages(mobileNo, message) {
+    let msgportal = "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
+        process.env.SMS_USER + "&password=" +
+        process.env.SMS_PASS + "&msisdn=" +
+        mobileNo + "&sid=" + process.env.SMS_SID +
+        "&msg=" + message + "&fl=0&gwid=2";
+    var data = await axios.get(msgportal);
+    return data;
+}
+
+async function currentLocation(courierId) {
+    var CourierRef = config.docref.child(courierId);
+    const data = await CourierRef.once("value")
+        .then((snapshot) => snapshot.val())
+        .catch((err) => err);
+    return data;
+}
+
+
+//customers app APIs
 router.post("/settings", async function(req, res, next) {
     const customerId = req.body.customerId;
     try {
         var getsettings = await settingsSchema.find({});
         if (getsettings.length == 1) {
-            // let orders = await orderSchema.find({customerId:customerId});
-            // if(orders.length != 0){
-            //   res.status(200).json({
-            //     Message: "Settings Found!",
-            //     Data: getsettings,
-            //     IsSuccess: true,
-            //   });
-            // }else{
-            //   let dataset = [{
-            //     _id:getsettings[0]._id,
-            //     PerUnder5KM:0,
-            //     PerKM:0,
-            //     ExpDelivery:0,
-            //     ReferalPoint:getsettings[0].ReferalPoint,
-            //     WhatsAppNo:getsettings[0].WhatsAppNo,
-            //     AppLink:getsettings[0].AppLink,
-            //     DefaultWMessage:getsettings[0].DefaultWMessage
-            //   }];
-            // }
             res.status(200).json({
                 Message: "Settings Found!",
                 Data: getsettings,
@@ -131,7 +213,7 @@ router.post("/newoder", async function(req, res, next) {
         });
 
         var placedorder = await newOrder.save();
-        var avlcourier = await findCourierBoy(pkLat, pkLong, placedorder.id);
+        var avlcourier = await PNDfinder(pkLat, pkLong, placedorder.id,placedorder.deliveryType);
 
         if (placedorder != null && avlcourier.length != 0) {
             console.log("Total Found:" + avlcourier.length);
@@ -182,47 +264,6 @@ router.post("/newoder", async function(req, res, next) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
-
-async function findCourierBoy(pick_lat, pick_long, orderid) {
-    var listCouriers = [];
-    var getCourier = await courierSchema
-        .find({ isActive: true, isVerified: true, "accStatus.flag": true })
-        .select("id fcmToken");
-    for (let i = 0; i < getCourier.length; i++) {
-        let location = await currentLocation(getCourier[i].id);
-        if (location != null && location.duty == "ON" && Number(location.parcel) < 3) {
-            let counter = await requestSchema.countDocuments({ orderId: orderid });
-            let exist = await requestSchema.find({
-                courierId: getCourier[i].id,
-                orderId: orderid,
-            });
-            if (counter <= 3) {
-                if (exist.length == 0) {
-                    let courierLocation = {
-                        latitude: location.latitude,
-                        longitude: location.longitude,
-                    };
-                    let pickLocation = { latitude: pick_lat, longitude: pick_long };
-                    let distanceKM = convertDistance(
-                        getDistance(courierLocation, pickLocation, 1000),
-                        "km"
-                    );
-                    if (distanceKM <= 15) {
-                        listCouriers.push({
-                            courierId: getCourier[i].id,
-                            orderId: orderid,
-                            distance: distanceKM,
-                            status: "Pending",
-                            fcmToken: getCourier[i].fcmToken,
-                            reason: "",
-                        });
-                    }
-                }
-            }
-        }
-    }
-    return listCouriers;
-}
 
 router.post("/activeOrders", async function(req, res, next) {
     const { customerId } = req.body;
@@ -341,7 +382,7 @@ router.post("/applyPromoCode", async function(req, res, next) {
     }
 });
 
-//COURIER BOY APP API
+//partner app APIs
 router.post("/acceptOrder", async function(req, res, next) {
     const { courierId, orderId } = req.body;
     try {
@@ -454,7 +495,7 @@ router.post("/rejectOrder", async function(req, res, next) {
             if (getlocation.duty == "ON") {
                 let updateRejection = await requestSchema.findOneAndUpdate({ courierId: courierId, orderId: orderId }, { status: "Reject", reason: reason });
                 if (updateRejection != null) {
-                    var avlcourier = await findCourierBoy(orderData[0].pickupPoint.lat, orderData[0].pickupPoint.long, orderId);
+                    var avlcourier = await PNDfinder(orderData[0].pickupPoint.lat, orderData[0].pickupPoint.long, orderId,orderData[0].deliveryType);
 
                     if (avlcourier.length != 0) {
 
@@ -485,10 +526,8 @@ router.post("/rejectOrder", async function(req, res, next) {
                             priority: "high",
                             timeToLive: 60 * 60 * 24,
                         };
-                        config.firebase
-                            .messaging()
-                            .sendToDevice(nearby[0].fcmToken, payload, options)
-                            .then((doc) => {
+                        config.firebase.messaging()
+                            .sendToDevice(nearby[0].fcmToken, payload, options).then((doc) => {
                                 console.log("Sending Notification");
                                 console.log(doc);
                             });
@@ -540,10 +579,11 @@ router.post("/noResponseOrder", async function(req, res, next) {
         if (updateRejection != null) {
             var orderData = await orderSchema.find({ _id: orderId, isActive: true });
             if (orderData.length != 0) {
-                var avlcourier = await findCourierBoy(
+                var avlcourier = await PNDfinder(
                     orderData[0].pickupPoint.lat,
                     orderData[0].pickupPoint.long,
-                    orderId
+                    orderId,
+                    orderData[0].deliveryType
                 );
                 if (avlcourier.length != 0) {
                     console.log("Courier Boys Available");
@@ -780,64 +820,5 @@ router.post("/orderStatus", async function(req, res, next) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
-
-//testing Apis
-router.post("/sendOrderNotification", async function(req, res, next) {
-    try {
-        let orderId = "5ed242aba0e6f600246246a2";
-        let fcm = "eAt0t9L-QWyiGx2rCS_VaC:APA91bFUx2w1FPNhGTxJiKZonXrGKRUnKax0jsNwIZU6kssvpiIloCvFsABzfSYgV280ULMjai7WAeCroOUHd-ij8iQV-hSWFn-fQURp8nfzGTK-5AFyKRPbBxqKIdJcA0sebYVX7lIT";
-        var orderDatas = await orderSchema.find({ '_id': orderId, isActive: true, });
-
-        let data = {
-            orderid: orderId,
-            distance: "5",
-            click_action: "FLUTTER_NOTIFICATION_CLICK",
-        };
-        let test = await sendPopupNotification(fcm, "Order Alert!", "New Order Found", data);
-        console.log(test);
-        res.status(200).json({ Message: "Notification Sent!", Data: 1, IsSuccess: true });
-    } catch (err) {
-        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
-    }
-});
-
-function getOrderNumber() {
-    let orderNo = "ORD-" + Math.floor(Math.random() * 90000) + 10000;
-    return orderNo;
-}
-
-async function sendMessages(mobileNo, message) {
-    let msgportal =
-        "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
-        process.env.SMS_USER +
-        "&password=" +
-        process.env.SMS_PASS +
-        "&msisdn=" +
-        mobileNo +
-        "&sid=" +
-        process.env.SMS_SID +
-        "&msg=" +
-        message +
-        "&fl=0&gwid=2";
-    var data = await axios.get(msgportal);
-    return data;
-}
-
-async function sendPopupNotification(fcmtoken, title, body, data) {
-    let payload = { notification: { title: title, body: body }, data: data };
-    let options = { priority: "high", timeToLive: 60 * 60 * 24 };
-    let response = await config.firebase
-        .messaging()
-        .sendToDevice(fcmtoken, payload, options);
-    return response;
-}
-
-async function currentLocation(courierId) {
-    var CourierRef = config.docref.child(courierId);
-    const data = await CourierRef.once("value")
-        .then((snapshot) => snapshot.val())
-        .catch((err) => err);
-    return data;
-}
 
 module.exports = router;

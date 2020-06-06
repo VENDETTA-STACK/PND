@@ -902,24 +902,53 @@ router.post("/courierlogs", async function(req, res, next) {
 //send Notification to PND Delivery Boys
 router.post("/sendNToPND", async function(req, res, next) {
     try {
-        const { ids, title, message } = req.body;
-        let courierIds = ids.split(',');
-        for (let i = 0; i < courierIds.length; i++) {
-            let fcmFinder = await courierSchema.find({ '_id': courierIds[i] }).select("id fcmToken");
-            if (fcmFinder.length != 0) {
-                let payload = {
-                    notification: {
-                        title: title,
-                        body: message,
-                    },
-                    data: { type: "message", click_action: "FLUTTER_NOTIFICATION_CLICK", },
-                };
-                let options = { priority: "high", timeToLive: 60 * 60 * 24, };
-                config.firebase.messaging().sendToDevice(fcmFinder[0].fcmToken, payload, options).then((doc) => {
+        const { service, data, title, message } = req.body;
+
+        let payload = {
+            notification: {
+                title: title,
+                body: message,
+            },
+            data: { type: "message", click_action: "FLUTTER_NOTIFICATION_CLICK", },
+        };
+        let options = { priority: "high", timeToLive: 60 * 60 * 24, };
+
+        if (service.length == 2) {
+
+            for (let i = 0; i < data.length; i++) {
+                let messag = title + "," + message;
+                let msgportal = "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" + process.env.SMS_USER +
+                    "&password=" + process.env.SMS_PASS + "&msisdn=" + data[0].mobileNo + "&sid=" + process.env.SMS_SID +
+                    "&msg=" + messag + "&fl=0&gwid=2";
+                axios.get(msgportal);
+            }
+
+            for (let i = 0; i < data.length; i++) {
+                config.firebase.messaging().sendToDevice(data[0].fcmToken, payload, options).then((doc) => {
                     console.log("Sending Notification");
                     console.log(doc);
                 });
             }
+
+        } else if (service[0].Name == "SMS") {
+
+            for (let i = 0; i < data.length; i++) {
+                let messag = title + "," + message;
+                let msgportal = "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" + process.env.SMS_USER +
+                    "&password=" + process.env.SMS_PASS + "&msisdn=" + data[0].mobileNo + "&sid=" + process.env.SMS_SID +
+                    "&msg=" + messag + "&fl=0&gwid=2";
+                axios.get(msgportal);
+            }
+
+        } else if (service[0].Name == "NOTIFICATION") {
+
+            for (let i = 0; i < data.length; i++) {
+                config.firebase.messaging().sendToDevice(data[0].fcmToken, payload, options).then((doc) => {
+                    console.log("Sending Notification");
+                    console.log(doc);
+                });
+            }
+
         }
         res.json({ Message: "Notification Sent Successfull!", Data: 1, IsSuccess: true });
     } catch (err) {
