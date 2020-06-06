@@ -10,6 +10,10 @@ const promoCodeSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  image:{
+    type:String,
+    required: true,
+  },
   code: {
     type: String,
     required: true,
@@ -18,7 +22,11 @@ const promoCodeSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  expiryDate: {
+  validfrom: {
+    type: Date,
+    required: true,
+  },
+  validupto: {
     type: Date,
     required: true,
   },

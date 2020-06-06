@@ -22,12 +22,27 @@ var uploadpic = multer({ storage: upload });
 var customerSchema = require("../data_models/customer.signup.model");
 var pickupAddressSchema = require("../data_models/pickupaddresses.model");
 var settingsSchema = require("../data_models/settings.model");
+var bannerSchema = require("../data_models/banner.model");
 
 /* Routes. */
 router.get("/", function(req, res, next) {
     res.render("index", { title: "Invalid URL" });
 });
 
+//required functions
+function registrationCode() {
+    var result = "";
+    var fourdigitsrandom = Math.floor(1000 + Math.random() * 9000);
+    var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var charactersLength = characters.length;
+    for (var i = 0; i < 4; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    var finalcode = result + "" + fourdigitsrandom;
+    return finalcode;
+}
+
+// customers app APIs
 router.post("/signup", async function(req, res, next) {
     const { name, mobileNo, email, referalCode } = req.body;
     try {
@@ -259,16 +274,40 @@ router.post("/pickupAddress", async function(req, res, next) {
     }
 });
 
-function registrationCode() {
-    var result = "";
-    var fourdigitsrandom = Math.floor(1000 + Math.random() * 9000);
-    var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var charactersLength = characters.length;
-    for (var i = 0; i < 4; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+router.post("/banners", async (req, res, next)=>{
+    try{
+        let bannerlist = await bannerSchema.find({});
+        res.json({Message:"Banners List!",Data:bannerlist,IsSuccess:true});
+    }catch(err){
+        res.json({Message:err.message,Data:0,IsSuccess:false});
     }
-    var finalcode = result + "" + fourdigitsrandom;
-    return finalcode;
-}
+});
+
+// show availble promocodes for a purticular customer
+router.post("/promocodes", async function(req, res, next) {
+    const { customerId } = req.body;
+    try {
+        var datasets = [];
+        let listPromoCodes = await promoCodeSchema.find({ isActive: true });
+        
+        for (var i = 0; i < listPromoCodes.length; i++) {
+            let exist = await usedpromoSchema.find({
+                customer: customerId,
+                code: listPromoCodes[i].code,
+            });
+            if (exist.length == 0) datasets.push(listPromoCodes[i]);
+        }
+
+        if (datasets.length != 0) {
+            res.status(200).json({Message: "Promocodes Found!",Data: datasets,IsSuccess: true,});
+        } else {
+            res.status(200).json({Message: "No Promocodes Found!",Data: datasets,IsSuccess: true,});
+        }
+
+    } catch (err) {
+        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
+
 
 module.exports = router;
