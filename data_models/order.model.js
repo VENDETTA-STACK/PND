@@ -12,6 +12,10 @@ const orderSchema = mongoose.Schema({
         type: String,
         required: true,
     },
+    orderImg:{
+        type:String,
+        required: true,
+    },
     pickupPoint: {
         name: {
             type: String,

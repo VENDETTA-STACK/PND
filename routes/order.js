@@ -8,7 +8,18 @@ var express = require("express");
 var config = require("../config");
 var router = express.Router();
 var arraySort = require("array-sort");
-const { getDistance, convertDistance } = require("geolib");
+var imguploader = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, "uploads/orderimg");
+    },
+    filename: function(req, file, cb) {
+        cb(
+            null,
+            file.fieldname + "_" + Date.now() + path.extname(file.originalname)
+        );
+    },
+});
+var orderimg = multer({ storage: imguploader });
 
 //SCHEMAS
 var orderSchema = require("../data_models/order.model");
@@ -146,7 +157,7 @@ router.post("/settings", async function(req, res, next) {
     }
 });
 
-router.post("/newoder", async function(req, res, next) {
+router.post("/newoder",orderimg.single('orderimg'), async function(req, res, next) {
     const {
         customerId,
         deliveryType,
@@ -174,6 +185,7 @@ router.post("/newoder", async function(req, res, next) {
         additionalAmount,
         finalAmount,
     } = req.body;
+    const file = req.file;
     let num = getOrderNumber();
     try {
         var newOrder = new orderSchema({
@@ -182,6 +194,7 @@ router.post("/newoder", async function(req, res, next) {
             customerId: customerId,
             deliveryType: deliveryType,
             weightLimit: weightLimit,
+            orderImg:file==undefined?"":file.path,
             pickupPoint: {
                 name: pkName,
                 mobileNo: pkMobileNo,
