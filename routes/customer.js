@@ -23,6 +23,8 @@ var customerSchema = require("../data_models/customer.signup.model");
 var pickupAddressSchema = require("../data_models/pickupaddresses.model");
 var settingsSchema = require("../data_models/settings.model");
 var bannerSchema = require("../data_models/banner.model");
+var promoCodeSchema = require("../data_models/promocode.model");
+var usedpromoSchema = require("../data_models/used.promocode.model");
 
 /* Routes. */
 router.get("/", function(req, res, next) {
