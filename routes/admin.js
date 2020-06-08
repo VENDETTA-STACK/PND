@@ -36,6 +36,20 @@ var promocodelocation = multer.diskStorage({
 });
 var uploadpromocode = multer({ storage: promocodelocation });
 
+
+var policeverificationImg = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, "uploads/couriers");
+    },
+    filename: function(req, file, cb) {
+        cb(
+            null,
+            file.fieldname + "_" + Date.now() + path.extname(file.originalname)
+        );
+    },
+});
+var uploadpoliceImg = multer({ storage: policeverificationImg });
+
 /* Data Models */
 var adminSchema = require("../data_models/admin.signup.model");
 var settingsSchema = require("../data_models/settings.model");
@@ -665,15 +679,21 @@ router.post("/AssignOrder", async function(req, res, next) {
     }
 });
 
-//send sms & notfication
-router.post("/notificationToCustomers", async function(req, res, next) {
-    const { customerId, title, message, checkins } = req.body;
-    try {
-        res.json(req.body);
-    } catch (err) {
-        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+router.post("/policeverification",uploadpoliceImg.single('image'),async function(req, res, next){
+    const id = req.body.id;
+    try{
+        const file = req.file;
+        if(file!=undefined){
+            let updatedata = {
+                policeVerificationImg:file.path
+            };
+            await courierSchema.findByIdAndUpdate(id,updatedata);
+        }
+        res.json({Message:"Police Verified !", Data:1,IsSuccess: true})
+    }catch(err){
+        res.json({Message:err.message, Data:0,IsSuccess: false});
     }
-});
+})
 
 //Prmocode Management
 router.post("/addpromocode", uploadpromocode.single('image'),async function(req, res, next) {

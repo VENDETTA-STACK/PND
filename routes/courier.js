@@ -27,6 +27,7 @@ var fieldset = finalstorage.fields([
     { name: "poaBackImg", maxCount: 1 },
     { name: "panCardImg", maxCount: 1 },
     { name: "electricityImg", maxCount: 1 },
+    { name: "policeVerificationImg", maxCount: 1 },
 ]);
 
 /* Data Models */
@@ -69,6 +70,11 @@ router.post("/signup", fieldset, async function(req, res, next) {
                 fs.unlinkSync(old.replace("\\g", "/"));
             }
 
+            old = req.files.policeVerificationImg[0].path;
+            if (fs.existsSync(old.replace("\\g", "/"))) {
+                fs.unlinkSync(old.replace("\\g", "/"));
+            }
+
             res.status(200).json({
                 Message: "Courier Already Registered!",
                 Data: 0,
@@ -89,6 +95,7 @@ router.post("/signup", fieldset, async function(req, res, next) {
                 poaBackImg: req.files.poaBackImg[0].path,
                 panCardImg: req.files.panCardImg[0].path,
                 electricityImg: req.files.electricityImg[0].path,
+                policeVerificationImg: req.files.policeVerificationImg[0].path,
             });
             await newCourier.save();
             res

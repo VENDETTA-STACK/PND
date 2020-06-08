@@ -38,8 +38,9 @@ var courierNotificationSchema = require("../data_models/courier.notification.mod
 async function GoogleMatrix(fromlocation,tolocation){
     let link = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&mode=driving&origins="+fromlocation.latitude+","+fromlocation.longitude+
     "&destinations="+tolocation.latitude+","+tolocation.longitude+"&key="+process.env.GOOGLE_API;
-    let result = await axios.get(link);
+    let results = await axios.get(link);
     let distancebe = results.data.rows[0].elements[0].distance.value;
+    console.log(distancebe+"Meter");
     return distancebe / 1000;
 }
 
@@ -154,6 +155,63 @@ router.post("/settings", async function(req, res, next) {
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
+});
+
+router.post("/ordercalc", async (req, res, next)=>{
+    const { picklat,picklong,droplat,droplong,deliverytype,promocode } = req.body;
+
+    let fromlocation = {latitude:Number(picklat), longitude:Number(picklong)};
+    let tolocation = {latitude:Number(droplat), longitude:Number(droplong)};
+    let prmcodes = await promoCodeSchema.find({code:promocode});
+    let settings = await settingsSchema.find({});
+    let totaldistance = await GoogleMatrix(fromlocation,tolocation);
+    
+    let basicamt = 0;
+    let addamt = 0;
+    let promoused = 0;
+    let totalamt = 0;
+    
+    if(totaldistance <= 5){
+        if(deliverytype == "Normal Delivery"){
+            basicamt = settings[0].PerUnder5KM;
+            addamt = 0;
+            totalamt = basicamt + addamt;
+            promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
+            totalamt = totalamt - promoused;
+        }else{
+            basicamt = settings[0].PerUnder5KM;
+            addamt = settings[0].ExpDelivery;
+            totalamt = basicamt + addamt;
+            promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
+            totalamt = totalamt - promoused;
+        }
+    }else{
+        if(deliverytype == "Normal Delivery"){
+            let remdis = totaldistance - 5;
+            basicamt = settings[0].PerUnder5KM + (remdis * settings[0].PerKM);
+            addamt = 0;
+            totalamt = basicamt + addamt;   
+            promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
+            totalamt = totalamt - promoused;
+        }else{
+            let remdis = totaldistance - 5;
+            basicamt = settings[0].PerUnder5KM + (remdis * settings[0].PerKM);
+            addamt = settings[0].ExpDelivery;
+            totalamt = basicamt + addamt;
+            promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
+            totalamt = totalamt - promoused;
+        }
+    }
+
+    let data = [{
+        totaldistance:totaldistance.toFixed(2),
+        basicamt:basicamt.toFixed(2),
+        addamt:addamt.toFixed(2),
+        promoused:promoused.toFixed(2),
+        totalamt:totalamt.toFixed(2)
+    }];
+    
+    res.json({ Message:"Calculation Found!",Data:data,IsSuccess: true});
 });
 
 router.post("/newoder",orderimg.single('orderimg'), async function(req, res, next) {
