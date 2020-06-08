@@ -40,7 +40,7 @@ async function GoogleMatrix(fromlocation,tolocation){
     "&destinations="+tolocation.latitude+","+tolocation.longitude+"&key="+process.env.GOOGLE_API;
     let results = await axios.get(link);
     let distancebe = results.data.rows[0].elements[0].distance.value;
-    console.log(distancebe+"Meter");
+    console.log(distancebe+" Meter");
     return distancebe / 1000;
 }
 
