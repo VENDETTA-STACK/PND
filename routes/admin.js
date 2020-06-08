@@ -50,6 +50,16 @@ var policeverificationImg = multer.diskStorage({
 });
 var uploadpoliceImg = multer({ storage: policeverificationImg });
 
+//Required Funtion
+async function GoogleMatrix(fromlocation,tolocation){
+    let link = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&mode=driving&origins="+fromlocation.latitude+","+fromlocation.longitude+
+    "&destinations="+tolocation.latitude+","+tolocation.longitude+"&key="+process.env.GOOGLE_API;
+    let results = await axios.get(link);
+    let distancebe = results.data.rows[0].elements[0].distance.value;
+    console.log(distancebe+" Meter");
+    return distancebe / 1000;
+}
+
 /* Data Models */
 var adminSchema = require("../data_models/admin.signup.model");
 var settingsSchema = require("../data_models/settings.model");
@@ -634,10 +644,7 @@ router.post("/AssignOrder", async function(req, res, next) {
                 latitude: location.latitude,
                 longitude: location.longitude,
             };
-            let distanceKM = convertDistance(
-                getDistance(emplocation, pick, 1000),
-                "km"
-            );
+            let distanceKM = await GoogleMatrix(emplocation,pick);
 
             var newrequest = new requestSchema({
                 _id: new config.mongoose.Types.ObjectId(),
