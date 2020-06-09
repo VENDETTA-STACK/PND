@@ -72,6 +72,7 @@ var locationLoggerSchema = require("../data_models/location.logger.model");
 var promocodeSchema = require("../data_models/promocode.model");
 var bannerSchema = require("../data_models/banner.model");
 var messageSchema = require("../data_models/message.creator.model");
+var deliverytypesSchema = require("../data_models/deliverytype.model");
 
 async function currentLocation(id) {
     var CourierRef = config.docref.child(id);
@@ -1007,5 +1008,29 @@ router.post("/sendNToPND", async function(req, res, next) {
     }
 });
 
+//not to show on admin panel
+router.post("/adddeliverytype", async (req, res, next)=>{
+    const { title,weightlimit,cost } = req.body;
+    try{
+        let predata = new deliverytypesSchema({
+            _id: new config.mongoose.Types.ObjectId(),
+            title:title,
+            weightlimit:weightlimit,
+            cost:cost
+        });
+        predata.save();
+        res.status(200).json("Data Saved");
+    }catch(err){
+        res.status(500).json(err.message);
+    }
+});
 
+router.post("/deliverytype", async (req, res, next)=>{
+    try{
+        let predata = await deliverytypesSchema.find({});
+        res.status(200).json(predata);
+    }catch(err){
+        res.status(500).json(err.message);
+    }
+});
 module.exports = router;

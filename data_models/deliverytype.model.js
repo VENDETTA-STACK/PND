@@ -8,6 +8,9 @@ const deliverytypeSchema = mongoose.Schema({
     weightlimit: {
         type: String,
     },
+    cost: {
+        type: Number,
+    },
 });
 
 module.exports = mongoose.model("deliverytypes", deliverytypeSchema);

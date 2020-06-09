@@ -32,7 +32,7 @@ var usedpromoSchema = require("../data_models/used.promocode.model");
 var promoCodeSchema = require("../data_models/promocode.model");
 var locationLoggerSchema = require("../data_models/location.logger.model");
 var courierNotificationSchema = require("../data_models/courier.notification.model");
-
+var deliverytypesSchema = require("../data_models/deliverytype.model");
 
 //required functions
 async function GoogleMatrix(fromlocation,tolocation){
@@ -136,22 +136,21 @@ async function currentLocation(courierId) {
 
 //customers app APIs
 router.post("/settings", async function(req, res, next) {
-    const customerId = req.body.customerId;
     try {
-        var getsettings = await settingsSchema.find({});
-        if (getsettings.length == 1) {
-            res.status(200).json({
-                Message: "Settings Found!",
-                Data: getsettings,
-                IsSuccess: true,
-            });
-        } else {
-            res.status(200).json({
-                Message: "Settings Not Found!",
-                Data: getsettings,
-                IsSuccess: true,
-            });
-        }
+        let getsettings = await settingsSchema.find({});
+        let getdeliverytypes = await deliverytypesSchema.find({});
+
+        let predata = [{
+            settings:getsettings,
+            deliverytypes:getdeliverytypes
+        }];
+
+        res.status(200).json({
+            Message: "Settings Found!",
+            Data: predata,
+            IsSuccess: true,
+        });
+
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
@@ -164,54 +163,81 @@ router.post("/ordercalc", async (req, res, next)=>{
     let tolocation = {latitude:Number(droplat), longitude:Number(droplong)};
     let prmcodes = await promoCodeSchema.find({code:promocode});
     let settings = await settingsSchema.find({});
+    let delivery = await deliverytypesSchema.find({});
     let totaldistance = await GoogleMatrix(fromlocation,tolocation);
-    
+
+    let basickm = 0;
     let basicamt = 0;
-    let addamt = 0;
+    let extrakm = 0;
+    let extraamt = 0;
+    let extadeliverycharges = 0;
     let promoused = 0;
     let totalamt = 0;
-    
+
     if(totaldistance <= 5){
         if(deliverytype == "Normal Delivery"){
+            basickm = totaldistance;
             basicamt = settings[0].PerUnder5KM;
-            addamt = 0;
-            totalamt = basicamt + addamt;
+            extrakm = 0;
+            extraamt = 0;
+            extadeliverycharges = delivery[0].cost;
+            totalamt = basicamt + extraamt + extadeliverycharges;
             promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
             totalamt = totalamt - promoused;
         }else{
-            basicamt = settings[0].PerUnder5KM;
-            addamt = settings[0].ExpDelivery;
-            totalamt = basicamt + addamt;
-            promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
-            totalamt = totalamt - promoused;
+            for(let i=1;i<delivery.length;i++){
+                if(deliverytype == delivery[i].title){
+                    basickm = totaldistance;
+                    basicamt = settings[0].PerUnder5KM;
+                    extrakm = 0;
+                    extraamt = 0;
+                    extadeliverycharges = delivery[i].cost;
+                    totalamt = basicamt + extraamt + extadeliverycharges;
+                    promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
+                    totalamt = totalamt - promoused;
+                }    
+            }
         }
     }else{
         if(deliverytype == "Normal Delivery"){
             let remdis = totaldistance - 5;
-            basicamt = settings[0].PerUnder5KM + (remdis * settings[0].PerKM);
-            addamt = 0;
-            totalamt = basicamt + addamt;   
+            basickm = 5;
+            basicamt = settings[0].PerUnder5KM;
+            extrakm = remdis;
+            extraamt = remdis * settings[0].PerKM;
+            extadeliverycharges = delivery[0].cost;
+            totalamt = basicamt + extraamt + extadeliverycharges;
             promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
             totalamt = totalamt - promoused;
         }else{
-            let remdis = totaldistance - 5;
-            basicamt = settings[0].PerUnder5KM + (remdis * settings[0].PerKM);
-            addamt = settings[0].ExpDelivery;
-            totalamt = basicamt + addamt;
-            promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
-            totalamt = totalamt - promoused;
+            for(let i=1;i<delivery.length;i++){
+                if(deliverytype == delivery[i].title){
+                    let remdis = totaldistance - 5;
+                    basickm = 5;
+                    basicamt = settings[0].PerUnder5KM;
+                    extrakm = remdis;
+                    extraamt = remdis * settings[0].PerKM;
+                    extadeliverycharges = delivery[i].cost;
+                    totalamt = basicamt + extraamt + extadeliverycharges;
+                    promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
+                    totalamt = totalamt - promoused;
+                }    
+            }
         }
     }
 
-    let data = [{
-        totaldistance:totaldistance.toFixed(2),
-        basicamt:basicamt.toFixed(2),
-        addamt:addamt.toFixed(2),
-        promoused:promoused.toFixed(2),
-        totalamt:totalamt.toFixed(2)
+    let dataset = [{
+        totaldistance:totaldistance,
+        basickm:basickm,
+        basicamt:basicamt,
+        extrakm:extrakm,
+        extraamt:extraamt,
+        extadeliverycharges:extadeliverycharges,
+        promoused:promoused,
+        totalamt:totalamt
     }];
-    
-    res.json({ Message:"Calculation Found!",Data:data,IsSuccess: true});
+
+    res.json({ Message:"Calculation Found!",Data:dataset,IsSuccess: true});
 });
 
 router.post("/newoder",orderimg.single('orderimg'), async function(req, res, next) {
@@ -831,5 +857,6 @@ router.post("/orderStatus", async function(req, res, next) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
+
 
 module.exports = router;
