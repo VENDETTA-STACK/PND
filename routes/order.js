@@ -509,6 +509,8 @@ router.post("/takeThisOrder", async function(req, res, next) {
                     description: courierData[0].cId + " has started order " + orderData[0].orderNo,
                 });
                 logger.save();
+                console.log("---Order Taking Failed--");
+                res.status(200).json({ Message: "Order Taking Successfully!", Data: 1, IsSuccess: true });
             } else {
                 console.log("---Order Taking Failed--");
                 res.status(200).json({ Message: "Order Taking Failed!", Data: 0, IsSuccess: true });
