@@ -66,11 +66,11 @@ async function PNDfinder(pickuplat,pickuplong,orderid,deliveryType){
                         let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
                         if(distancebtnpp <= 15){
                             available.push({
-                                courierId: getCourier[i].id,
+                                courierId: getpndpartners[i].id,
                                 orderId: orderid,
-                                distance: distanceKM,
+                                distance: distancebtnpp,
                                 status: "Pending",
-                                fcmToken: getCourier[i].fcmToken,
+                                fcmToken: getpndpartners[i].fcmToken,
                                 reason: "",
                             });
                         }
@@ -94,11 +94,11 @@ async function PNDfinder(pickuplat,pickuplong,orderid,deliveryType){
                         let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
                         if(distancebtnpp <= 15){
                             available.push({
-                                courierId: getCourier[i].id,
+                                courierId: getpndpartners[i].id,
                                 orderId: orderid,
-                                distance: distanceKM,
+                                distance: distancebtnpp,
                                 status: "Pending",
-                                fcmToken: getCourier[i].fcmToken,
+                                fcmToken: getpndpartners[i].fcmToken,
                                 reason: "",
                             });
                         }

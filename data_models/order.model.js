@@ -14,7 +14,6 @@ const orderSchema = mongoose.Schema({
     },
     orderImg:{
         type:String,
-        required: true,
     },
     pickupPoint: {
         name: {
