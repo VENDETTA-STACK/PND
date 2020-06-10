@@ -38,9 +38,7 @@ var deliverytypesSchema = require("../data_models/deliverytype.model");
 async function GoogleMatrix(fromlocation,tolocation){
     let link = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&mode=driving&origins="+fromlocation.latitude+","+fromlocation.longitude+
     "&destinations="+tolocation.latitude+","+tolocation.longitude+"&key="+process.env.GOOGLE_API;
-    console.log(link);
     let results = await axios.get(link);
-    console.log(results);
     let distancebe = results.data.rows[0].elements[0].distance.value;
     console.log(distancebe+" Meter");
     return distancebe / 1000;
@@ -174,6 +172,7 @@ router.post("/ordercalc", async (req, res, next)=>{
     let extraamt = 0;
     let extadeliverycharges = 0;
     let promoused = 0;
+    let amount =0;
     let totalamt = 0;
 
     if(totaldistance <= 5){
@@ -183,9 +182,9 @@ router.post("/ordercalc", async (req, res, next)=>{
             extrakm = 0;
             extraamt = 0;
             extadeliverycharges = delivery[0].cost;
-            totalamt = basicamt + extraamt + extadeliverycharges;
-            promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
-            totalamt = totalamt - promoused;
+            amount = basicamt + extraamt + extadeliverycharges;
+            promoused = prmcodes.length != 0?amount * prmcodes[0].discount / 100:0;
+            totalamt = amount - promoused;
         }else{
             for(let i=1;i<delivery.length;i++){
                 if(deliverytype == delivery[i].title){
@@ -194,9 +193,9 @@ router.post("/ordercalc", async (req, res, next)=>{
                     extrakm = 0;
                     extraamt = 0;
                     extadeliverycharges = delivery[i].cost;
-                    totalamt = basicamt + extraamt + extadeliverycharges;
-                    promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
-                    totalamt = totalamt - promoused;
+                    amount = basicamt + extraamt + extadeliverycharges;
+                    promoused = prmcodes.length != 0?amount * prmcodes[0].discount / 100:0;
+                    totalamt = amount - promoused;
                 }    
             }
         }
@@ -208,9 +207,9 @@ router.post("/ordercalc", async (req, res, next)=>{
             extrakm = remdis;
             extraamt = remdis * settings[0].PerKM;
             extadeliverycharges = delivery[0].cost;
-            totalamt = basicamt + extraamt + extadeliverycharges;
-            promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
-            totalamt = totalamt - promoused;
+            amount = basicamt + extraamt + extadeliverycharges;
+            promoused = prmcodes.length != 0?amount * prmcodes[0].discount / 100:0;
+            totalamt = amount - promoused;
         }else{
             for(let i=1;i<delivery.length;i++){
                 if(deliverytype == delivery[i].title){
@@ -220,9 +219,9 @@ router.post("/ordercalc", async (req, res, next)=>{
                     extrakm = remdis;
                     extraamt = remdis * settings[0].PerKM;
                     extadeliverycharges = delivery[i].cost;
-                    totalamt = basicamt + extraamt + extadeliverycharges;
-                    promoused = prmcodes.length != 0?totalamt * prmcodes[0].discount / 100:0;
-                    totalamt = totalamt - promoused;
+                    amount = basicamt + extraamt + extadeliverycharges;
+                    promoused = prmcodes.length != 0?amount * prmcodes[0].discount / 100:0;
+                    totalamt = amount - promoused;
                 }    
             }
         }
@@ -235,6 +234,7 @@ router.post("/ordercalc", async (req, res, next)=>{
         extrakm:extrakm.toFixed(2),
         extraamt:extraamt.toFixed(2),
         extadeliverycharges:extadeliverycharges.toFixed(2),
+        amount:amount.toFixed(2),
         promoused:promoused.toFixed(2),
         totalamt:totalamt.toFixed(2)
     }];
