@@ -311,7 +311,7 @@ router.post("/newoder",orderimg.single('orderimg'), async function(req, res, nex
         });
         var placedorder = await newOrder.save();
         var avlcourier = await PNDfinder(pkLat, pkLong, placedorder.id,placedorder.deliveryType);
-        if(promoCode!=""){
+        if(promoCode!="0"){
                let usedpromo = new usedpromoSchema({
                    _id: new config.mongoose.Types.ObjectId(),
                    customer:customerId,
@@ -637,16 +637,28 @@ router.post("/noResponseOrder", async function(req, res, next) {
                         fcmToken: courierfound[0].fcmToken,
                     });
                     await newrequest.save();
-
-                    let fcmtoken = courierfound[0].fcmToken;
-                    let title = "New Order Alert";
-                    let body = "New Order Found For You!";
-                    let data = {
-                        orderid: courierfound[0].orderId.toString(),
-                        distance: courierfound[0].distance.toString(),
-                        click_action: "FLUTTER_NOTIFICATION_CLICK",
+                    var payload = {
+                        notification: {
+                            title: "Order Alert",
+                            body: "New Order Alert Found For You.",
+                        },
+                        data: {
+                            orderid: courierfound[0].orderId.toString(),
+                            distance: courierfound[0].distance.toString(),
+                            click_action: "FLUTTER_NOTIFICATION_CLICK",
+                        },
                     };
-                    sendPopupNotification(fcmtoken, title, body, data);
+                    var options = {
+                        priority: "high",
+                        timeToLive: 60 * 60 * 24,
+                    };
+                    config.firebase
+                        .messaging()
+                        .sendToDevice(courierfound[0].fcmToken, payload, options)
+                        .then((doc) => {
+                            console.log("Sending Notification");
+                            console.log(doc);
+                        });
                     res.status(200).json({ Message: "Order No Response!", Data: 1, IsSuccess: true });
                 } else {
                     console.log("No Courier Boys Available:: Waiting For Admin Response");
