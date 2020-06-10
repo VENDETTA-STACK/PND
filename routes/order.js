@@ -227,14 +227,14 @@ router.post("/ordercalc", async (req, res, next)=>{
     }
 
     let dataset = [{
-        totaldistance:totaldistance,
-        basickm:basickm,
-        basicamt:basicamt,
-        extrakm:extrakm,
-        extraamt:extraamt,
-        extadeliverycharges:extadeliverycharges,
-        promoused:promoused,
-        totalamt:totalamt
+        totaldistance:totaldistance.toFixed(2),
+        basickm:basickm.toFixed(2),
+        basicamt:basicamt.toFixed(2),
+        extrakm:extrakm.toFixed(2),
+        extraamt:extraamt.toFixed(2),
+        extadeliverycharges:extadeliverycharges.toFixed(2),
+        promoused:promoused.toFixed(2),
+        totalamt:totalamt.toFixed(2)
     }];
 
     res.json({ Message:"Calculation Found!",Data:dataset,IsSuccess: true});
