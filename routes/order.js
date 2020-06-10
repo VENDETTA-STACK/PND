@@ -493,13 +493,6 @@ router.post("/takeThisOrder", async function(req, res, next) {
                 });
                 extrakm.save();
 
-                //calculate Time
-                let emplocation = { latitude: getlocation.latitude, longitude: getlocation.longitude };
-                let picklocation = { latitude: orderData[0].pickupPoint.lat, longitude: orderData[0].pickupPoint.long };
-                let distanceKM = convertDistance(getDistance(emplocation, picklocation, 1000), "km");
-                let approxtime = (Number(distanceKM) / 40) * 60;
-                sendMessages(orderData[0].customerId.mobileNo, "Your delivery boy will reach to pickup point in approx " + approxtime + " min.");
-
                 //add Logger
                 let logger = new locationLoggerSchema({
                     _id: new config.mongoose.Types.ObjectId(),
@@ -509,7 +502,7 @@ router.post("/takeThisOrder", async function(req, res, next) {
                     description: courierData[0].cId + " has started order " + orderData[0].orderNo,
                 });
                 logger.save();
-                console.log("---Order Taking Failed--");
+                console.log("---Order Taking Success--");
                 res.status(200).json({ Message: "Order Taking Successfully!", Data: 1, IsSuccess: true });
             } else {
                 console.log("---Order Taking Failed--");
