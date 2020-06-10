@@ -212,7 +212,6 @@ router.post("/updatesetttings", async function(req, res, next) {
     const {
         PerUnder5KM,
         PerKM,
-        ExpDelivery,
         ReferalPoint,
         WhatsAppNo,
         DefaultWMessage,
@@ -225,7 +224,6 @@ router.post("/updatesetttings", async function(req, res, next) {
             let updatedsettings = {
                 PerUnder5KM: PerUnder5KM,
                 PerKM: PerKM,
-                ExpDelivery: ExpDelivery,
                 ReferalPoint: ReferalPoint,
                 WhatsAppNo: WhatsAppNo,
                 DefaultWMessage: DefaultWMessage,
@@ -240,7 +238,6 @@ router.post("/updatesetttings", async function(req, res, next) {
                 _id: new config.mongoose.Types.ObjectId(),
                 PerUnder5KM: PerUnder5KM,
                 PerKM: PerKM,
-                ExpDelivery: ExpDelivery,
                 ReferalPoint: ReferalPoint,
                 WhatsAppNo: WhatsAppNo,
                 DefaultWMessage: DefaultWMessage,
