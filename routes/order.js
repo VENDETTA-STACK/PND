@@ -38,7 +38,9 @@ var deliverytypesSchema = require("../data_models/deliverytype.model");
 async function GoogleMatrix(fromlocation,tolocation){
     let link = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&mode=driving&origins="+fromlocation.latitude+","+fromlocation.longitude+
     "&destinations="+tolocation.latitude+","+tolocation.longitude+"&key="+process.env.GOOGLE_API;
+    console.log(link);
     let results = await axios.get(link);
+    console.log(results);
     let distancebe = results.data.rows[0].elements[0].distance.value;
     console.log(distancebe+" Meter");
     return distancebe / 1000;

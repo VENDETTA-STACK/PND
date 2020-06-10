@@ -1030,4 +1030,10 @@ router.post("/deliverytype", async (req, res, next)=>{
         res.status(500).json(err.message);
     }
 });
+
+
+router.post("/unreadedOrders",async (req,res,next)=>{
+    
+});
+
 module.exports = router;
