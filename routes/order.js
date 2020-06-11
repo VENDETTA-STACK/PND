@@ -434,20 +434,12 @@ router.post("/acceptOrder", async function(req, res, next) {
             if (getlocation.duty == "ON") {
 
                 let updaterequest = await requestSchema.findOneAndUpdate({ orderId: orderId, courierId: courierId }, { status: "Accept" }, { new: true });
-                if (updaterequest.status == "Accept") {
-                    await orderSchema.findByIdAndUpdate(orderId, { courierId: courierId, status: "Order Assigned", note: "Order Has Been Assigned" });
+                await orderSchema.findByIdAndUpdate(orderId, { courierId: courierId, status: "Order Assigned", note: "Order Has Been Assigned" });
                     //send Message to customer
                     let createMsg = "Your order has been accepted by our delivery boy " + courierData[0].firstName + " " + courierData[0].lastName + "--" + courierData[0].mobileNo;
                     sendMessages(orderData[0].customerId.mobileNo, createMsg);
 
-                    //send Notification to customer
-                    let data = {
-                        click_action: "FLUTTER_NOTIFICATION_CLICK",
-                    };
-                    let notchecker = await sendPopupNotification(orderData[0].customerId.fcmToken, "Order Accepted", "Your Order Has Been Accepted!", data);
                     console.log("---Order Accepted--");
-                    console.log(notchecker);
-
                     //add Logger
                     let logger = new locationLoggerSchema({
                         _id: new config.mongoose.Types.ObjectId(),
@@ -457,11 +449,6 @@ router.post("/acceptOrder", async function(req, res, next) {
                         description: courierData[0].cId + " Has Accepted Order " + orderData[0].orderNo,
                     });
                     logger.save();
-                    res.status(200).json({ Message: "Order accepted!", Data: 1, IsSuccess: true });
-                } else {
-                    console.log("---Unable Order Accepted--");
-                    res.status(200).json({ Message: "Unable to accepted order!", Data: 0, IsSuccess: true });
-                }
             } else {
                 console.log("---Please Turn On Your Duty--");
                 res.status(200).json({ Message: "Please turn on your duty!", Data: 0, IsSuccess: true });
