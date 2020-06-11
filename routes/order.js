@@ -449,6 +449,7 @@ router.post("/acceptOrder", async function(req, res, next) {
                         description: courierData[0].cId + " Has Accepted Order " + orderData[0].orderNo,
                     });
                     logger.save();
+                    res.status(200).json({ Message: "Order Accepted!", Data: 1, IsSuccess: true });
             } else {
                 console.log("---Please Turn On Your Duty--");
                 res.status(200).json({ Message: "Please turn on your duty!", Data: 0, IsSuccess: true });
