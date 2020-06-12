@@ -34,8 +34,16 @@ const courierSchema = mongoose.Schema({
   panCardImg: {
     type: String,
   },
-  electricityImg:{
+  proofType: {
     type: String,
+    required: true,
+  },
+  electricityImg: {
+    type: String,
+  },
+  policeVerificationImg: {
+    type: String,
+    default: "",
   },
   fcmToken: {
     type: String,
@@ -85,10 +93,6 @@ const courierSchema = mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true,
-  },
-  policeVerificationImg: {
-    type: String,
-    default: "",
   },
   dateTime: {
     type: Date,

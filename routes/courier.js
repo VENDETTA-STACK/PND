@@ -27,10 +27,9 @@ var fieldset = finalstorage.fields([
   { name: "poaBackImg", maxCount: 1 },
   { name: "panCardImg", maxCount: 1 },
   { name: "electricityImg", maxCount: 1 },
+  { name: "policeVerificationImg", maxCount: 1 },
 ]);
 
-// { name: "policeVerificationImg", maxCount: 1 },
-// req.files.policeVerificationImg[0].path
 /* Data Models */
 var courierSchema = require("../data_models/courier.signup.model");
 var courierNotificationSchema = require("../data_models/courier.notification.model");
@@ -71,10 +70,10 @@ router.post("/signup", fieldset, async function (req, res, next) {
         fs.unlinkSync(old.replace("\\g", "/"));
       }
 
-      // old = req.files.policeVerificationImg[0].path;
-      // if (fs.existsSync(old.replace("\\g", "/"))) {
-      //     fs.unlinkSync(old.replace("\\g", "/"));
-      // }
+      old = req.files.policeVerificationImg[0].path;
+      if (fs.existsSync(old.replace("\\g", "/"))) {
+        fs.unlinkSync(old.replace("\\g", "/"));
+      }
 
       res.status(200).json({
         Message: "Courier Already Registered!",
@@ -82,7 +81,6 @@ router.post("/signup", fieldset, async function (req, res, next) {
         IsSuccess: true,
       });
     } else {
-      //req.files.profileImg[0].path
       let cid = cidgenerator();
       var newCourier = new courierSchema({
         _id: new config.mongoose.Types.ObjectId(),
@@ -96,7 +94,7 @@ router.post("/signup", fieldset, async function (req, res, next) {
         poaBackImg: req.files.poaBackImg[0].path,
         panCardImg: req.files.panCardImg[0].path,
         electricityImg: req.files.electricityImg[0].path,
-        policeVerificationImg: "",
+        policeVerificationImg: req.files.policeVerificationImg[0].path,
       });
       await newCourier.save();
       res
