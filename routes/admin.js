@@ -10,6 +10,7 @@ var cors = require("cors");
 var multer = require("multer");
 const { getDistance, convertDistance } = require("geolib");
 
+//image uploading
 var bannerlocation = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/banners");
@@ -81,6 +82,7 @@ var promocodeSchema = require("../data_models/promocode.model");
 var bannerSchema = require("../data_models/banner.model");
 var messageSchema = require("../data_models/message.creator.model");
 var deliverytypesSchema = require("../data_models/deliverytype.model");
+var poatypesSchema = require("../data_models/poatype.model");
 
 async function currentLocation(id) {
   var CourierRef = config.docref.child(id);
@@ -358,13 +360,11 @@ router.post("/cancelOrder", async function (req, res, next) {
         .json({ Message: "Order Cancelled!", Data: 1, IsSuccess: true });
     }
     {
-      res
-        .status(200)
-        .json({
-          Message: "Unable to Cancell Order!",
-          Data: 0,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Unable to Cancell Order!",
+        Data: 0,
+        IsSuccess: true,
+      });
     }
   } catch {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -771,10 +771,7 @@ router.post("/AssignOrder", async function (req, res, next) {
   }
 });
 
-router.post(
-  "/policeverification",
-  uploadpoliceImg.single("image"),
-  async function (req, res, next) {
+router.post("/policeverification", uploadpoliceImg.single("image"), async function (req, res, next) {
     const id = req.body.id;
     try {
       const file = req.file;
@@ -1175,6 +1172,27 @@ router.post("/deliverytype", async (req, res, next) => {
   }
 });
 
-router.post("/unreadedOrders", async (req, res, next) => {});
+router.post("/addpoatype", async (req, res, next) => {
+  const title = req.body.title;
+  try{
+    let data = new poatypesSchema({
+      _id: new config.mongoose.Types.ObjectId(),
+      title:title
+    });
+    data.save();
+    res.status(200).json("Data Saved");
+  }catch(err){
+    res.status(500).json(err.message);
+  }
+});
+
+router.post("/poatypes", async (req, res, next) => {
+  try {
+    let predata = await poatypesSchema.find({});
+    res.status(200).json(predata);
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+});
 
 module.exports = router;

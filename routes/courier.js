@@ -42,7 +42,7 @@ router.get("/", function (req, res, next) {
 
 //couriers signup
 router.post("/signup", fieldset, async function (req, res, next) {
-  const { firstName, lastName, mobileNo, poaType } = req.body;
+  const { firstName, lastName, mobileNo, poaType, proofType } = req.body;
   try {
     var existCourier = await courierSchema.find({ mobileNo: mobileNo });
     if (existCourier.length == 1) {
@@ -89,6 +89,7 @@ router.post("/signup", fieldset, async function (req, res, next) {
         lastName: lastName,
         mobileNo: mobileNo,
         poaType: poaType,
+        proofType:proofType,
         profileImg: req.files.profileImg[0].path,
         poaFrontImg: req.files.poaFrontImg[0].path,
         poaBackImg: req.files.poaBackImg[0].path,
