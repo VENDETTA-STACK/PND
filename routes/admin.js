@@ -50,6 +50,19 @@ var policeverificationImg = multer.diskStorage({
 });
 var uploadpoliceImg = multer({ storage: policeverificationImg });
 
+var categoryImg = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/categories");
+  },
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "_" + Date.now() + path.extname(file.originalname)
+    );
+  },
+});
+var uploadcategory = multer({ storage: categoryImg });
+
 //Required Funtion
 async function GoogleMatrix(fromlocation, tolocation) {
   let link =
@@ -83,6 +96,7 @@ var bannerSchema = require("../data_models/banner.model");
 var messageSchema = require("../data_models/message.creator.model");
 var deliverytypesSchema = require("../data_models/deliverytype.model");
 var poatypesSchema = require("../data_models/poatype.model");
+var parcelcategories = require("../data_models/category.model");
 
 async function currentLocation(id) {
   var CourierRef = config.docref.child(id);
@@ -771,7 +785,10 @@ router.post("/AssignOrder", async function (req, res, next) {
   }
 });
 
-router.post("/policeverification", uploadpoliceImg.single("image"), async function (req, res, next) {
+router.post(
+  "/policeverification",
+  uploadpoliceImg.single("image"),
+  async function (req, res, next) {
     const id = req.body.id;
     try {
       const file = req.file;
@@ -1174,14 +1191,14 @@ router.post("/deliverytype", async (req, res, next) => {
 
 router.post("/addpoatype", async (req, res, next) => {
   const title = req.body.title;
-  try{
+  try {
     let data = new poatypesSchema({
       _id: new config.mongoose.Types.ObjectId(),
-      title:title
+      title: title,
     });
     data.save();
     res.status(200).json("Data Saved");
-  }catch(err){
+  } catch (err) {
     res.status(500).json(err.message);
   }
 });
@@ -1194,5 +1211,50 @@ router.post("/poatypes", async (req, res, next) => {
     res.status(500).json(err.message);
   }
 });
+
+router.post(
+  "/addcategories",
+  uploadcategory.single("image"),
+  async (req, res, next) => {
+    const title = req.body.title;
+    try {
+      const file = req.file;
+      let category = new parcelcategories({
+        _id: new config.mongoose.Types.ObjectId(),
+        title: title,
+        image: file == undefined ? null : file.path,
+      });
+      category.save();
+      res.json({
+        Message:"Category Added Successfully!",
+        Data:1,
+        IsSuccess:true
+      });
+    } catch (err) {
+      res.json({
+        Message:err.message,
+        Data:0,
+        IsSuccess:false
+      });
+    }
+  }
+);
+
+router.post("/category",async (req,res,next)=>{
+  try{
+    let datalist = await parcelcategories.find({});
+    res.json({
+      Message:"Categiories Found!",
+      Data:datalist,
+      IsSuccess:true
+    });
+  }catch(err){
+    res.json({
+      Message:err.message,
+      Data:0,
+      IsSuccess:false
+    });
+  }
+})
 
 module.exports = router;

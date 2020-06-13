@@ -25,6 +25,7 @@ var settingsSchema = require("../data_models/settings.model");
 var bannerSchema = require("../data_models/banner.model");
 var promoCodeSchema = require("../data_models/promocode.model");
 var usedpromoSchema = require("../data_models/used.promocode.model");
+var parcelcategories = require("../data_models/category.model");
 
 /* Routes. */
 router.get("/", function (req, res, next) {
@@ -287,7 +288,12 @@ router.post("/pickupAddress", async function (req, res, next) {
 router.post("/banners", async (req, res, next) => {
   try {
     let bannerlist = await bannerSchema.find({});
-    res.json({ Message: "Banners List!", Data: bannerlist, IsSuccess: true });
+    let categories = await parcelcategories.find({});
+    let datalist = [{
+      banners:bannerlist,
+      categories:categories
+    }];
+    res.json({ Message: "Banners List!", Data: datalist, IsSuccess: true });
   } catch (err) {
     res.json({ Message: err.message, Data: 0, IsSuccess: false });
   }
