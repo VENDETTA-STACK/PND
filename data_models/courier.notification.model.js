@@ -21,4 +21,4 @@ const courierNotificationSchema = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("courierNotifications", courierNotificationSchema);
+module.exports = mongoose.model("couriernotifications", courierNotificationSchema);

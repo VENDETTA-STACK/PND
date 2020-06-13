@@ -100,4 +100,4 @@ const courierSchema = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Couriers", courierSchema);
+module.exports = mongoose.model("couriers", courierSchema);
