@@ -197,16 +197,16 @@ router.post("/updateFcmToken", async function (req, res, next) {
 router.post("/signin", async function (req, res, next) {
   const { mobileNo } = req.body;
   try {
-    var existCourier = await courierSchema.find({ mobileNo: mobileNo });
+    var existCourier = await courierSchema.find({ mobileNo: mobileNo,isActive:true });
     if (existCourier.length == 1) {
       res.status(200).json({
-        Message: "Customer Found!",
+        Message: "Delivery Partner Found!",
         Data: existCourier,
         IsSuccess: true,
       });
     } else {
       res.status(200).json({
-        Message: "Customer Not Found!",
+        Message: "Delivery Partner Not Found!",
         Data: existCourier,
         IsSuccess: true,
       });

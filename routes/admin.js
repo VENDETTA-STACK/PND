@@ -20,7 +20,7 @@ var bannerlocation = multer.diskStorage({
       null,
       file.fieldname + "_" + Date.now() + path.extname(file.originalname)
     );
-  },
+  }
 });
 var uploadbanner = multer({ storage: bannerlocation });
 
@@ -33,7 +33,7 @@ var promocodelocation = multer.diskStorage({
       null,
       file.fieldname + "_" + Date.now() + path.extname(file.originalname)
     );
-  },
+  }
 });
 var uploadpromocode = multer({ storage: promocodelocation });
 
@@ -46,7 +46,7 @@ var policeverificationImg = multer.diskStorage({
       null,
       file.fieldname + "_" + Date.now() + path.extname(file.originalname)
     );
-  },
+  }
 });
 var uploadpoliceImg = multer({ storage: policeverificationImg });
 
@@ -59,7 +59,7 @@ var categoryImg = multer.diskStorage({
       null,
       file.fieldname + "_" + Date.now() + path.extname(file.originalname)
     );
-  },
+  }
 });
 var uploadcategory = multer({ storage: categoryImg });
 
@@ -101,8 +101,8 @@ var parcelcategories = require("../data_models/category.model");
 async function currentLocation(id) {
   var CourierRef = config.docref.child(id);
   const data = await CourierRef.once("value")
-    .then((snapshot) => snapshot.val())
-    .catch((err) => err);
+    .then(snapshot => snapshot.val())
+    .catch(err => err);
   return data;
 }
 
@@ -111,13 +111,13 @@ router.post("/signup", async function (req, res, next) {
   const { name, username, password, type } = req.body;
   try {
     var existAdmin = await adminSchema.find({
-      username: username.toLowerCase(),
+      username: username.toLowerCase()
     });
     if (existAdmin.length != 0) {
       res.status(200).json({
         Message: "username is already taken!",
         Data: 0,
-        IsSuccess: true,
+        IsSuccess: true
       });
     } else {
       let newadmin = new adminSchema({
@@ -125,7 +125,7 @@ router.post("/signup", async function (req, res, next) {
         name: name.toLowerCase(),
         username: username.toLowerCase(),
         password: password.toLowerCase(),
-        type: type.toLowerCase(),
+        type: type.toLowerCase()
       });
       await newadmin.save();
       res
@@ -140,11 +140,12 @@ router.post("/signup", async function (req, res, next) {
 //admin panel login
 router.post("/login", async function (req, res, next) {
   const { username, password, type } = req.body;
+  console.log(req.body);
   try {
     var existAdmin = await adminSchema.find({
       username: username,
       password: password,
-      type: type,
+      type: type
     });
     if (existAdmin.length != 0) {
       res
@@ -154,7 +155,7 @@ router.post("/login", async function (req, res, next) {
       res.status(200).json({
         Message: "user not found!",
         Data: existAdmin,
-        IsSuccess: true,
+        IsSuccess: true
       });
     }
   } catch (err) {
@@ -174,7 +175,7 @@ router.post("/dashcounters", async function (req, res, next) {
       .countDocuments();
     let pendingOrders = await orderSchema
       .find({
-        status: "Admin",
+        status: "Admin"
       })
       .countDocuments();
 
@@ -185,7 +186,7 @@ router.post("/dashcounters", async function (req, res, next) {
       totalOrders: totalOrders,
       customers: customers,
       pendingOrders: pendingOrders,
-      disapporved: disapporved,
+      disapporved: disapporved
     });
     res
       .status(200)
@@ -202,7 +203,7 @@ router.post("/getVerifiedCouriers", async function (req, res, next) {
       .find({
         isActive: true,
         isVerified: true,
-        "accStatus.flag": true,
+        "accStatus.flag": true
       })
       .select("id cId firstName lastName");
     res
@@ -225,7 +226,7 @@ router.post("/adminusers", async function (req, res, next) {
       res.status(200).json({
         Message: "user not found!",
         Data: existAdmin,
-        IsSuccess: true,
+        IsSuccess: true
       });
     }
   } catch (err) {
@@ -241,7 +242,7 @@ router.post("/updatesetttings", async function (req, res, next) {
     ReferalPoint,
     WhatsAppNo,
     DefaultWMessage,
-    AppLink,
+    AppLink
   } = req.body;
   try {
     var existData = await settingsSchema.find({});
@@ -253,7 +254,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         ReferalPoint: ReferalPoint,
         WhatsAppNo: WhatsAppNo,
         DefaultWMessage: DefaultWMessage,
-        AppLink: AppLink,
+        AppLink: AppLink
       };
       await settingsSchema.findByIdAndUpdate(id, updatedsettings);
       res
@@ -267,7 +268,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         ReferalPoint: ReferalPoint,
         WhatsAppNo: WhatsAppNo,
         DefaultWMessage: DefaultWMessage,
-        AppLink: AppLink,
+        AppLink: AppLink
       });
       await newsettings.save();
       res
@@ -287,13 +288,13 @@ router.post("/settings", async function (req, res, next) {
       res.status(200).json({
         Message: "Settings Found!",
         Data: getsettings,
-        IsSuccess: true,
+        IsSuccess: true
       });
     } else {
       res.status(200).json({
         Message: "Settings Not Found!",
         Data: getsettings,
-        IsSuccess: true,
+        IsSuccess: true
       });
     }
   } catch (err) {
@@ -327,8 +328,8 @@ router.post("/orders", async function (req, res, next) {
         $or: [
           { status: "Order Processing" },
           { status: "Order Picked" },
-          { status: "Order Assigned" },
-        ],
+          { status: "Order Assigned" }
+        ]
       })
       .populate(
         "courierId",
@@ -348,7 +349,7 @@ router.post("/orders", async function (req, res, next) {
       runningOrders: runningOrders,
       cancelledOrders: cancelledOrders,
       pendingOrders: pendingOrders,
-      completeOrders: completeOrders,
+      completeOrders: completeOrders
     });
 
     res
@@ -377,7 +378,7 @@ router.post("/cancelOrder", async function (req, res, next) {
       res.status(200).json({
         Message: "Unable to Cancell Order!",
         Data: 0,
-        IsSuccess: true,
+        IsSuccess: true
       });
     }
   } catch {
@@ -391,7 +392,7 @@ router.post("/couriers", async function (req, res, next) {
     courierSchema
       .find({})
       .exec()
-      .then((docs) => {
+      .then(docs => {
         if (docs.length != 0) {
           res
             .status(200)
@@ -400,7 +401,7 @@ router.post("/couriers", async function (req, res, next) {
           res.status(200).json({
             Message: "No Courier Found!",
             Data: docs,
-            IsSuccess: true,
+            IsSuccess: true
           });
         }
       });
@@ -418,29 +419,29 @@ router.post("/couriersIsApproval", async function (req, res, next) {
       if (courierApp[0].accStatus.flag == true) {
         await courierSchema.findByIdAndUpdate(id, {
           "accStatus.flag": false,
-          "accStatus.message": "Waiting For Administrator Approval",
+          "accStatus.message": "Waiting For Administrator Approval"
         });
         res.status(200).json({
           Message: "Account Status Updated!",
           Data: 1,
-          IsSuccess: true,
+          IsSuccess: true
         });
       } else {
         await courierSchema.findByIdAndUpdate(id, {
           "accStatus.flag": true,
-          "accStatus.message": "Approved",
+          "accStatus.message": "Approved"
         });
         res.status(200).json({
           Message: "Account Status Updated!",
           Data: 1,
-          IsSuccess: true,
+          IsSuccess: true
         });
       }
     } else {
       res.status(200).json({
         Message: "Account Status Not Updated!",
         Data: 0,
-        IsSuccess: true,
+        IsSuccess: true
       });
     }
   } catch (err) {
@@ -459,21 +460,21 @@ router.post("/couriersIsActive", async function (req, res, next) {
         res.status(200).json({
           Message: "Account Status Updated!",
           Data: 1,
-          IsSuccess: true,
+          IsSuccess: true
         });
       } else {
         await courierSchema.findByIdAndUpdate(id, { isActive: true });
         res.status(200).json({
           Message: "Account Status Updated!",
           Data: 1,
-          IsSuccess: true,
+          IsSuccess: true
         });
       }
     } else {
       res.status(200).json({
         Message: "Account Status Not Updated!",
         Data: 0,
-        IsSuccess: true,
+        IsSuccess: true
       });
     }
   } catch (err) {
@@ -553,8 +554,8 @@ router.post("/todaysExtraKms", async function (req, res, next) {
         path: "orderId",
         populate: {
           path: "customerId",
-          model: "Customers",
-        },
+          model: "Customers"
+        }
       });
     for (let i = 0; i < exttime.length; i++) {
       if (exttime[i].dateTime.toISOString().slice(0, 10) == currentdate) {
@@ -585,25 +586,25 @@ router.post("/appstatistics", async function (req, res, next) {
       path: "orderId",
       populate: {
         path: "customerId",
-        model: "Customers",
-      },
+        model: "Customers"
+      }
     });
     for (let i = 0; i < exttime.length; i++) {
       if (exttime[i].dateTime.toISOString().slice(0, 10) == currentdate) {
         if (exttime[i].orderId.status == "Order Delivered") {
           let pickup = {
             latitude: exttime[i].orderId.pickupPoint.lat,
-            longitude: exttime[i].orderId.pickupPoint.long,
+            longitude: exttime[i].orderId.pickupPoint.long
           };
           let drop = {
             latitude: exttime[i].orderId.deliveryPoint.lat,
-            longitude: exttime[i].orderId.deliveryPoint.long,
+            longitude: exttime[i].orderId.deliveryPoint.long
           };
           let pndKM = await GoogleMatrix(pickup, drop);
 
           let start = {
             latitude: exttime[i].blat,
-            longitude: exttime[i].blong,
+            longitude: exttime[i].blong
           };
           let end = { latitude: exttime[i].plat, longitude: exttime[i].plong };
           let extaKM = await GoogleMatrix(start, end);
@@ -611,7 +612,7 @@ router.post("/appstatistics", async function (req, res, next) {
             courierId: exttime[i].courierId,
             orderNo: exttime[i].orderId.orderNo,
             pndKM: pndKM.toFixed(2),
-            extaKM: extaKM.toFixed(2),
+            extaKM: extaKM.toFixed(2)
           });
         }
       }
@@ -641,16 +642,16 @@ router.post("/ftExtraKms", async function (req, res, next) {
     let exttime = await ExtatimeSchema.find({
       dateTime: {
         $gte: fdate,
-        $lt: tdate,
-      },
+        $lt: tdate
+      }
     })
       .populate("courierId")
       .populate({
         path: "orderId",
         populate: {
           path: "customerId",
-          model: "Customers",
-        },
+          model: "Customers"
+        }
       });
 
     if (exttime.length != 0) {
@@ -673,12 +674,12 @@ router.post("/changePassword", async function (req, res, next) {
   try {
     let dataset = await adminSchema.find({
       _id: userId,
-      password: oldpassword,
+      password: oldpassword
     });
     if (dataset.length == 1) {
       await adminSchema.findByIdAndUpdate(userId, {
         name: accountname,
-        password: newpassword,
+        password: newpassword
       });
       res
         .status(200)
@@ -709,7 +710,7 @@ router.post("/getAvailableBoys", async function (req, res, next) {
         let name = listIds[i].firstName + " " + listIds[i].lastName;
         list_courier.push({
           Id: dbID,
-          name: name,
+          name: name
         });
       }
     }
@@ -717,7 +718,7 @@ router.post("/getAvailableBoys", async function (req, res, next) {
     res.status(200).json({
       Message: "Delivery Boys Found!",
       Data: list_courier,
-      IsSuccess: true,
+      IsSuccess: true
     });
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -733,11 +734,11 @@ router.post("/AssignOrder", async function (req, res, next) {
       let location = await currentLocation(courierId);
       let pick = {
         latitude: OrderData[0].pickupPoint.lat,
-        longitude: OrderData[0].pickupPoint.long,
+        longitude: OrderData[0].pickupPoint.long
       };
       let emplocation = {
         latitude: location.latitude,
-        longitude: location.longitude,
+        longitude: location.longitude
       };
       let distanceKM = await GoogleMatrix(emplocation, pick);
 
@@ -748,14 +749,14 @@ router.post("/AssignOrder", async function (req, res, next) {
         distance: distanceKM,
         status: "Accept",
         reason: "",
-        fcmToken: courierboy[0].fcmToken,
+        fcmToken: courierboy[0].fcmToken
       });
       await newrequest.save();
 
       await orderSchema.findByIdAndUpdate(orderId, {
         courierId: courierId,
         status: "Order Assigned",
-        note: "Order Has Been Assigned",
+        note: "Order Has Been Assigned"
       });
       let description =
         courierboy[0].cId +
@@ -767,7 +768,7 @@ router.post("/AssignOrder", async function (req, res, next) {
         courierId: courierId,
         lat: location.latitude,
         long: location.longitude,
-        description: description,
+        description: description
       });
       await logger.save();
 
@@ -794,7 +795,7 @@ router.post(
       const file = req.file;
       if (file != undefined) {
         let updatedata = {
-          policeVerificationImg: file.path,
+          policeVerificationImg: file.path
         };
         await courierSchema.findByIdAndUpdate(id, updatedata);
       }
@@ -818,7 +819,7 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
     code,
     discount,
     validfrom,
-    validupto,
+    validupto
   } = req.body;
   const file = req.file;
   try {
@@ -831,7 +832,7 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
         discount: discount,
         validfrom: validfrom,
         validupto: validupto,
-        image: file != undefined ? file.path : "",
+        image: file != undefined ? file.path : ""
       });
       await newPromo.save();
     } else {
@@ -845,7 +846,7 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
             discount: discount,
             validfrom: validfrom,
             validupto: validupto,
-            image: file.path,
+            image: file.path
           };
           await promocodeSchema.findByIdAndUpdate(id, newPromo);
         } else {
@@ -855,7 +856,7 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
             code: code,
             discount: discount,
             validfrom: validfrom,
-            validupto: validupto,
+            validupto: validupto
           };
           await promocodeSchema.findByIdAndUpdate(id, newPromo);
         }
@@ -910,7 +911,7 @@ router.post("/addbanner", uploadbanner.single("image"), async function (
     let newbanner = new bannerSchema({
       _id: new config.mongoose.Types.ObjectId(),
       title: title,
-      image: file == undefined ? null : file.path,
+      image: file == undefined ? null : file.path
     });
     await newbanner.save();
     res
@@ -920,7 +921,7 @@ router.post("/addbanner", uploadbanner.single("image"), async function (
     res.json({
       Message: err.message,
       Data: 0,
-      IsdSuccess: false,
+      IsdSuccess: false
     });
   }
 });
@@ -976,7 +977,7 @@ router.post("/messages", async function (req, res, next) {
     res.json({
       Message: err.message,
       Data: 0,
-      IsSuccess: false,
+      IsSuccess: false
     });
   }
 });
@@ -988,31 +989,31 @@ router.post("/addMessage", async function (req, res, next) {
       let newMessage = new messageSchema({
         _id: new config.mongoose.Types.ObjectId(),
         title: title,
-        description: description,
+        description: description
       });
       await newMessage.save();
       res.status(200).json({
         Message: "Message Saved!",
         Data: 1,
-        IsSuccess: true,
+        IsSuccess: true
       });
     } else {
       let oldMessage = {
         title: title,
-        description: description,
+        description: description
       };
       await messageSchema.findByIdAndUpdate(id, oldMessage);
       res.status(200).json({
         Message: "Message Edited!",
         Data: 1,
-        IsSuccess: true,
+        IsSuccess: true
       });
     }
   } catch (err) {
     res.json({
       Message: err.message,
       Data: 0,
-      IsSuccess: false,
+      IsSuccess: false
     });
   }
 });
@@ -1042,7 +1043,7 @@ router.post("/customers", async function (req, res, next) {
     res.status(200).json({
       Message: "Customer List Found!",
       Data: dataset,
-      IsSuccess: true,
+      IsSuccess: true
     });
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -1077,7 +1078,7 @@ router.post("/courierlogs", async function (req, res, next) {
     res.status(200).json({
       Message: "Log List Found!",
       Data: dataset,
-      IsSuccess: true,
+      IsSuccess: true
     });
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -1092,9 +1093,9 @@ router.post("/sendNToPND", async function (req, res, next) {
     let payload = {
       notification: {
         title: title,
-        body: message,
+        body: message
       },
-      data: { type: "message", click_action: "FLUTTER_NOTIFICATION_CLICK" },
+      data: { type: "message", click_action: "FLUTTER_NOTIFICATION_CLICK" }
     };
     let options = { priority: "high", timeToLive: 60 * 60 * 24 };
 
@@ -1120,7 +1121,7 @@ router.post("/sendNToPND", async function (req, res, next) {
         config.firebase
           .messaging()
           .sendToDevice(data[0].fcmToken, payload, options)
-          .then((doc) => {
+          .then(doc => {
             console.log("Sending Notification");
             console.log(doc);
           });
@@ -1147,7 +1148,7 @@ router.post("/sendNToPND", async function (req, res, next) {
         config.firebase
           .messaging()
           .sendToDevice(data[0].fcmToken, payload, options)
-          .then((doc) => {
+          .then(doc => {
             console.log("Sending Notification");
             console.log(doc);
           });
@@ -1156,7 +1157,7 @@ router.post("/sendNToPND", async function (req, res, next) {
     res.json({
       Message: "Notification Sent Successfull!",
       Data: 1,
-      IsSuccess: true,
+      IsSuccess: true
     });
   } catch (err) {
     res.json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -1171,7 +1172,7 @@ router.post("/adddeliverytype", async (req, res, next) => {
       _id: new config.mongoose.Types.ObjectId(),
       title: title,
       weightlimit: weightlimit,
-      cost: cost,
+      cost: cost
     });
     predata.save();
     res.status(200).json("Data Saved");
@@ -1194,7 +1195,7 @@ router.post("/addpoatype", async (req, res, next) => {
   try {
     let data = new poatypesSchema({
       _id: new config.mongoose.Types.ObjectId(),
-      title: title,
+      title: title
     });
     data.save();
     res.status(200).json("Data Saved");
@@ -1222,39 +1223,91 @@ router.post(
       let category = new parcelcategories({
         _id: new config.mongoose.Types.ObjectId(),
         title: title,
-        image: file == undefined ? null : file.path,
+        image: file == undefined ? null : file.path
       });
       category.save();
       res.json({
-        Message:"Category Added Successfully!",
-        Data:1,
-        IsSuccess:true
+        Message: "Category Added Successfully!",
+        Data: 1,
+        IsSuccess: true
       });
     } catch (err) {
       res.json({
-        Message:err.message,
-        Data:0,
-        IsSuccess:false
+        Message: err.message,
+        Data: 0,
+        IsSuccess: false
       });
     }
   }
 );
 
-router.post("/category",async (req,res,next)=>{
-  try{
+router.post("/category", async (req, res, next) => {
+  try {
     let datalist = await parcelcategories.find({});
     res.json({
-      Message:"Categiories Found!",
-      Data:datalist,
-      IsSuccess:true
+      Message: "Categiories Found!",
+      Data: datalist,
+      IsSuccess: true
     });
-  }catch(err){
+  } catch (err) {
     res.json({
-      Message:err.message,
-      Data:0,
-      IsSuccess:false
+      Message: err.message,
+      Data: 0,
+      IsSuccess: false
     });
   }
-})
+});
+
+router.post("/getextrakms", async (req, res, next) => {
+  try {
+    let couriersList = [];
+    let currentdate = new Date().toISOString().slice(0, 10);
+    let verifiedcouriers = await courierSchema.find({});
+    for (let i = 0; i < verifiedcouriers.length; i++) {
+      let exttime = await ExtatimeSchema.find({
+        plat: { $ne: null },
+        courierId: verifiedcouriers[i]._id
+      }).populate("orderId");
+      let finalextdistance = 0;
+      let finalpddistance = 0;
+      let finalearning = 0;
+      let orderData = [];
+      for (let i = 0; i < exttime.length; i++) {
+        let localcounter = 0;
+        if (exttime[i].dateTime.toISOString().slice(0, 10) == currentdate) {
+          let start = {
+            latitude: exttime[i].blat,
+            longitude: exttime[i].blong
+          };
+          let end = { latitude: exttime[i].plat, longitude: exttime[i].plong };
+          let extradistance = await GoogleMatrix(start, end);
+          finalextdistance = finalextdistance + extradistance;
+
+          let orderdistance = exttime[i].orderId.deliveryPoint.distance;
+          finalpddistance = finalpddistance + orderdistance;
+
+          finalearning = finalearning + exttime[i].orderId.finalAmount;
+          orderData.push(exttime[i].orderId);
+        }
+      }
+
+      let total = Number(finalextdistance) + Number(finalpddistance);
+      couriersList.push({
+        id: verifiedcouriers[i]._id,
+        orderdata: orderData,
+        name: verifiedcouriers[i].firstName,
+        extrakm: finalextdistance.toFixed(2),
+        orderkm: finalpddistance.toFixed(2),
+        totaldist: total.toFixed(2),
+        totalearning: finalearning.toFixed(2)
+      });
+    }
+    res
+      .status(200)
+      .json({ Message: "Data Found!", Data: couriersList, IsSuccess: true });
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
 
 module.exports = router;
