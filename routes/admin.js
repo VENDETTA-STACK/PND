@@ -1272,6 +1272,7 @@ router.post("/getextrakms", async (req, res, next) => {
       let finalpddistance = 0;
       let finalearning = 0;
       let orderData = [];
+      let blank = [];
       for (let i = 0; i < exttime.length; i++) {
         let localcounter = 0;
         if (exttime[i].dateTime.toISOString().slice(0, 10) == currentdate) {
@@ -1280,9 +1281,11 @@ router.post("/getextrakms", async (req, res, next) => {
             longitude: exttime[i].blong
           };
           let end = { latitude: exttime[i].plat, longitude: exttime[i].plong };
-          let extradistance = await GoogleMatrix(start, end);
-          finalextdistance = finalextdistance + extradistance;
-
+          finalextdistance = {
+            start:start,
+            end:end
+          };
+          blank.push(finalextdistance);
           let orderdistance = exttime[i].orderId.deliveryPoint.distance;
           finalpddistance = finalpddistance + orderdistance;
 
@@ -1296,7 +1299,7 @@ router.post("/getextrakms", async (req, res, next) => {
         id: verifiedcouriers[i]._id,
         orderdata: orderData,
         name: verifiedcouriers[i].firstName,
-        extrakm: finalextdistance.toFixed(2),
+        extrakm: blank,
         orderkm: finalpddistance.toFixed(2),
         totaldist: total.toFixed(2),
         totalearning: finalearning.toFixed(2)

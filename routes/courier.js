@@ -34,10 +34,32 @@ var fieldset = finalstorage.fields([
 var courierSchema = require("../data_models/courier.signup.model");
 var courierNotificationSchema = require("../data_models/courier.notification.model");
 var locationLoggerSchema = require("../data_models/location.logger.model");
-
+var poatypesSchema = require("../data_models/poatype.model");
+var prooftypeSchema = require("../data_models/prooftype.modal");
 /* Routes. */
 router.get("/", function (req, res, next) {
   res.render("index", { title: "Invalid URL" });
+});
+
+router.post("/masterdata", async function (req, res, next) {
+  try {
+    let poatypes = poatypesSchema.find();
+    let prooftype = prooftypeSchema.find();
+    res.json({
+      Message: "Masters Found!",
+      Data: {
+        poatypes: poatypes,
+        prooftype: prooftype,
+      },
+      IsSuccess: true,
+    });
+  } catch (err) {
+    res.json({
+      Message: err.message,
+      Data: 0,
+      IsSuccess: false,
+    });
+  }
 });
 
 //couriers signup
@@ -89,7 +111,7 @@ router.post("/signup", fieldset, async function (req, res, next) {
         lastName: lastName,
         mobileNo: mobileNo,
         poaType: poaType,
-        proofType:proofType,
+        proofType: proofType,
         profileImg: req.files.profileImg[0].path,
         poaFrontImg: req.files.poaFrontImg[0].path,
         poaBackImg: req.files.poaBackImg[0].path,
@@ -197,7 +219,10 @@ router.post("/updateFcmToken", async function (req, res, next) {
 router.post("/signin", async function (req, res, next) {
   const { mobileNo } = req.body;
   try {
-    var existCourier = await courierSchema.find({ mobileNo: mobileNo,isActive:true });
+    var existCourier = await courierSchema.find({
+      mobileNo: mobileNo,
+      isActive: true,
+    });
     if (existCourier.length == 1) {
       res.status(200).json({
         Message: "Delivery Partner Found!",
