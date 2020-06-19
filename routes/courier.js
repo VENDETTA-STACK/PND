@@ -43,13 +43,13 @@ router.get("/", function (req, res, next) {
 
 router.post("/masterdata", async function (req, res, next) {
   try {
-    let poatypes = poatypesSchema.find();
-    let prooftype = prooftypeSchema.find();
+    let poatypes = await poatypesSchema.find();
+    let prooftype = await prooftypeSchema.find();
     res.json({
       Message: "Masters Found!",
       Data: {
         poatypes: poatypes,
-        prooftype: prooftype,
+        prooftypes: prooftype,
       },
       IsSuccess: true,
     });
