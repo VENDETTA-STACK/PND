@@ -336,9 +336,9 @@ router.post("/newoder",orderimg.single('orderimg'), async function(req, res, nex
                 notification: {
                     title: "Order Alert",
                     body: "New Order Alert Found For You.",
-                    sound:"surprise.mp3"
                 },
                 data: {
+                    sound:"surprise.mp3",
                     orderid: courierfound[0].orderId.toString(),
                     distance: courierfound[0].distance.toString(),
                     click_action: "FLUTTER_NOTIFICATION_CLICK",
