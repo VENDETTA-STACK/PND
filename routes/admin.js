@@ -906,12 +906,13 @@ router.post("/addbanner", uploadbanner.single("image"), async function (
   res,
   next
 ) {
-  const title = req.body.title;
+  const {title,type} = req.body;
   try {
     const file = req.file;
     let newbanner = new bannerSchema({
       _id: new config.mongoose.Types.ObjectId(),
       title: title,
+      type:type,
       image: file == undefined ? null : file.path,
     });
     await newbanner.save();
