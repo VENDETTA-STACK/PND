@@ -1243,6 +1243,24 @@ router.post(
   }
 );
 
+router.post("/deletecategory", async function (req, res, next) {
+  const id = req.body.id;
+  try {
+    let dataset = await parcelcategories.findByIdAndDelete(id);
+    if (dataset != null) {
+      res
+        .status(200)
+        .json({ Message: "Customer Deleted!", Data: 1, IsSuccess: true });
+    } else {
+      res
+        .status(200)
+        .json({ Message: "Customer Not Deleted!", Data: 0, IsSuccess: true });
+    }
+  } catch (err) {
+    res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
 router.post("/category", async (req, res, next) => {
   try {
     let datalist = await parcelcategories.find({});

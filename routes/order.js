@@ -835,8 +835,9 @@ router.post("/reachPickPoint", async function (req, res, next) {
           { courierId: courierId, orderId: orderId },
           data
         );
+        console.log(checkif);
         sendMessages(
-          checkif[0].customerId.mobileNo,
+          checkif[0].pickupPoint.mobileNo,
           "Your delivery boy reached To pickup Point."
         );
         sendMessages(
