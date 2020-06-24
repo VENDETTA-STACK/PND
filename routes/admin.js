@@ -244,6 +244,7 @@ router.post("/updatesetttings", async function (req, res, next) {
     WhatsAppNo,
     DefaultWMessage,
     AppLink,
+    AmountPayKM
   } = req.body;
   try {
     var existData = await settingsSchema.find({});
@@ -256,6 +257,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         WhatsAppNo: WhatsAppNo,
         DefaultWMessage: DefaultWMessage,
         AppLink: AppLink,
+        AmountPayKM:AmountPayKM
       };
       await settingsSchema.findByIdAndUpdate(id, updatedsettings);
       res
@@ -270,6 +272,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         WhatsAppNo: WhatsAppNo,
         DefaultWMessage: DefaultWMessage,
         AppLink: AppLink,
+        AmountPayKM:AmountPayKM
       });
       await newsettings.save();
       res
@@ -1282,6 +1285,7 @@ router.post("/getextrakms", async (req, res, next) => {
   try {
     let couriersList = [];
     let currentdate = new Date().toISOString().slice(0, 10);
+    let settings = await settingsSchema.find({});
     let verifiedcouriers = await courierSchema.find({});
     for (let i = 0; i < verifiedcouriers.length; i++) {
       let exttime = await ExtatimeSchema.find({
@@ -1318,7 +1322,8 @@ router.post("/getextrakms", async (req, res, next) => {
       couriersList.push({
         id: verifiedcouriers[i]._id,
         orderdata: orderData,
-        name: verifiedcouriers[i].firstName,
+        name: verifiedcouriers[i].firstName+''+verifiedcouriers[i].lastName ,
+        amttopaysettings:settings[0].AmountPayKM,
         extrakm: blank,
         orderkm: finalpddistance.toFixed(2),
         totaldist: total.toFixed(2),

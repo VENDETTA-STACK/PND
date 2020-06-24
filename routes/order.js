@@ -436,7 +436,7 @@ router.post("/activeOrders", async function (req, res, next) {
       .find({ customerId: customerId, isActive: true })
       .populate(
         "courierId",
-        "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+        "firstName lastName fcmToken mobileNo accStatus transport isVerified profileImg"
       )
       .exec()
       .then((docs) => {
@@ -462,7 +462,7 @@ router.post("/completeOrders", async function (req, res, next) {
       .find({ customerId: customerId, isActive: false })
       .populate(
         "courierId",
-        "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+        "firstName lastName fcmToken mobileNo accStatus transport isVerified profileImg"
       )
       .exec()
       .then((docs) => {
