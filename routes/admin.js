@@ -1322,7 +1322,7 @@ router.post("/getextrakms", async (req, res, next) => {
       couriersList.push({
         id: verifiedcouriers[i]._id,
         orderdata: orderData,
-        name: verifiedcouriers[i].firstName+''+verifiedcouriers[i].lastName ,
+        name: verifiedcouriers[i].firstName+''+verifiedcouriers[i].lastName,
         amttopaysettings:settings[0].AmountPayKM,
         extrakm: blank,
         orderkm: finalpddistance.toFixed(2),
@@ -1330,6 +1330,7 @@ router.post("/getextrakms", async (req, res, next) => {
         totalearning: finalearning.toFixed(2),
       });
     }
+    console.log(couriersList);
     res
       .status(200)
       .json({ Message: "Data Found!", Data: couriersList, IsSuccess: true });
