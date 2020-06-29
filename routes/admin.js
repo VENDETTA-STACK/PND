@@ -1284,7 +1284,9 @@ router.post("/category", async (req, res, next) => {
 router.post("/getextrakms", async (req, res, next) => {
   try {
     let couriersList = [];
-    let currentdate = new Date().toISOString().slice(0, 10);
+    // let currentdate = new Date().toISOString().slice(0, 10);
+    let currentdate = '2020-06-27';
+    console.log(currentdate);
     let settings = await settingsSchema.find({});
     let verifiedcouriers = await courierSchema.find({});
     for (let i = 0; i < verifiedcouriers.length; i++) {
@@ -1296,20 +1298,18 @@ router.post("/getextrakms", async (req, res, next) => {
       let finalpddistance = 0;
       let finalearning = 0;
       let orderData = [];
-      let blank = [];
+      let blank = 0;
+
       for (let i = 0; i < exttime.length; i++) {
-        let localcounter = 0;
         if (exttime[i].dateTime.toISOString().slice(0, 10) == currentdate) {
           let start = {
             latitude: exttime[i].blat,
             longitude: exttime[i].blong,
           };
           let end = { latitude: exttime[i].plat, longitude: exttime[i].plong };
-          finalextdistance = {
-            start: start,
-            end: end,
-          };
-          blank.push(finalextdistance);
+          let distance = await GoogleMatrix(start,end);
+          
+          blank = blank + distance; 
           let orderdistance = exttime[i].orderId.deliveryPoint.distance;
           finalpddistance = finalpddistance + orderdistance;
 
@@ -1318,16 +1318,16 @@ router.post("/getextrakms", async (req, res, next) => {
         }
       }
 
-      let total = Number(finalextdistance) + Number(finalpddistance);
+      let total = Number(finalpddistance) + Number(blank);
       couriersList.push({
         id: verifiedcouriers[i]._id,
         orderdata: orderData,
-        name: verifiedcouriers[i].firstName+''+verifiedcouriers[i].lastName,
-        amttopaysettings:settings[0].AmountPayKM,
-        extrakm: blank,
+        name: verifiedcouriers[i].firstName+' '+verifiedcouriers[i].lastName,
+        extrakm: blank.toFixed(2),
         orderkm: finalpddistance.toFixed(2),
         totaldist: total.toFixed(2),
         totalearning: finalearning.toFixed(2),
+        amttopay:blank.toFixed(2) * Number(settings[0].AmountPayKM)
       });
     }
     console.log(couriersList);
@@ -1336,6 +1336,23 @@ router.post("/getextrakms", async (req, res, next) => {
       .json({ Message: "Data Found!", Data: couriersList, IsSuccess: true });
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+  }
+});
+
+router.post('/getkms', async (req,res,next)=>{
+  try{
+    let currentdate = '2020-06-27';
+    
+    let settings = await settingsSchema.find({}).select("AmountPayKM");
+    let couriers = await courierSchema.find({isActive:true,"accStatus.flag":true});
+    for(let i=0;i<couriers.length;i++){
+      let exttimes = await ExtatimeSchema.find({plat: { $ne: null },courierId: couriers[i]._id,}).populate("orderId");
+      
+    }
+
+    res.json({Message:"Data",Data:settings,IsSuccess:true});
+  }catch(err){
+    res.json({Message:err.message,Data:0,IsSuccess:true});
   }
 });
 
