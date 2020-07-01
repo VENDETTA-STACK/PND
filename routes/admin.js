@@ -244,7 +244,7 @@ router.post("/updatesetttings", async function (req, res, next) {
     WhatsAppNo,
     DefaultWMessage,
     AppLink,
-    AmountPayKM
+    AmountPayKM,
   } = req.body;
   try {
     var existData = await settingsSchema.find({});
@@ -257,7 +257,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         WhatsAppNo: WhatsAppNo,
         DefaultWMessage: DefaultWMessage,
         AppLink: AppLink,
-        AmountPayKM:AmountPayKM
+        AmountPayKM: AmountPayKM,
       };
       await settingsSchema.findByIdAndUpdate(id, updatedsettings);
       res
@@ -272,7 +272,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         WhatsAppNo: WhatsAppNo,
         DefaultWMessage: DefaultWMessage,
         AppLink: AppLink,
-        AmountPayKM:AmountPayKM
+        AmountPayKM: AmountPayKM,
       });
       await newsettings.save();
       res
@@ -909,13 +909,13 @@ router.post("/addbanner", uploadbanner.single("image"), async function (
   res,
   next
 ) {
-  const {title,type} = req.body;
+  const { title, type } = req.body;
   try {
     const file = req.file;
     let newbanner = new bannerSchema({
       _id: new config.mongoose.Types.ObjectId(),
       title: title,
-      type:type,
+      type: type,
       image: file == undefined ? null : file.path,
     });
     await newbanner.save();
@@ -1285,7 +1285,7 @@ router.post("/getextrakms", async (req, res, next) => {
   try {
     let couriersList = [];
     // let currentdate = new Date().toISOString().slice(0, 10);
-    let currentdate = '2020-06-27';
+    let currentdate = "2020-07-01";
     console.log(currentdate);
     let settings = await settingsSchema.find({});
     let verifiedcouriers = await courierSchema.find({});
@@ -1307,14 +1307,22 @@ router.post("/getextrakms", async (req, res, next) => {
             longitude: exttime[i].blong,
           };
           let end = { latitude: exttime[i].plat, longitude: exttime[i].plong };
-          let distance = await GoogleMatrix(start,end);
-          
-          blank = blank + distance; 
+          let distance = await GoogleMatrix(start, end);
+
+          blank = blank + distance;
           let orderdistance = exttime[i].orderId.deliveryPoint.distance;
           finalpddistance = finalpddistance + orderdistance;
 
           finalearning = finalearning + exttime[i].orderId.finalAmount;
-          orderData.push(exttime[i].orderId);
+          let ordData = {
+            extrakm:{
+              start:start,
+              end:end
+            },
+            extratime:distance,
+            orderData:exttime[i].orderId
+          }
+          orderData.push(ordData);
         }
       }
 
@@ -1322,12 +1330,13 @@ router.post("/getextrakms", async (req, res, next) => {
       couriersList.push({
         id: verifiedcouriers[i]._id,
         orderdata: orderData,
-        name: verifiedcouriers[i].firstName+' '+verifiedcouriers[i].lastName,
+        name:
+          verifiedcouriers[i].firstName + " " + verifiedcouriers[i].lastName,
         extrakm: blank.toFixed(2),
         orderkm: finalpddistance.toFixed(2),
         totaldist: total.toFixed(2),
         totalearning: finalearning.toFixed(2),
-        amttopay:blank.toFixed(2) * Number(settings[0].AmountPayKM)
+        amttopay: total.toFixed(2) * Number(settings[0].AmountPayKM),
       });
     }
     console.log(couriersList);
@@ -1339,20 +1348,33 @@ router.post("/getextrakms", async (req, res, next) => {
   }
 });
 
-router.post('/getkms', async (req,res,next)=>{
-  try{
-    let currentdate = '2020-06-27';
-    
+router.post("/getkms", async (req, res, next) => {
+  try {
+    let currentdate = new Date();
+    let todate = new Date(currentdate.setDate(currentdate.getDate() + 1));
     let settings = await settingsSchema.find({}).select("AmountPayKM");
-    let couriers = await courierSchema.find({isActive:true,"accStatus.flag":true});
-    for(let i=0;i<couriers.length;i++){
-      let exttimes = await ExtatimeSchema.find({plat: { $ne: null },courierId: couriers[i]._id,}).populate("orderId");
-      
+    let couriers = await courierSchema.find({ isActive: true, "accStatus.flag": true });
+    
+    let dataset = [];
+    let finalextradistance = 0;
+    for (let i = 0; i < couriers.length; i++) {
+      let finalData =[];
+      let exttimes = await ExtatimeSchema.find({ dateTime: { $gte: currentdate, $lt: todate }, plat: { $ne: null }, courierId: couriers[i]._id,}).populate("orderId");
+      for (let a = 0; a < exttimes.length; a++) {
+        let start = { latitude: exttime[i].blat, longitude: exttime[i].blong };
+        let end = { latitude: exttimes[i].plat, longitude: exttimes[i].plong };
+        let extradistance = await GoogleMatrix(start, end);
+        finalextradistance = finalextradistance + extradistance;
+        
+        finalData.push({
+          extradistance:extradistance,
+        });
+      }
     }
 
-    res.json({Message:"Data",Data:settings,IsSuccess:true});
-  }catch(err){
-    res.json({Message:err.message,Data:0,IsSuccess:true});
+    res.json({ Message: "Data", Data: dataset, IsSuccess: true });
+  } catch (err) {
+    res.json({ Message: err.message, Data: 0, IsSuccess: true });
   }
 });
 
