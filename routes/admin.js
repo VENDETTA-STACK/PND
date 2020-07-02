@@ -1348,35 +1348,6 @@ router.post("/getextrakms", async(req, res, next) => {
     }
 });
 
-router.post("/getkms", async(req, res, next) => {
-    try {
-        let currentdate = new Date();
-        let todate = new Date(currentdate.setDate(currentdate.getDate() + 1));
-        let settings = await settingsSchema.find({}).select("AmountPayKM");
-        let couriers = await courierSchema.find({ isActive: true, "accStatus.flag": true });
-
-        let dataset = [];
-        let finalextradistance = 0;
-        for (let i = 0; i < couriers.length; i++) {
-            let finalData = [];
-            let exttimes = await ExtatimeSchema.find({ dateTime: { $gte: currentdate, $lt: todate }, plat: { $ne: null }, courierId: couriers[i]._id, }).populate("orderId");
-            for (let a = 0; a < exttimes.length; a++) {
-                let start = { latitude: exttime[i].blat, longitude: exttime[i].blong };
-                let end = { latitude: exttimes[i].plat, longitude: exttimes[i].plong };
-                let extradistance = await GoogleMatrix(start, end);
-                finalextradistance = finalextradistance + extradistance;
-
-                finalData.push({
-                    extradistance: extradistance,
-                });
-            }
-        }
-
-        res.json({ Message: "Data", Data: dataset, IsSuccess: true });
-    } catch (err) {
-        res.json({ Message: err.message, Data: 0, IsSuccess: true });
-    }
-});
 
 router.post("/addprooftype", async(req, res, next) => {
     const title = req.body.title;
