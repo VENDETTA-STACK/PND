@@ -20,6 +20,10 @@ const ExtraTimeSchema = mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  deliverytime: {
+    type: Date,
+    default: null
+  },
 });
 
 module.exports = mongoose.model("ExtraTime", ExtraTimeSchema);

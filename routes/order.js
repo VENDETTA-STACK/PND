@@ -509,51 +509,35 @@ router.post("/acceptOrder", async function (req, res, next) {
         });
         //send Message to customer
         let createMsg =
-          "Your order "+orderData[0].orderNo+" has been accepted by our delivery boy " + courierData[0].firstName +" " + courierData[0].lastName +"--" + courierData[0].mobileNo+".He Will Reach To You Shortly.";
+          "Your order " +
+          orderData[0].orderNo +
+          " has been accepted by our delivery boy " +
+          courierData[0].firstName +
+          " " +
+          courierData[0].lastName +
+          "--" +
+          courierData[0].mobileNo +
+          ".He Will Reach To You Shortly.";
         sendMessages(orderData[0].customerId.mobileNo, createMsg);
-        let msg = "Your order "+orderData[0].orderNo+" has been accepted by" + courierData[0].firstName + " " + courierData[0].lastName;
-        var payload = {
-          notification: {
-            title: "PicknDelivere",
-            body: msg,
-          },
-          data: { click_action: "FLUTTER_NOTIFICATION_CLICK" },
-        };
-        var options = {
-          priority: "high",
-          timeToLive: 60 * 60 * 24,
-        };
-        config.firebase
-          .messaging()
-          .sendToDevice(orderData[0].customerId.fcmToken, payload, options)
-          .then((doc) => {
-            console.log("Sending Notification To Customer On Order Accept");
-            console.log(doc);
-          });
-
         console.log("---Order Accepted--");
         res
           .status(200)
           .json({ Message: "Order Accepted!", Data: 1, IsSuccess: true });
       } else {
         console.log("---Please Turn On Your Duty--");
-        res
-          .status(200)
-          .json({
-            Message: "Please turn on your duty!",
-            Data: 0,
-            IsSuccess: true,
-          });
-      }
-    } else {
-      console.log("---Order Might Be Cancelled By Customer--");
-      res
-        .status(200)
-        .json({
-          Message: "Sorry! Order Not Available",
+        res.status(200).json({
+          Message: "Please turn on your duty!",
           Data: 0,
           IsSuccess: true,
         });
+      }
+    } else {
+      console.log("---Order Might Be Cancelled By Customer--");
+      res.status(200).json({
+        Message: "Sorry! Order Not Available",
+        Data: 0,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -583,13 +567,11 @@ router.post("/takeThisOrder", async function (req, res, next) {
         });
         extrakm.save();
         console.log("---Order Taking Success--");
-        res
-          .status(200)
-          .json({
-            Message: "Order Taking Successfully!",
-            Data: 1,
-            IsSuccess: true,
-          });
+        res.status(200).json({
+          Message: "Order Taking Successfully!",
+          Data: 1,
+          IsSuccess: true,
+        });
       } else {
         console.log("---Order Taking Failed--");
         res
@@ -598,13 +580,11 @@ router.post("/takeThisOrder", async function (req, res, next) {
       }
     } else {
       console.log("---Please Turn On Your Duty--");
-      res
-        .status(200)
-        .json({
-          Message: "Please turn on your duty!",
-          Data: 0,
-          IsSuccess: true,
-        });
+      res.status(200).json({
+        Message: "Please turn on your duty!",
+        Data: 0,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -682,13 +662,11 @@ router.post("/rejectOrder", async function (req, res, next) {
             });
             logger.save();
 
-            res
-              .status(200)
-              .json({
-                Message: "Order Has Been Rejected!",
-                Data: 1,
-                IsSuccess: true,
-              });
+            res.status(200).json({
+              Message: "Order Has Been Rejected!",
+              Data: 1,
+              IsSuccess: true,
+            });
           } else {
             console.log("All Courier Boys Are Busy");
             var updateorder = {
@@ -697,43 +675,35 @@ router.post("/rejectOrder", async function (req, res, next) {
             };
             await orderSchema.findByIdAndUpdate(orderId, updateorder);
             console.log("---Order Rejected--");
-            res
-              .status(200)
-              .json({
-                Message: "Order Has Been Rejected!",
-                Data: 1,
-                IsSuccess: true,
-              });
+            res.status(200).json({
+              Message: "Order Has Been Rejected!",
+              Data: 1,
+              IsSuccess: true,
+            });
           }
         } else {
           console.log("---Unable to Reject Order--");
-          res
-            .status(200)
-            .json({
-              Message: "Unable to Reject Order!",
-              Data: 0,
-              IsSuccess: true,
-            });
-        }
-      } else {
-        console.log("---Please Turn On Your Duty--");
-        res
-          .status(200)
-          .json({
-            Message: "Please turn on your duty!",
+          res.status(200).json({
+            Message: "Unable to Reject Order!",
             Data: 0,
             IsSuccess: true,
           });
-      }
-    } else {
-      console.log("---Order Might Be Cancelled By Customer--");
-      res
-        .status(200)
-        .json({
-          Message: "Sorry! Order Not Available",
+        }
+      } else {
+        console.log("---Please Turn On Your Duty--");
+        res.status(200).json({
+          Message: "Please turn on your duty!",
           Data: 0,
           IsSuccess: true,
         });
+      }
+    } else {
+      console.log("---Order Might Be Cancelled By Customer--");
+      res.status(200).json({
+        Message: "Sorry! Order Not Available",
+        Data: 0,
+        IsSuccess: true,
+      });
     }
   } catch (err) {
     res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -822,7 +792,8 @@ router.post("/reachPickPoint", async function (req, res, next) {
       var checkif = await orderSchema
         .find({ _id: orderId, isActive: true })
         .populate("customerId");
-      if (checkif.length != 0) {
+      
+        if (checkif.length != 0) {
         await orderSchema.findOneAndUpdate(
           { _id: orderId, courierId: courierId },
           {
@@ -830,40 +801,22 @@ router.post("/reachPickPoint", async function (req, res, next) {
             note: "Delivery boy reached to pickup point",
           }
         );
+        
         var data = { plat: location.latitude, plong: location.longitude };
         await ExtatimeSchema.findOneAndUpdate(
           { courierId: courierId, orderId: orderId },
           data
         );
-        console.log(checkif);
+        
         sendMessages(
           checkif[0].pickupPoint.mobileNo,
           "Your delivery boy reached To pickup Point."
         );
+        
         sendMessages(
           checkif[0].deliveryPoint.mobileNo,
           "Your delivery boy reached To pickup point. He will reach to you shortly."
         );
-
-        let msg = "Your Delivery Boy Reached To Pickup Point.";
-        var payload = {
-            notification: {
-              title: "PicknDelivere",
-              body: msg,
-            },
-            data: { click_action: "FLUTTER_NOTIFICATION_CLICK" },
-          };
-          var options = {
-            priority: "high",
-            timeToLive: 60 * 60 * 24,
-          };
-          config.firebase
-            .messaging()
-            .sendToDevice(checkif[0].customerId.fcmToken, payload, options)
-            .then((doc) => {
-              console.log("Sending Notification To Customer On Delivery Reached");
-              console.log(doc);
-            });
 
         res
           .status(200)
@@ -888,41 +841,38 @@ router.post("/reachPickPoint", async function (req, res, next) {
 router.post("/reachDropPoint", async function (req, res, next) {
   const { courierId, orderId } = req.body;
   try {
+
+    // Check If Given Order Is Active or Not
     var checkif = await orderSchema
       .find({ _id: orderId, isActive: true })
       .populate("customerId");
-    if (checkif.length != 0) {
+      if (checkif.length != 0) {
+
+      // Order Schema updated With Status Order Delivered
       await orderSchema.findOneAndUpdate(
         { _id: orderId, courierId: courierId },
         { status: "Order Delivered", note: "Order Delivered", isActive: false }
       );
+
+      // Set Delivery Date In Extratime Schema
+      let newDate = new Date();
+      await ExtatimeSchema.findOneAndUpdate(
+        { orderId: orderId, courierId: courierId },
+        { deliverytime: newDate }
+      );
+
+      // Sending Message To Sender
       sendMessages(
         checkif[0].customerId.mobileNo,
         "Your Order Has Been Delivered."
       );
+
+      // Sending Message To Reciever
       sendMessages(
         checkif[0].deliveryPoint.mobileNo,
         "Your Order Has Been Delivered."
       );
-      let msg = "Your Delivery Boy Reached To Pickup Point.";
-      var payload = {
-        notification: {
-          title: "PicknDelivere",
-          body: msg,
-        },
-        data: { click_action: "FLUTTER_NOTIFICATION_CLICK" },
-      };
-      var options = {
-        priority: "high",
-        timeToLive: 60 * 60 * 24,
-      };
-      config.firebase
-        .messaging()
-        .sendToDevice(checkif[0].customerId.fcmToken, payload, options)
-        .then((doc) => {
-          console.log("Sending Notification To Customer On Delivery Boy Droped");
-          console.log(doc);
-        });
+
       res
         .status(200)
         .json({ Message: "Order Delivered!", Data: 1, IsSuccess: true });
