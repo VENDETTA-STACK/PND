@@ -1221,20 +1221,54 @@ router.post(
     "/addcategories",
     uploadcategory.single("image"),
     async(req, res, next) => {
+        const id = req.body.id;
         const title = req.body.title;
+        const price = req.body.price;
+        const note = req.body.note;
         try {
             const file = req.file;
-            let category = new parcelcategories({
-                _id: new config.mongoose.Types.ObjectId(),
-                title: title,
-                image: file == undefined ? null : file.path,
-            });
-            category.save();
-            res.json({
-                Message: "Category Added Successfully!",
-                Data: 1,
-                IsSuccess: true,
-            });
+            if (id == "0") {
+                let category = new parcelcategories({
+                    _id: new config.mongoose.Types.ObjectId(),
+                    title: title,
+                    price: price,
+                    note: note,
+                    image: file == undefined ? null : file.path,
+                });
+                await category.save();
+                res.json({
+                    Message: "Category Added Successfully!",
+                    Data: 1,
+                    IsSuccess: true,
+                });
+            } else {
+                if (file != undefined) {
+                    let category = {
+                        title: title,
+                        price: price,
+                        note: note,
+                        image: file == undefined ? null : file.path,
+                    };
+                    await parcelcategories.findByIdAndUpdate(id, category, { new: true });
+                    res.json({
+                        Message: "Category Updated Successfully!",
+                        Data: 1,
+                        IsSuccess: true,
+                    });
+                } else {
+                    let category = {
+                        title: title,
+                        price: price,
+                        note: note,
+                    };
+                    await parcelcategories.findByIdAndUpdate(id, category, { new: true });
+                    res.json({
+                        Message: "Category Updated Successfully!",
+                        Data: 1,
+                        IsSuccess: true,
+                    });
+                }
+            }
         } catch (err) {
             res.json({
                 Message: err.message,
