@@ -297,7 +297,10 @@ router.post("/ordercalcV2", async(req, res, next) => {
         droplong,
         deliverytype,
         promocode,
+        parcelcontents
     } = req.body;
+
+    console.log(req.body);
 
     let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
     let tolocation = { latitude: Number(droplat), longitude: Number(droplong) };
@@ -365,13 +368,19 @@ router.post("/ordercalcV2", async(req, res, next) => {
 
     let distamt = Number(basicamt.toFixed(2)) + Number(extraamt.toFixed(2));
     distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
-    let amt = Number(distamt) + Math.ceil(extadeliverycharges.toFixed(2));
+    let sortParcelContents = arraySort(parcelcontents,'price',{reverse: true});
+    let extracharges = 0;
+    for(let a=0;a<sortParcelContents.length;a++){
+        extracharges = extracharges + sortParcelContents[a].price;
+    }
+    let amt = Number(distamt) + extracharges + Math.ceil(extadeliverycharges.toFixed(2));
     promoused = prmcodes.length != 0 ? (amt * prmcodes[0].discount) / 100 : 0;
     let netamount = amt - Math.ceil(promoused.toFixed(2));
 
     let dataset = [{
         totaldistance: Math.round(totaldistance.toFixed(2)),
         totaldistamt: Number(distamt),
+        extracharges:extracharges,
         extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
         amount: amt,
         promoused: Math.ceil(promoused.toFixed(2)),
