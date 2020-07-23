@@ -33,6 +33,7 @@ var promoCodeSchema = require("../data_models/promocode.model");
 var locationLoggerSchema = require("../data_models/location.logger.model");
 var courierNotificationSchema = require("../data_models/courier.notification.model");
 var deliverytypesSchema = require("../data_models/deliverytype.model");
+var categorySchema = require('../data_models/category.model');
 
 //required functions
 async function GoogleMatrix(fromlocation, tolocation) {
@@ -368,16 +369,30 @@ router.post("/ordercalcV2", async(req, res, next) => {
 
     let distamt = Number(basicamt.toFixed(2)) + Number(extraamt.toFixed(2));
     distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
-    let sortParcelContents = arraySort(parcelcontents,'price',{reverse: true});
+    let note;
+    //Find Parcel Content From Database
+    let parcelContentsList = [];
+    for(let e=0;e<parcelcontents.length;e++){
+        let data = await categorySchema.findOne({title:parcelcontents[e]});
+        if(e==0){
+            note = data.note;
+        }
+        parcelContentsList.push(data);
+    }
+    console.log(parcelContentsList);
+    //Find ExtraCharges
+    let sortParcelContents = arraySort(parcelContentsList,'price',{reverse: true});
     let extracharges = 0;
     for(let a=0;a<sortParcelContents.length;a++){
         extracharges = extracharges + sortParcelContents[a].price;
     }
+
     let amt = Number(distamt) + extracharges + Math.ceil(extadeliverycharges.toFixed(2));
     promoused = prmcodes.length != 0 ? (amt * prmcodes[0].discount) / 100 : 0;
     let netamount = amt - Math.ceil(promoused.toFixed(2));
 
     let dataset = [{
+        note:note,
         totaldistance: Math.round(totaldistance.toFixed(2)),
         totaldistamt: Number(distamt),
         extracharges:extracharges,
