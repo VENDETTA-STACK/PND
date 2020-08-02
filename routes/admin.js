@@ -341,25 +341,25 @@ router.post("/orders", async function(req, res, next) {
             )
             .populate("customerId");
 
-        let completeOrders = await orderSchema
-            .find({ status: "Order Delivered", isActive: false })
-            .populate(
-                "courierId",
-                "firstName lastName fcmToken mobileNo accStatus transport isVerified"
-            )
-            .populate("customerId");
+        // let completeOrders = await orderSchema
+        //     .find({ status: "Order Delivered", isActive: false })
+        //     .populate(
+        //         "courierId",
+        //         "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+        //     )
+        //     .populate("customerId");
 
-        let orderscomplete = [];
-        for (let i = 0; i < completeOrders.length; i++) {
-            let datadate = await ExtatimeSchema.find({
-                orderId: completeOrders[i]._id,
-            });
-            orderscomplete.push({
-                starttime: datadate[0].dateTime,
-                endTime: datadate[0].deliverytime != null ? datadate[0].deliverytime : null,
-                completeOrders: completeOrders[i],
-            });
-        }
+        // let orderscomplete = [];
+        // for (let i = 0; i < completeOrders.length; i++) {
+        //     let datadate = await ExtatimeSchema.find({
+        //         orderId: completeOrders[i]._id,
+        //     });
+        //     orderscomplete.push({
+        //         starttime: datadate[0].dateTime,
+        //         endTime: datadate[0].deliverytime != null ? datadate[0].deliverytime : null,
+        //         completeOrders: completeOrders[i],
+        //     });
+        // }
 
         newdataset.push({
             runningOrders: runningOrders,
