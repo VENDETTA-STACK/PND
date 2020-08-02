@@ -1113,19 +1113,22 @@ router.post("/sendNToPND", async function(req, res, next) {
 
         if (service.length == 2) {
             for (let i = 0; i < data.length; i++) {
-                let messag = title + "," + message;
-                let msgportal =
-                    "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
-                    process.env.SMS_USER +
-                    "&password=" +
-                    process.env.SMS_PASS +
-                    "&msisdn=" +
-                    data[i].mobileNo +
-                    "&sid=" +
-                    process.env.SMS_SID +
-                    "&msg=" +
-                    messag +
-                    "&fl=0&gwid=2";
+                let messag = title + "," + message;                
+                // let msgportal =
+                //     "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
+                //     process.env.SMS_USER +
+                //     "&password=" +
+                //     process.env.SMS_PASS +
+                //     "&msisdn=" +
+                //     data[i].mobileNo +
+                //     "&sid=" +
+                //     process.env.SMS_SID +
+                //     "&msg=" +
+                //     messag +
+                //     "&fl=0&gwid=2";
+
+                let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno=8200823905&text= " + messag;
+                console.log(msgportal);
                 axios.get(msgportal);
             }
 
@@ -1143,7 +1146,8 @@ router.post("/sendNToPND", async function(req, res, next) {
             console.log(list);
             for (let i = 0; i < list; i++) {
                 let messag = title + "," + message;
-                let msgportal = "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" + process.env.SMS_USER + "&password=" + process.env.SMS_PASS + "&msisdn=" + data[i].mobileNo + "&sid=" + process.env.SMS_SID + "&msg=" + messag + "&fl=0&gwid=2";
+                let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno="+ data[i].mobileNo +"&text= " + messag;
+                //let msgportal = "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" + process.env.SMS_USER + "&password=" + process.env.SMS_PASS + "&msisdn=" + data[i].mobileNo + "&sid=" + process.env.SMS_SID + "&msg=" + messag + "&fl=0&gwid=2";
                 axios.get(msgportal);
             }
 
@@ -1167,7 +1171,12 @@ router.post("/sendNToPND", async function(req, res, next) {
         res.json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
-
+//check balance
+//http://websms.mitechsolution.com/api/creditstatus.json?apikey=5f266fc48b29f
+router.post("/balancecheck", async(req,res,next)=>{
+    let data = await axios.get("http://websms.mitechsolution.com/api/creditstatus.json?apikey=" + process.env.SMS_API);
+    res.json(data.data.description);
+})
 //not to show on admin panel
 router.post("/adddeliverytype", async(req, res, next) => {
     const { title, weightlimit, cost } = req.body;
