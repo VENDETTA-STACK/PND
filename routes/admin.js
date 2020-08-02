@@ -361,11 +361,11 @@ router.post("/orders", async function(req, res, next) {
         //     });
         // }
 
+        //completeOrders: orderscomplete,
         newdataset.push({
             runningOrders: runningOrders,
             cancelledOrders: cancelledOrders,
-            pendingOrders: pendingOrders,
-            completeOrders: orderscomplete,
+            pendingOrders: pendingOrders,            
         });
 
         res
