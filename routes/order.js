@@ -65,7 +65,7 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
         .select("id fcmToken");
 
     if (deliveryType == "Normal Delivery") {
-        for (let i = 0; i < getpndpartners.length; i++) {
+        for (let i = 0; i < getpndpartners.length; i++) {            
             let partnerlocation = await currentLocation(getpndpartners[i].id);
             if (
                 (partnerlocation.duty == "ON") &
@@ -85,6 +85,8 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
                             latitude: partnerlocation.latitude,
                             longitude: partnerlocation.longitude,
                         };
+                        console.log(partnerlocation);
+                        console.log(pickupcoords,partnercoords)
                         let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
                         if (distancebtnpp <= 15) {
                             available.push({
@@ -164,10 +166,14 @@ async function sendMessages(mobileNo, message) {
 }
 
 async function currentLocation(courierId) {
-    var CourierRef = config.docref.child(courierId);
+    console.log(courierId);
+    var CourierRef = config.docref.child(courierId);    
     const data = await CourierRef.once("value")
         .then((snapshot) => snapshot.val())
         .catch((err) => err);
+    console.log("---------");
+    console.log(data);
+    console.log("---------");
     return data;
 }
 
@@ -483,7 +489,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function(
             status: "Order Processing",
             note: "Your order is processing!",
         });
-        var placedorder = await newOrder.save();
+        var placedorder = await newOrder.save();        
         var avlcourier = await PNDfinder(
             pkLat,
             pkLong,
@@ -545,6 +551,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function(
             .status(200)
             .json({ Message: "Order Placed!", Data: 1, IsSuccess: true });
     } catch (err) {
+        console.log(err);
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
