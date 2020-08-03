@@ -340,7 +340,7 @@ router.post("/orders", async function(req, res, next) {
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified"
             )
             .populate("customerId");
-
+           //completed order API 
         // let completeOrders = await orderSchema
         //     .find({ status: "Order Delivered", isActive: false })
         //     .populate(
@@ -376,6 +376,44 @@ router.post("/orders", async function(req, res, next) {
     }
 });
 
+//orders completed
+router.post("/completed_orders", async function(req, res, next) {
+    try {
+        let newdataset = [];
+
+           //completed order API 
+        let completeOrders = await orderSchema
+            .find({ status: "Order Delivered", isActive: false })
+            .populate(
+                "courierId",
+                "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+            )
+            .populate("customerId");
+
+        let orderscomplete = [];
+        for (let i = 0; i < completeOrders.length; i++) {
+            let datadate = await ExtatimeSchema.find({
+                orderId: completeOrders[i]._id,
+            });
+            orderscomplete.push({
+                starttime: datadate[0].dateTime,
+                endTime: datadate[0].deliverytime != null ? datadate[0].deliverytime : null,
+                completeOrders: completeOrders[i],
+            });
+        }
+
+        //completeOrders: orderscomplete,
+        newdataset.push({
+            completeOrders: orderscomplete,          
+        });
+
+        res
+            .status(200)
+            .json({ Message: "Order Found!", Data: newdataset, IsSuccess: true });
+    } catch (err) {
+        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
 //cancel Order
 router.post("/cancelOrder", async function(req, res, next) {
     const id = req.body.id;
@@ -1127,7 +1165,7 @@ router.post("/sendNToPND", async function(req, res, next) {
                 //     messag +
                 //     "&fl=0&gwid=2";
 
-                let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno=8200823905&text= " + messag;
+                let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno="+ data[i].mobileNo  +"&text= " + messag;
                 console.log(msgportal);
                 axios.get(msgportal);
             }
