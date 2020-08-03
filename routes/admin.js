@@ -1127,7 +1127,7 @@ router.post("/sendNToPND", async function(req, res, next) {
                 //     messag +
                 //     "&fl=0&gwid=2";
 
-                let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno=8200823905&text= " + messag;
+                let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno="+ data[i].mobileNo  +"&text= " + messag;
                 console.log(msgportal);
                 axios.get(msgportal);
             }
