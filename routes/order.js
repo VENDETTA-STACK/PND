@@ -149,18 +149,21 @@ function getOrderNumber() {
 }
 
 async function sendMessages(mobileNo, message) {
-    let msgportal =
-        "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
-        process.env.SMS_USER +
-        "&password=" +
-        process.env.SMS_PASS +
-        "&msisdn=" +
-        mobileNo +
-        "&sid=" +
-        process.env.SMS_SID +
-        "&msg=" +
-        message +
-        "&fl=0&gwid=2";
+    // let msgportal =
+    //     "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
+    //     process.env.SMS_USER +
+    //     "&password=" +
+    //     process.env.SMS_PASS +
+    //     "&msisdn=" +
+    //     mobileNo +
+    //     "&sid=" +
+    //     process.env.SMS_SID +
+    //     "&msg=" +
+    //     message +
+    //     "&fl=0&gwid=2";
+    let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno="+ mobileNo  +"&text= " + message;
+    console.log(msgportal);
+    axios.get(msgportal);
     var data = await axios.get(msgportal);
     return data;
 }
