@@ -803,11 +803,11 @@ router.post("/AssignOrder", async function(req, res, next) {
             });
             await newrequest.save();
 
-            await orderSchema.findByIdAndUpdate(orderId, {
-                courierId: courierId,
-                status: "Order Assigned",
-                note: "Order Has Been Assigned",
-            });
+             await orderSchema.findByIdAndUpdate(orderId, {
+                 courierId: courierId,
+                 status: "Order Assigned",
+                 note: "Order Has Been Assigned",
+             });
             let description =
                 courierboy[0].cId +
                 " Accepted Order " +
@@ -821,6 +821,8 @@ router.post("/AssignOrder", async function(req, res, next) {
                 description: description,
             });
             await logger.save();
+            
+            //send Notificaiton Code Here To Customer
             //send sms when directly assign SMS
             //kd 30-08-2020
             let courierData = await courierSchema.find({ _id: courierId });
@@ -835,9 +837,8 @@ router.post("/AssignOrder", async function(req, res, next) {
             "--" +
             courierData[0].mobileNo +
             ".He Will Reach To You Shortly.";
-            sendMessages(orderData[0].customerId.mobileNo, createMsg);
-            
-            //send Notificaiton Code Here To Customer
+            console.log(courierData[0].mobileNo+createMsg);
+           sendMessages( OrderData[0].pickupPoint.mobileNo,createMsg);
             res
                 .status(200)
                 .json({ Message: "Order Assigned !", Data: 1, IsSuccess: true });
@@ -850,7 +851,26 @@ router.post("/AssignOrder", async function(req, res, next) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
-
+// send sms
+async function sendMessages(mobileNo, message) {
+    // let msgportal =
+    //     "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
+    //     process.env.SMS_USER +
+    //     "&password=" +
+    //     process.env.SMS_PASS +
+    //     "&msisdn=" +
+    //     mobileNo +
+    //     "&sid=" +
+    //     process.env.SMS_SID +
+    //     "&msg=" +
+    //     message +
+    //     "&fl=0&gwid=2";
+    let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno="+ mobileNo  +"&text= " + message;
+    console.log(msgportal);
+    axios.get(msgportal);
+    var data = await axios.get(msgportal);
+    return data;
+}
 router.post(
     "/policeverification",
     uploadpoliceImg.single("image"),
