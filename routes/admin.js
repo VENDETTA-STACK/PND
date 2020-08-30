@@ -836,6 +836,7 @@ router.post("/AssignOrder", async function(req, res, next) {
             courierData[0].mobileNo +
             ".He Will Reach To You Shortly.";
             sendMessages(orderData[0].customerId.mobileNo, createMsg);
+            
             //send Notificaiton Code Here To Customer
             res
                 .status(200)
@@ -1180,7 +1181,7 @@ router.post("/sendNToPND", async function(req, res, next) {
                 //     "&fl=0&gwid=2";
 
                 let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno="+ data[i].mobileNo  +"&text= " + messag;
-                console.log(msgportal);
+                console.log(msgportal); 
                 axios.get(msgportal);
             }
 
