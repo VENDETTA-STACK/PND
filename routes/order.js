@@ -100,7 +100,7 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
                         }
                     }
                 }
-            }
+            }   
         }
     } else {
         for (let i = 0; i < getpndpartners.length; i++) {
@@ -147,7 +147,7 @@ function getOrderNumber() {
     let orderNo = "ORD-" + Math.floor(Math.random() * 90000) + 10000;
     return orderNo;
 }
-
+// send sms
 async function sendMessages(mobileNo, message) {
     // let msgportal =
     //     "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +

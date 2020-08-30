@@ -821,7 +821,21 @@ router.post("/AssignOrder", async function(req, res, next) {
                 description: description,
             });
             await logger.save();
-
+            //send sms when directly assign SMS
+            //kd 30-08-2020
+            let courierData = await courierSchema.find({ _id: courierId });
+            //send Message to customer
+            let createMsg =
+            "Your order " +
+            OrderData[0].orderNo +
+            " has been accepted by our delivery boy " +
+            courierData[0].firstName +
+            " " +
+            courierData[0].lastName +
+            "--" +
+            courierData[0].mobileNo +
+            ".He Will Reach To You Shortly.";
+            sendMessages(orderData[0].customerId.mobileNo, createMsg);
             //send Notificaiton Code Here To Customer
             res
                 .status(200)
