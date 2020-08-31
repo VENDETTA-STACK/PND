@@ -536,13 +536,20 @@ router.post("/newoder", orderimg.single("orderimg"), async function(
                 priority: "high",
                 timeToLive: 60 * 60 * 24,
             };
-            config.firebase
+            // config.firebase
+            //     .messaging()
+            //     .sendToDevice(courierfound[0].fcmToken, payload, options)
+            //     .then((doc) => {
+            //         console.log("Sending Notification");
+            //         console.log(doc);
+            //     });
+                config.firebase
                 .messaging()
-                .sendToDevice(courierfound[0].fcmToken, payload, options)
+                .sendToDevice("e3xzpnXhRDqsrVrJBGqEU7:APA91bFW3B8R1jdWJjfHxNnESOSQOO-YvTsbRGXpGYu5D9XB3K_a8g_V1-bskQ_6i0jNCBU9JHmS8dd4O1t9cZLoeyf9ZeTamme9YT8RxVQfzOCZhKHB7sg9PrHcaltDLyxwM7oEeRxo", payload, options)
                 .then((doc) => {
                     console.log("Sending Notification");
                     console.log(doc);
-                });
+                });    
         } else {
             console.log("No Courier Boys Available:: Waiting For Admin Response");
             var updateorder = {
