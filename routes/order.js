@@ -920,15 +920,15 @@ router.post("/reachPickPoint", async function(req, res, next) {
                     data
                 );
 
-                sendMessages(
-                    checkif[0].pickupPoint.mobileNo,
-                    "Your delivery boy reached To pickup Point."
-                );
+                // sendMessages(
+                //     checkif[0].pickupPoint.mobileNo,
+                //     "Your delivery boy reached To pickup Point."
+                // );
 
-                sendMessages(
-                    checkif[0].deliveryPoint.mobileNo,
-                    "Your delivery boy reached To pickup point. He will reach to you shortly."
-                );
+                // sendMessages(
+                //     checkif[0].deliveryPoint.mobileNo,
+                //     "Your delivery boy reached To pickup point. He will reach to you shortly."
+                // );
 
                 res
                     .status(200)
