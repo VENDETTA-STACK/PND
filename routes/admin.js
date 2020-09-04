@@ -8,14 +8,15 @@ var config = require("../config");
 var router = express.Router();
 var cors = require("cors");
 var multer = require("multer");
+var request = require('request');
 const { getDistance, convertDistance } = require("geolib");
 
 //image uploading
 var bannerlocation = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         cb(null, "uploads/banners");
     },
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         cb(
             null,
             file.fieldname + "_" + Date.now() + path.extname(file.originalname)
@@ -25,10 +26,10 @@ var bannerlocation = multer.diskStorage({
 var uploadbanner = multer({ storage: bannerlocation });
 
 var promocodelocation = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         cb(null, "uploads/promocodes");
     },
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         cb(
             null,
             file.fieldname + "_" + Date.now() + path.extname(file.originalname)
@@ -38,10 +39,10 @@ var promocodelocation = multer.diskStorage({
 var uploadpromocode = multer({ storage: promocodelocation });
 
 var policeverificationImg = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         cb(null, "uploads/couriers");
     },
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         cb(
             null,
             file.fieldname + "_" + Date.now() + path.extname(file.originalname)
@@ -51,10 +52,10 @@ var policeverificationImg = multer.diskStorage({
 var uploadpoliceImg = multer({ storage: policeverificationImg });
 
 var categoryImg = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         cb(null, "uploads/categories");
     },
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         cb(
             null,
             file.fieldname + "_" + Date.now() + path.extname(file.originalname)
@@ -108,7 +109,7 @@ async function currentLocation(id) {
 }
 
 //create adminpanel accounts
-router.post("/signup", async function(req, res, next) {
+router.post("/signup", async function (req, res, next) {
     const { name, username, password, type } = req.body;
     try {
         var existAdmin = await adminSchema.find({
@@ -139,7 +140,7 @@ router.post("/signup", async function(req, res, next) {
 });
 
 //admin panel login
-router.post("/login", async function(req, res, next) {
+router.post("/login", async function (req, res, next) {
     const { username, password, type } = req.body;
     console.log(req.body);
     try {
@@ -165,7 +166,7 @@ router.post("/login", async function(req, res, next) {
 });
 
 //get dashboard counters
-router.post("/dashcounters", async function(req, res, next) {
+router.post("/dashcounters", async function (req, res, next) {
     try {
         let admins = await adminSchema.countDocuments();
         let couriers = await courierSchema.countDocuments();
@@ -198,7 +199,7 @@ router.post("/dashcounters", async function(req, res, next) {
 });
 
 //get verfied couriers for admin panel map
-router.post("/getVerifiedCouriers", async function(req, res, next) {
+router.post("/getVerifiedCouriers", async function (req, res, next) {
     try {
         let dataset = await courierSchema
             .find({
@@ -216,7 +217,7 @@ router.post("/getVerifiedCouriers", async function(req, res, next) {
 });
 
 //get admin users listings
-router.post("/adminusers", async function(req, res, next) {
+router.post("/adminusers", async function (req, res, next) {
     try {
         var existAdmin = await adminSchema.find();
         if (existAdmin.length != 0) {
@@ -236,7 +237,7 @@ router.post("/adminusers", async function(req, res, next) {
 });
 
 //update settings by admin panel
-router.post("/updatesetttings", async function(req, res, next) {
+router.post("/updatesetttings", async function (req, res, next) {
     const {
         PerUnder5KM,
         PerKM,
@@ -285,7 +286,7 @@ router.post("/updatesetttings", async function(req, res, next) {
 });
 
 //get settings for mobile app
-router.post("/settings", async function(req, res, next) {
+router.post("/settings", async function (req, res, next) {
     try {
         var getsettings = await settingsSchema.find({});
         if (getsettings.length == 1) {
@@ -307,7 +308,7 @@ router.post("/settings", async function(req, res, next) {
 });
 
 //list of orders with full details
-router.post("/orders", async function(req, res, next) {
+router.post("/orders", async function (req, res, next) {
     try {
         let newdataset = [];
 
@@ -340,7 +341,7 @@ router.post("/orders", async function(req, res, next) {
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified"
             )
             .populate("customerId");
-           //completed order API 
+        //completed order API 
         // let completeOrders = await orderSchema
         //     .find({ status: "Order Delivered", isActive: false })
         //     .populate(
@@ -365,7 +366,7 @@ router.post("/orders", async function(req, res, next) {
         newdataset.push({
             runningOrders: runningOrders,
             cancelledOrders: cancelledOrders,
-            pendingOrders: pendingOrders,            
+            pendingOrders: pendingOrders,
         });
 
         res
@@ -377,11 +378,11 @@ router.post("/orders", async function(req, res, next) {
 });
 
 //orders completed
-router.post("/completed_orders", async function(req, res, next) {
+router.post("/completed_orders", async function (req, res, next) {
     try {
         let newdataset = [];
 
-           //completed order API 
+        //completed order API 
         let completeOrders = await orderSchema
             .find({ status: "Order Delivered", isActive: false })
             .populate(
@@ -404,7 +405,7 @@ router.post("/completed_orders", async function(req, res, next) {
 
         //completeOrders: orderscomplete,
         newdataset.push({
-            completeOrders: orderscomplete,          
+            completeOrders: orderscomplete,
         });
 
         res
@@ -415,7 +416,7 @@ router.post("/completed_orders", async function(req, res, next) {
     }
 });
 //cancel Order
-router.post("/cancelOrder", async function(req, res, next) {
+router.post("/cancelOrder", async function (req, res, next) {
     const id = req.body.id;
     try {
         let orderupdate = await orderSchema.find({ _id: id, isActive: true });
@@ -437,7 +438,7 @@ router.post("/cancelOrder", async function(req, res, next) {
 });
 
 //list of couriers boys
-router.post("/couriers", async function(req, res, next) {
+router.post("/couriers", async function (req, res, next) {
     try {
         courierSchema
             .find({})
@@ -461,7 +462,7 @@ router.post("/couriers", async function(req, res, next) {
 });
 
 //toggle account approval of courier boys
-router.post("/couriersIsApproval", async function(req, res, next) {
+router.post("/couriersIsApproval", async function (req, res, next) {
     const id = req.body.id;
     try {
         let courierApp = await courierSchema.find({ _id: id });
@@ -500,7 +501,7 @@ router.post("/couriersIsApproval", async function(req, res, next) {
 });
 
 //toggle account status accessibility of courier boys
-router.post("/couriersIsActive", async function(req, res, next) {
+router.post("/couriersIsActive", async function (req, res, next) {
     const id = req.body.id;
     try {
         let courierApp = await courierSchema.find({ _id: id });
@@ -533,7 +534,7 @@ router.post("/couriersIsActive", async function(req, res, next) {
 });
 
 //delete courier boys with their images and documents
-router.post("/couriersDelete", async function(req, res, next) {
+router.post("/couriersDelete", async function (req, res, next) {
     const id = req.body.id;
     try {
         let data = await courierSchema.find({ _id: id });
@@ -571,7 +572,7 @@ router.post("/couriersDelete", async function(req, res, next) {
 });
 
 //get live location of courier boys whose duty is on: used in dashboard adminpanel
-router.post("/getLiveLocation", async function(req, res, next) {
+router.post("/getLiveLocation", async function (req, res, next) {
     var list_courier = [];
     var listIds = await courierSchema
         .find({ isActive: true, "accStatus.flag": true, isVerified: true })
@@ -594,7 +595,7 @@ router.post("/getLiveLocation", async function(req, res, next) {
 });
 
 //get todays extra kilometers done by courier boys during orders
-router.post("/todaysExtraKms", async function(req, res, next) {
+router.post("/todaysExtraKms", async function (req, res, next) {
     try {
         var dataList = [];
         let currentdate = new Date().toISOString().slice(0, 10);
@@ -627,7 +628,7 @@ router.post("/todaysExtraKms", async function(req, res, next) {
 });
 
 //get todays extra kilometers done by courier boys during orders
-router.post("/appstatistics", async function(req, res, next) {
+router.post("/appstatistics", async function (req, res, next) {
     const courierId = req.body.courierId;
     try {
         var dataList = [];
@@ -682,7 +683,7 @@ router.post("/appstatistics", async function(req, res, next) {
 });
 
 //get extra kilometers done by courier boys during orders from date wise
-router.post("/ftExtraKms", async function(req, res, next) {
+router.post("/ftExtraKms", async function (req, res, next) {
     const { FromDate, ToDate } = req.body;
     let fdate = new Date(FromDate);
     let tdate = new Date(ToDate);
@@ -690,11 +691,11 @@ router.post("/ftExtraKms", async function(req, res, next) {
     console.log(tdate);
     try {
         let exttime = await ExtatimeSchema.find({
-                dateTime: {
-                    $gte: fdate,
-                    $lt: tdate,
-                },
-            })
+            dateTime: {
+                $gte: fdate,
+                $lt: tdate,
+            },
+        })
             .populate("courierId")
             .populate({
                 path: "orderId",
@@ -719,7 +720,7 @@ router.post("/ftExtraKms", async function(req, res, next) {
 });
 
 //change Admin Password : Account Settings
-router.post("/changePassword", async function(req, res, next) {
+router.post("/changePassword", async function (req, res, next) {
     const { userId, accountname, oldpassword, newpassword } = req.body;
     try {
         let dataset = await adminSchema.find({
@@ -745,7 +746,7 @@ router.post("/changePassword", async function(req, res, next) {
 });
 
 //get delivery Boys whose duty is on
-router.post("/getAvailableBoys", async function(req, res, next) {
+router.post("/getAvailableBoys", async function (req, res, next) {
     try {
         var list_courier = [];
 
@@ -775,7 +776,7 @@ router.post("/getAvailableBoys", async function(req, res, next) {
     }
 });
 
-router.post("/AssignOrder", async function(req, res, next) {
+router.post("/AssignOrder", async function (req, res, next) {
     const { courierId, orderId } = req.body;
     try {
         let OrderData = await orderSchema.find({ _id: orderId, isActive: true });
@@ -803,11 +804,11 @@ router.post("/AssignOrder", async function(req, res, next) {
             });
             await newrequest.save();
 
-             await orderSchema.findByIdAndUpdate(orderId, {
-                 courierId: courierId,
-                 status: "Order Assigned",
-                 note: "Order Has Been Assigned",
-             });
+            await orderSchema.findByIdAndUpdate(orderId, {
+                courierId: courierId,
+                status: "Order Assigned",
+                note: "Order Has Been Assigned",
+            });
             let description =
                 courierboy[0].cId +
                 " Accepted Order " +
@@ -821,24 +822,55 @@ router.post("/AssignOrder", async function(req, res, next) {
                 description: description,
             });
             await logger.save();
-            
+
             //send Notificaiton Code Here To Customer
             //send sms when directly assign SMS
             //kd 30-08-2020
             let courierData = await courierSchema.find({ _id: courierId });
             //send Message to customer
             let createMsg =
-            "Your order " +
-            OrderData[0].orderNo +
-            " has been accepted by our delivery boy " +
-            courierData[0].firstName +
-            " " +
-            courierData[0].lastName +
-            "--" +
-            courierData[0].mobileNo +
-            ".He Will Reach To You Shortly.";
-            console.log(courierData[0].mobileNo+createMsg);
-           sendMessages( OrderData[0].pickupPoint.mobileNo,createMsg);
+                "Your order " +
+                OrderData[0].orderNo +
+                " has been accepted by our delivery boy " +
+                courierData[0].firstName +
+                " " +
+                courierData[0].lastName +
+                "--" +
+                courierData[0].mobileNo +
+                ".He Will Reach To You Shortly.";
+            console.log(courierData[0].mobileNo + createMsg);
+            sendMessages(OrderData[0].pickupPoint.mobileNo, createMsg);
+
+            // New Code 03-09-2020
+            var payload = {
+                "title": "Order Alert",
+                "body": "New Order Alert Found For You.",
+                "data": {
+                    "sound": "surprise.mp3",
+                    "orderid": orderId,
+                    "distance": distanceKM,
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                },
+                "to": courierboy[0].fcmToken
+            };
+            var options = {
+                'method': 'POST',
+                'url': 'https://fcm.googleapis.com/fcm/send',
+                'headers': {
+                    'authorization': 'key=AAAAb8BaOXA:APA91bGPf4oQWUscZcjXnuyIJhEQ_bcb6pifUozs9mjrEyNWJcyut7zudpYLBtXGGDU4uopV8dnIjCOyapZToJ1QxPZVBDBSbhP_wxhriQ7kFBlHN1_HVTRtClUla0XSKGVreSgsbgjH',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            };
+            request(options, function (error, response) {
+                if (error) {
+                    console.log(error.message);
+                } else {
+                    console.log("Sending Notification");
+                    console.log(response.body);
+                }
+            });
+
             res
                 .status(200)
                 .json({ Message: "Order Assigned !", Data: 1, IsSuccess: true });
@@ -865,7 +897,7 @@ async function sendMessages(mobileNo, message) {
     //     "&msg=" +
     //     message +
     //     "&fl=0&gwid=2";
-    let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno="+ mobileNo  +"&text= " + message;
+    let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno=" + mobileNo + "&text= " + message;
     console.log(msgportal);
     axios.get(msgportal);
     var data = await axios.get(msgportal);
@@ -874,7 +906,7 @@ async function sendMessages(mobileNo, message) {
 router.post(
     "/policeverification",
     uploadpoliceImg.single("image"),
-    async function(req, res, next) {
+    async function (req, res, next) {
         const id = req.body.id;
         try {
             const file = req.file;
@@ -892,7 +924,7 @@ router.post(
 );
 
 //Prmocode Management
-router.post("/addpromocode", uploadpromocode.single("image"), async function(
+router.post("/addpromocode", uploadpromocode.single("image"), async function (
     req,
     res,
     next
@@ -955,7 +987,7 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function(
     }
 });
 
-router.post("/promocodes", async function(req, res, next) {
+router.post("/promocodes", async function (req, res, next) {
     try {
         let dataset = await promocodeSchema.find({});
         res
@@ -966,7 +998,7 @@ router.post("/promocodes", async function(req, res, next) {
     }
 });
 
-router.post("/deletepromocode", async function(req, res, next) {
+router.post("/deletepromocode", async function (req, res, next) {
     const { id } = req.body;
     try {
         let dataset = await promocodeSchema.findByIdAndDelete(id);
@@ -985,7 +1017,7 @@ router.post("/deletepromocode", async function(req, res, next) {
 });
 
 //Banner Management
-router.post("/addbanner", uploadbanner.single("image"), async function(
+router.post("/addbanner", uploadbanner.single("image"), async function (
     req,
     res,
     next
@@ -1012,7 +1044,7 @@ router.post("/addbanner", uploadbanner.single("image"), async function(
     }
 });
 
-router.post("/banners", async function(req, res, next) {
+router.post("/banners", async function (req, res, next) {
     try {
         let dataset = await bannerSchema.find();
         res
@@ -1023,7 +1055,7 @@ router.post("/banners", async function(req, res, next) {
     }
 });
 
-router.post("/deletebanner", async function(req, res, next) {
+router.post("/deletebanner", async function (req, res, next) {
     const id = req.body.id;
     try {
         let dataset = await bannerSchema.find({ _id: id });
@@ -1053,7 +1085,7 @@ router.post("/deletebanner", async function(req, res, next) {
 });
 
 //Message Creator
-router.post("/messages", async function(req, res, next) {
+router.post("/messages", async function (req, res, next) {
     try {
         let dataset = await messageSchema.find({});
         res
@@ -1068,7 +1100,7 @@ router.post("/messages", async function(req, res, next) {
     }
 });
 
-router.post("/addMessage", async function(req, res, next) {
+router.post("/addMessage", async function (req, res, next) {
     const { id, title, description } = req.body;
     try {
         if (id == 0) {
@@ -1104,7 +1136,7 @@ router.post("/addMessage", async function(req, res, next) {
     }
 });
 
-router.post("/deleteMessage", async function(req, res, next) {
+router.post("/deleteMessage", async function (req, res, next) {
     const id = req.body.id;
     try {
         let dataset = await messageSchema.findByIdAndDelete(id);
@@ -1123,7 +1155,7 @@ router.post("/deleteMessage", async function(req, res, next) {
 });
 
 //coustomer
-router.post("/customers", async function(req, res, next) {
+router.post("/customers", async function (req, res, next) {
     try {
         let dataset = await customerSchema.find({});
         res.status(200).json({
@@ -1136,7 +1168,7 @@ router.post("/customers", async function(req, res, next) {
     }
 });
 
-router.post("/customersDelete", async function(req, res, next) {
+router.post("/customersDelete", async function (req, res, next) {
     const id = req.body.id;
     try {
         let dataset = await customerSchema.findByIdAndDelete(id);
@@ -1155,7 +1187,7 @@ router.post("/customersDelete", async function(req, res, next) {
 });
 
 //Location Logs
-router.post("/courierlogs", async function(req, res, next) {
+router.post("/courierlogs", async function (req, res, next) {
     try {
         let dataset = await locationLoggerSchema
             .find({})
@@ -1172,7 +1204,7 @@ router.post("/courierlogs", async function(req, res, next) {
 });
 
 //send Notification to PND Delivery Boys
-router.post("/sendNToPND", async function(req, res, next) {
+router.post("/sendNToPND", async function (req, res, next) {
     try {
         const { service, data, title, message } = req.body;
         let payload = {
@@ -1186,7 +1218,7 @@ router.post("/sendNToPND", async function(req, res, next) {
 
         if (service.length == 2) {
             for (let i = 0; i < data.length; i++) {
-                let messag = title + "," + message;                
+                let messag = title + "," + message;
                 // let msgportal =
                 //     "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
                 //     process.env.SMS_USER +
@@ -1200,8 +1232,8 @@ router.post("/sendNToPND", async function(req, res, next) {
                 //     messag +
                 //     "&fl=0&gwid=2";
 
-                let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno="+ data[i].mobileNo  +"&text= " + messag;
-                console.log(msgportal); 
+                let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno=" + data[i].mobileNo + "&text= " + messag;
+                console.log(msgportal);
                 axios.get(msgportal);
             }
 
@@ -1219,7 +1251,7 @@ router.post("/sendNToPND", async function(req, res, next) {
             console.log(list);
             for (let i = 0; i < list; i++) {
                 let messag = title + "," + message;
-                let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno="+ data[i].mobileNo +"&text= " + messag;
+                let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno=" + data[i].mobileNo + "&text= " + messag;
                 //let msgportal = "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" + process.env.SMS_USER + "&password=" + process.env.SMS_PASS + "&msisdn=" + data[i].mobileNo + "&sid=" + process.env.SMS_SID + "&msg=" + messag + "&fl=0&gwid=2";
                 axios.get(msgportal);
             }
@@ -1246,12 +1278,12 @@ router.post("/sendNToPND", async function(req, res, next) {
 });
 //check balance
 //http://websms.mitechsolution.com/api/creditstatus.json?apikey=5f266fc48b29f
-router.post("/balancecheck", async(req,res,next)=>{
+router.post("/balancecheck", async (req, res, next) => {
     let data = await axios.get("http://websms.mitechsolution.com/api/creditstatus.json?apikey=" + process.env.SMS_API);
     res.json(data.data.description);
 })
 //not to show on admin panel
-router.post("/adddeliverytype", async(req, res, next) => {
+router.post("/adddeliverytype", async (req, res, next) => {
     const { title, weightlimit, cost } = req.body;
     try {
         let predata = new deliverytypesSchema({
@@ -1267,7 +1299,7 @@ router.post("/adddeliverytype", async(req, res, next) => {
     }
 });
 
-router.post("/deliverytype", async(req, res, next) => {
+router.post("/deliverytype", async (req, res, next) => {
     try {
         let predata = await deliverytypesSchema.find({});
         res.status(200).json(predata);
@@ -1276,7 +1308,7 @@ router.post("/deliverytype", async(req, res, next) => {
     }
 });
 
-router.post("/addpoatype", async(req, res, next) => {
+router.post("/addpoatype", async (req, res, next) => {
     const title = req.body.title;
     try {
         let data = new poatypesSchema({
@@ -1290,7 +1322,7 @@ router.post("/addpoatype", async(req, res, next) => {
     }
 });
 
-router.post("/poatypes", async(req, res, next) => {
+router.post("/poatypes", async (req, res, next) => {
     try {
         let predata = await poatypesSchema.find({});
         res.status(200).json(predata);
@@ -1302,7 +1334,7 @@ router.post("/poatypes", async(req, res, next) => {
 router.post(
     "/addcategories",
     uploadcategory.single("image"),
-    async(req, res, next) => {
+    async (req, res, next) => {
         const id = req.body.id;
         const title = req.body.title;
         const price = req.body.price;
@@ -1361,7 +1393,7 @@ router.post(
     }
 );
 
-router.post("/deletecategory", async function(req, res, next) {
+router.post("/deletecategory", async function (req, res, next) {
     const id = req.body.id;
     try {
         let dataset = await parcelcategories.findByIdAndDelete(id);
@@ -1379,7 +1411,7 @@ router.post("/deletecategory", async function(req, res, next) {
     }
 });
 
-router.post("/category", async(req, res, next) => {
+router.post("/category", async (req, res, next) => {
     try {
         let datalist = await parcelcategories.find({});
         res.json({
@@ -1396,7 +1428,7 @@ router.post("/category", async(req, res, next) => {
     }
 });
 
-router.post("/getextrakms", async(req, res, next) => {
+router.post("/getextrakms", async (req, res, next) => {
     try {
         var fromDate = req.body.fromDate;
         var toDate = req.body.toDate;
@@ -1471,7 +1503,7 @@ router.post("/getextrakms", async(req, res, next) => {
     }
 });
 
-router.post("/addprooftype", async(req, res, next) => {
+router.post("/addprooftype", async (req, res, next) => {
     const title = req.body.title;
     try {
         let category = new prooftypeSchema({

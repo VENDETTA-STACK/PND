@@ -8,11 +8,13 @@ var express = require("express");
 var config = require("../config");
 var router = express.Router();
 var arraySort = require("array-sort");
+// For Third Party Service Call
+var request = require('request');
 var imguploader = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         cb(null, "uploads/orderimg");
     },
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         cb(
             null,
             file.fieldname + "_" + Date.now() + path.extname(file.originalname)
@@ -65,7 +67,7 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
         .select("id fcmToken");
 
     if (deliveryType == "Normal Delivery") {
-        for (let i = 0; i < getpndpartners.length; i++) {            
+        for (let i = 0; i < getpndpartners.length; i++) {
             let partnerlocation = await currentLocation(getpndpartners[i].id);
             if (
                 (partnerlocation.duty == "ON") &
@@ -86,7 +88,7 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
                             longitude: partnerlocation.longitude,
                         };
                         console.log(partnerlocation);
-                        console.log(pickupcoords,partnercoords)
+                        console.log(pickupcoords, partnercoords)
                         let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
                         if (distancebtnpp <= 15) {
                             available.push({
@@ -100,7 +102,7 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
                         }
                     }
                 }
-            }   
+            }
         }
     } else {
         for (let i = 0; i < getpndpartners.length; i++) {
@@ -161,7 +163,7 @@ async function sendMessages(mobileNo, message) {
     //     "&msg=" +
     //     message +
     //     "&fl=0&gwid=2";
-    let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno="+ mobileNo  +"&text= " + message;
+    let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno=" + mobileNo + "&text= " + message;
     console.log(msgportal);
     axios.get(msgportal);
     var data = await axios.get(msgportal);
@@ -170,7 +172,7 @@ async function sendMessages(mobileNo, message) {
 
 async function currentLocation(courierId) {
     console.log(courierId);
-    var CourierRef = config.docref.child(courierId);    
+    var CourierRef = config.docref.child(courierId);
     const data = await CourierRef.once("value")
         .then((snapshot) => snapshot.val())
         .catch((err) => err);
@@ -181,7 +183,7 @@ async function currentLocation(courierId) {
 }
 
 //customers app APIs
-router.post("/settings", async function(req, res, next) {
+router.post("/settings", async function (req, res, next) {
     try {
         let getsettings = await settingsSchema.find({});
         let getdeliverytypes = await deliverytypesSchema.find({});
@@ -189,7 +191,7 @@ router.post("/settings", async function(req, res, next) {
         let predata = [{
             settings: getsettings,
             deliverytypes: getdeliverytypes,
-        }, ];
+        },];
 
         res.status(200).json({
             Message: "Settings Found!",
@@ -201,7 +203,7 @@ router.post("/settings", async function(req, res, next) {
     }
 });
 
-router.post("/ordercalc", async(req, res, next) => {
+router.post("/ordercalc", async (req, res, next) => {
     const {
         picklat,
         picklong,
@@ -293,13 +295,13 @@ router.post("/ordercalc", async(req, res, next) => {
         amount: amount.toFixed(2),
         promoused: promoused.toFixed(2),
         totalamt: totalamt.toFixed(2),
-    }, ];
+    },];
 
     res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
 });
 
 
-router.post("/ordercalcV2", async(req, res, next) => {
+router.post("/ordercalcV2", async (req, res, next) => {
     const {
         picklat,
         picklong,
@@ -381,18 +383,18 @@ router.post("/ordercalcV2", async(req, res, next) => {
     let note;
     //Find Parcel Content From Database
     let parcelContentsList = [];
-    for(let e=0;e<parcelcontents.length;e++){
-        let data = await categorySchema.findOne({title:parcelcontents[e]});
-        if(e==0){
+    for (let e = 0; e < parcelcontents.length; e++) {
+        let data = await categorySchema.findOne({ title: parcelcontents[e] });
+        if (e == 0) {
             note = data.note;
         }
         parcelContentsList.push(data);
     }
     console.log(parcelContentsList);
     //Find ExtraCharges
-    let sortParcelContents = arraySort(parcelContentsList,'price',{reverse: true});
+    let sortParcelContents = arraySort(parcelContentsList, 'price', { reverse: true });
     let extracharges = 0;
-    for(let a=0;a<sortParcelContents.length;a++){
+    for (let a = 0; a < sortParcelContents.length; a++) {
         extracharges = extracharges + sortParcelContents[a].price;
     }
 
@@ -401,31 +403,32 @@ router.post("/ordercalcV2", async(req, res, next) => {
     let netamount = amt - Math.ceil(promoused.toFixed(2));
 
     let dataset = [{
-        note:note,
+        note: note,
         totaldistance: Math.round(totaldistance.toFixed(2)),
         totaldistamt: Number(distamt),
-        extracharges:extracharges,
+        extracharges: extracharges,
         extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
         amount: amt,
         promoused: Math.ceil(promoused.toFixed(2)),
         totalamt: netamount
-    }, ];
+    },];
 
     res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
 });
 
 
-var round = function(num, precision) {
+var round = function (num, precision) {
     num = parseFloat(num);
     if (!precision) return num.toLocaleString();
     return (Math.round(num / precision) * precision).toLocaleString();
 };
 
-router.post("/newoder", orderimg.single("orderimg"), async function(
+router.post("/newoder", orderimg.single("orderimg"), async function (
     req,
     res,
     next
 ) {
+    console.log(req.body);
     const {
         customerId,
         deliveryType,
@@ -492,7 +495,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function(
             status: "Order Processing",
             note: "Your order is processing!",
         });
-        var placedorder = await newOrder.save();        
+        var placedorder = await newOrder.save();
         var avlcourier = await PNDfinder(
             pkLat,
             pkLong,
@@ -520,22 +523,22 @@ router.post("/newoder", orderimg.single("orderimg"), async function(
                 fcmToken: courierfound[0].fcmToken,
             });
             await newrequest.save();
-            var payload = {
-                notification: {
-                    title: "Order Alert",
-                    body: "New Order Alert Found For You.",
-                },
-                data: {
-                    sound: "surprise.mp3",
-                    orderid: courierfound[0].orderId.toString(),
-                    distance: courierfound[0].distance.toString(),
-                    click_action: "FLUTTER_NOTIFICATION_CLICK",
-                },
-            };
-            var options = {
-                priority: "high",
-                timeToLive: 60 * 60 * 24,
-            };
+            // var payload = {
+            //     notification: {
+            //         title: "Order Alert",
+            //         body: "New Order Alert Found For You.",
+            //     },
+            //     data: {
+            //         sound: "surprise.mp3",
+            //         orderid: courierfound[0].orderId.toString(),
+            //         distance: courierfound[0].distance.toString(),
+            //         click_action: "FLUTTER_NOTIFICATION_CLICK",
+            //     },
+            // };
+            // var options = {
+            //     priority: "high",
+            //     timeToLive: 60 * 60 * 24,
+            // };
             // config.firebase
             //     .messaging()
             //     .sendToDevice(courierfound[0].fcmToken, payload, options)
@@ -543,13 +546,46 @@ router.post("/newoder", orderimg.single("orderimg"), async function(
             //         console.log("Sending Notification");
             //         console.log(doc);
             //     });
-                config.firebase
-                .messaging()
-                .sendToDevice(courierfound[0].fcmToken, payload, options)
-                .then((doc) => {
+            // config.firebase
+            // .messaging()
+            // .sendToDevice(courierfound[0].fcmToken, payload, options)
+            // .then((doc) => {                    
+            //     console.log("Sending Notification");
+            //     console.log(doc);
+            // // });    
+            // orderstatus[0]["isActive"] == true &&
+            // orderstatus[0]["status"] == "Order Processing"
+
+            // New Code 03-09-2020
+            var payload = {
+                "title": "Order Alert",
+                "body": "New Order Alert Found For You.",
+                "data": {
+                    "sound": "surprise.mp3",
+                    "orderid": courierfound[0].orderId.toString(),
+                    "distance": courierfound[0].distance.toString(),
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                },
+                "to": courierfound[0].fcmToken
+            };
+            var options = {
+                'method': 'POST',
+                'url': 'https://fcm.googleapis.com/fcm/send',
+                'headers': {
+                    'authorization': 'key=AAAAb8BaOXA:APA91bGPf4oQWUscZcjXnuyIJhEQ_bcb6pifUozs9mjrEyNWJcyut7zudpYLBtXGGDU4uopV8dnIjCOyapZToJ1QxPZVBDBSbhP_wxhriQ7kFBlHN1_HVTRtClUla0XSKGVreSgsbgjH',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            };
+            request(options, function (error, response) {
+                if (error) {
+                    console.log(error.message);
+                } else {
                     console.log("Sending Notification");
-                    console.log(doc);
-                });    
+                    console.log(response.body);
+                }
+            });
+
         } else {
             console.log("No Courier Boys Available:: Waiting For Admin Response");
             var updateorder = {
@@ -566,7 +602,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function(
     }
 });
 
-router.post("/activeOrders", async function(req, res, next) {
+router.post("/activeOrders", async function (req, res, next) {
     const { customerId } = req.body;
     try {
         orderSchema
@@ -592,7 +628,7 @@ router.post("/activeOrders", async function(req, res, next) {
     }
 });
 
-router.post("/completeOrders", async function(req, res, next) {
+router.post("/completeOrders", async function (req, res, next) {
     const { customerId } = req.body;
     try {
         orderSchema
@@ -619,7 +655,7 @@ router.post("/completeOrders", async function(req, res, next) {
 });
 
 //partner app APIs
-router.post("/acceptOrder", async function(req, res, next) {
+router.post("/acceptOrder", async function (req, res, next) {
     const { courierId, orderId } = req.body;
     try {
         let orderData = await orderSchema
@@ -677,7 +713,7 @@ router.post("/acceptOrder", async function(req, res, next) {
     }
 });
 
-router.post("/takeThisOrder", async function(req, res, next) {
+router.post("/takeThisOrder", async function (req, res, next) {
     const { courierId, orderId } = req.body;
     try {
         let courierData = await courierSchema.find({ _id: courierId });
@@ -721,7 +757,7 @@ router.post("/takeThisOrder", async function(req, res, next) {
     }
 });
 
-router.post("/rejectOrder", async function(req, res, next) {
+router.post("/rejectOrder", async function (req, res, next) {
     const { courierId, orderId, reason } = req.body;
     console.log("Data for Reject Order");
     console.log(req.body);
@@ -836,7 +872,7 @@ router.post("/rejectOrder", async function(req, res, next) {
     }
 });
 
-router.post("/noResponseOrder", async function(req, res, next) {
+router.post("/noResponseOrder", async function (req, res, next) {
     const { courierId, orderId } = req.body;
     try {
         var updateRejection = await requestSchema.findOneAndUpdate({ courierId: courierId, orderId: orderId }, { status: "NoResponse", reason: "Not Responded By Delivery Boy" });
@@ -907,7 +943,7 @@ router.post("/noResponseOrder", async function(req, res, next) {
     }
 });
 
-router.post("/reachPickPoint", async function(req, res, next) {
+router.post("/reachPickPoint", async function (req, res, next) {
     const { courierId, orderId } = req.body;
     try {
         var location = await currentLocation(courierId);
@@ -957,7 +993,7 @@ router.post("/reachPickPoint", async function(req, res, next) {
     }
 });
 
-router.post("/reachDropPoint", async function(req, res, next) {
+router.post("/reachDropPoint", async function (req, res, next) {
     const { courierId, orderId } = req.body;
     try {
 
@@ -999,7 +1035,7 @@ router.post("/reachDropPoint", async function(req, res, next) {
     }
 });
 
-router.post("/c_activeOrder", async function(req, res, next) {
+router.post("/c_activeOrder", async function (req, res, next) {
     const { courierId } = req.body;
     var data = await requestSchema.find({
         courierId: courierId,
@@ -1033,7 +1069,7 @@ router.post("/c_activeOrder", async function(req, res, next) {
     }
 });
 
-router.post("/c_completeOrder", async function(req, res, next) {
+router.post("/c_completeOrder", async function (req, res, next) {
     const { courierId } = req.body;
     var data = await orderSchema.find({ courierId: courierId, isActive: false });
     if (data.length != 0) {
@@ -1047,7 +1083,7 @@ router.post("/c_completeOrder", async function(req, res, next) {
     }
 });
 
-router.post("/c_responseOrder", async function(req, res, next) {
+router.post("/c_responseOrder", async function (req, res, next) {
     const { courierId } = req.body;
     var data = await requestSchema.find({
         courierId: courierId,
@@ -1083,7 +1119,7 @@ router.post("/c_responseOrder", async function(req, res, next) {
     }
 });
 
-router.post("/orderDetails", async function(req, res, next) {
+router.post("/orderDetails", async function (req, res, next) {
     const { id } = req.body;
     try {
         var order = await orderSchema.find({ _id: id });
@@ -1101,7 +1137,7 @@ router.post("/orderDetails", async function(req, res, next) {
     }
 });
 
-router.post("/orderStatus", async function(req, res, next) {
+router.post("/orderStatus", async function (req, res, next) {
     const { id } = req.body;
     try {
         var order = await orderSchema.find({ _id: id }).select("isActive status");

@@ -9,6 +9,8 @@ const orderSettingsSchema = mongoose.Schema({
   WhatsAppNo: { type: String},
   DefaultWMessage: { type: String},
   AmountPayKM: { type: Number,},
+  TermsnConditionURL: { type: String,},
+  
 });
 
 module.exports = mongoose.model("Settings", orderSettingsSchema);
