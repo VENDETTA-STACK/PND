@@ -2,9 +2,9 @@
   "name": "pd01webapp",
   "version": "0.0.0",
   "private": true,
-   "scripts": {
-     "start": "nodemon ./bin/www"
-   },
+  "scripts": {
+    "start": "nodemon ./bin/www"
+  },
   "dependencies": {
     "array-sort": "^1.0.0",
     "axios": "^0.19.2",
