@@ -10,7 +10,10 @@ const orderSettingsSchema = mongoose.Schema({
   DefaultWMessage: { type: String},
   AmountPayKM: { type: Number,},
   TermsnConditionURL: { type: String,},
-  
+  FromTime: { type: Date,},
+  ToTime: { type: Date,},
+  NormalDelivery: { type: String,},
+  ExpressDelivery: { type: String,},
 });
 
 module.exports = mongoose.model("Settings", orderSettingsSchema);

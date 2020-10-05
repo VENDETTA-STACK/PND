@@ -20,6 +20,7 @@ var filestorage = multer.diskStorage({
         );
     },
 });
+
 var finalstorage = multer({ storage: filestorage });
 var fieldset = finalstorage.fields([
     { name: "profileImg", maxCount: 1 },

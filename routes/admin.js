@@ -10,6 +10,7 @@ var cors = require("cors");
 var multer = require("multer");
 var request = require('request');
 const { getDistance, convertDistance } = require("geolib");
+const isEmpty = require('lodash.isempty');
 
 //image uploading
 var bannerlocation = multer.diskStorage({
@@ -99,6 +100,7 @@ var deliverytypesSchema = require("../data_models/deliverytype.model");
 var poatypesSchema = require("../data_models/poatype.model");
 var parcelcategories = require("../data_models/category.model");
 var prooftypeSchema = require("../data_models/prooftype.modal");
+var orderCancelSchema = require("../data_models/orderCancelReason");
 
 async function currentLocation(id) {
     var CourierRef = config.docref.child(id);
@@ -246,6 +248,8 @@ router.post("/updatesetttings", async function (req, res, next) {
         DefaultWMessage,
         AppLink,
         AmountPayKM,
+        FromTime,
+        ToTime,
     } = req.body;
     try {
         var existData = await settingsSchema.find({});
@@ -259,6 +263,10 @@ router.post("/updatesetttings", async function (req, res, next) {
                 DefaultWMessage: DefaultWMessage,
                 AppLink: AppLink,
                 AmountPayKM: AmountPayKM,
+                FromTime: FromTime,
+                ToTime: ToTime,
+                NormalDelivery: "2.5 Hours",
+                ExpressDelivery: "60 Minutes"
             };
             await settingsSchema.findByIdAndUpdate(id, updatedsettings);
             res
@@ -274,6 +282,10 @@ router.post("/updatesetttings", async function (req, res, next) {
                 DefaultWMessage: DefaultWMessage,
                 AppLink: AppLink,
                 AmountPayKM: AmountPayKM,
+                FromTime: FromTime,
+                ToTime: ToTime,
+                NormalDelivery: "2.5 Hours",
+                ExpressDelivery: "60 Minutes" 
             });
             await newsettings.save();
             res
@@ -377,6 +389,30 @@ router.post("/orders", async function (req, res, next) {
     }
 });
 
+//After order Changed Delivery Boy
+
+// router.post("/updatedeliveryboy", async function(req, res, next){
+//     console.log("hello");
+//     const { firstName , lastName } = req.body;
+//     console.log(req.body);
+//     try {
+//         var existOrderData = await orderSchema.find({
+//             $or: [
+//                 { status: "Order Processing" },
+//                 { status: "Order Assigned" },
+//             ],
+//         });
+//         console.log(existOrderData);
+//         if(existOrderData.length == 1){
+//             console.log("in dataset")
+//             let ordId = existOrderData[0].orderNo;
+//             console.log(ordId);
+//         } 
+//     } catch (err) {
+//         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+//     }
+// }); 
+
 //orders completed
 router.post("/completed_orders", async function (req, res, next) {
     try {
@@ -415,6 +451,7 @@ router.post("/completed_orders", async function (req, res, next) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
+
 //cancel Order
 router.post("/cancelOrder", async function (req, res, next) {
     const id = req.body.id;
@@ -1522,6 +1559,38 @@ router.post("/addprooftype", async (req, res, next) => {
             Data: 0,
             IsSuccess: false,
         });
+    }
+});
+
+router.post("/ordercancelreason", async function(req, res, next){
+    if(isEmpty(req.body)){
+        res.status(404).send("404 ERROR");
+      }
+      else{
+        var record = new orderCancelSchema({
+            DefaultReason : req.body.DefaultReason,
+            CustomeReason : req.body.CustomeReason  
+        });
+        console.log(record);
+        record.save();
+        return res.status(200).send({success: true, Message : "Your Reasons Added"});
+      }
+});
+
+router.post("getempordercount/:id",async function(req, res, next){
+    var empId = req.params.id;
+    try {
+        let newdataset = [];
+
+        let empOrders = await orderSchema
+            .find()
+            .populate(
+                { courierId : empId }
+            )
+            .populate("customerId");
+        res.status(200).json({ Success : true , Message : "Data Found" , Data : empOrders })
+    } catch (err) {
+        res.status(400).json({ Success : false , Message : "Data Not Found" })
     }
 });
 
