@@ -10,7 +10,6 @@ var cors = require("cors");
 var multer = require("multer");
 var request = require('request');
 const { getDistance, convertDistance } = require("geolib");
-const isEmpty = require('lodash.isempty');
 
 //image uploading
 var bannerlocation = multer.diskStorage({
