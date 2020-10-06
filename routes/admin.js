@@ -1577,21 +1577,21 @@ router.post("/ordercancelreason", async function(req, res, next){
       }
 });
 
-router.post("getempordercount/:id",async function(req, res, next){
-    var empId = req.params.id;
-    try {
-        let newdataset = [];
+// router.post("getempordercount/:id",async function(req, res, next){
+//     var empId = req.params.id;
+//     try {
+//         let newdataset = [];
 
-        let empOrders = await orderSchema
-            .find()
-            .populate(
-                { courierId : empId }
-            )
-            .populate("customerId");
-        res.status(200).json({ Success : true , Message : "Data Found" , Data : empOrders })
-    } catch (err) {
-        res.status(400).json({ Success : false , Message : "Data Not Found" })
-    }
-});
+//         let empOrders = await orderSchema
+//             .find()
+//             .populate(
+//                 { courierId : empId }
+//             )
+//             .populate("customerId");
+//         res.status(200).json({ Success : true , Message : "Data Found" , Data : empOrders })
+//     } catch (err) {
+//         res.status(400).json({ Success : false , Message : "Data Not Found" })
+//     }
+// });
 
 module.exports = router;
