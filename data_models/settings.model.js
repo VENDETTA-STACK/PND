@@ -14,6 +14,7 @@ const orderSettingsSchema = mongoose.Schema({
   ToTime: { type: Date,},
   NormalDelivery: { type: String,},
   ExpressDelivery: { type: String,},
+  CancelOrderTime: { type: Number,},
 });
 
 module.exports = mongoose.model("Settings", orderSettingsSchema);

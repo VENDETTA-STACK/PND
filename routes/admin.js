@@ -250,6 +250,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         AmountPayKM,
         FromTime,
         ToTime,
+        CancelOrderTime,
     } = req.body;
     try {
         var existData = await settingsSchema.find({});
@@ -266,7 +267,8 @@ router.post("/updatesetttings", async function (req, res, next) {
                 FromTime: FromTime,
                 ToTime: ToTime,
                 NormalDelivery: "2.5 Hours",
-                ExpressDelivery: "60 Minutes"
+                ExpressDelivery: "60 Minutes",
+                CancelOrderTime: "30"
             };
             await settingsSchema.findByIdAndUpdate(id, updatedsettings);
             res
@@ -285,7 +287,8 @@ router.post("/updatesetttings", async function (req, res, next) {
                 FromTime: FromTime,
                 ToTime: ToTime,
                 NormalDelivery: "2.5 Hours",
-                ExpressDelivery: "60 Minutes" 
+                ExpressDelivery: "60 Minutes",
+                CancelOrderTime: "30" 
             });
             await newsettings.save();
             res
@@ -1562,6 +1565,7 @@ router.post("/addprooftype", async (req, res, next) => {
     }
 });
 
+//Add Custome Reasons for canceling Orders
 router.post("/ordercancelreason", async function(req, res, next){
     if(isEmpty(req.body)){
         res.status(404).send("404 ERROR");
@@ -1575,6 +1579,40 @@ router.post("/ordercancelreason", async function(req, res, next){
         record.save();
         return res.status(200).send({success: true, Message : "Your Reasons Added"});
       }
+});
+
+//Get All Reasons
+router.post("/getordercancelreason", async function(req , res , next){
+    try {
+        let Reasons = await orderCancelSchema.find()
+        res.status(200).json({ Success : true , Message : "Data Found" , Data : Reasons });    
+    } catch (err) {
+        res.status(400).json({ Success : false , Message : "Data Not Found" })
+    }
+
+});
+
+router.post("/getdateorder", async function(req, res, next){
+    let { startDate , endDate ,empId } = req.body;
+
+    try {
+        // if(startDate === '' || endDate === '') {
+        //     return res.status(400).json({
+        //         status:'failure',
+        //         message: 'Please ensure you pick two dates'
+        //          })
+        //         }
+        console.log({ startDate, endDate});
+        let dataset = await orderSchema.find( { "courierId" : empId , dateTime:{$gte:startDate,$lte:endDate}} )
+        .populate(
+            "courierId",
+            "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+        )
+        .populate("customerId");
+        res.status(200).json({ Success : true , Message : "Data Found" , CountOrder : dataset.length , Data : dataset })
+    } catch (err) {
+        res.status(400).json({ Success : false , Message : "Data Not Found" })
+    }
 });
 
 // router.post("getempordercount/:id",async function(req, res, next){

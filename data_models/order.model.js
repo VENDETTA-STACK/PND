@@ -15,6 +15,9 @@ const orderSchema = mongoose.Schema({
     orderImg:{
         type:String,
     },
+    // TransactionId:{
+    //     type:String,
+    // },
     pickupPoint: {
         name: {
             type: String,

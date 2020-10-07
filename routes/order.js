@@ -602,6 +602,188 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
     }
 });
 
+//Orderplaced for testing and storing transaction id
+// router.post("/newoder_2", orderimg.single("orderimg"), async function (
+//     req,
+//     res,
+//     next
+// ) {
+//     console.log(req.body);
+//     const {
+//         customerId,
+//         deliveryType,
+//         weightLimit,
+//         pkName,
+//         pkMobileNo,
+//         pkAddress,
+//         pkLat,
+//         pkLong,
+//         pkCompleteAddress,
+//         pkContent,
+//         pkArriveType,
+//         pkArriveTime,
+//         dpName,
+//         dpMobileNo,
+//         dpAddress,
+//         dpLat,
+//         dpLong,
+//         dpCompleteAddress,
+//         dpDistance,
+//         collectCash,
+//         promoCode,
+//         amount,
+//         discount,
+//         additionalAmount,
+//         finalAmount,
+//         TransactionId,
+//     } = req.body;
+//     const file = req.file;
+//     let num = getOrderNumber();
+//     try {
+//         var newOrder = new orderSchema({
+//             _id: new config.mongoose.Types.ObjectId(),
+//             orderNo: num,
+//             customerId: customerId,
+//             deliveryType: deliveryType,
+//             weightLimit: weightLimit,
+//             orderImg: file == undefined ? "" : file.path,
+//             pickupPoint: {
+//                 name: pkName,
+//                 mobileNo: pkMobileNo,
+//                 address: pkAddress,
+//                 lat: pkLat,
+//                 long: pkLong,
+//                 completeAddress: pkCompleteAddress,
+//                 contents: pkContent,
+//                 arriveType: pkArriveType,
+//                 arriveTime: pkArriveTime,
+//             },
+//             deliveryPoint: {
+//                 name: dpName,
+//                 mobileNo: dpMobileNo,
+//                 address: dpAddress,
+//                 lat: dpLat,
+//                 long: dpLong,
+//                 completeAddress: dpCompleteAddress,
+//                 distance: dpDistance,
+//             },
+//             collectCash: collectCash,
+//             promoCode: promoCode,
+//             amount: amount,
+//             discount: discount,
+//             additionalAmount: additionalAmount,
+//             finalAmount: finalAmount,
+//             status: "Order Processing",
+//             note: "Your order is processing!",
+//         });
+//         var placedorder = await newOrder.save();
+//         var avlcourier = await PNDfinder(
+//             pkLat,
+//             pkLong,
+//             placedorder.id,
+//             placedorder.deliveryType
+//         );
+//         if (promoCode != "0") {
+//             let usedpromo = new usedpromoSchema({
+//                 _id: new config.mongoose.Types.ObjectId(),
+//                 customer: customerId,
+//                 code: promoCode,
+//             });
+//             usedpromo.save();
+//         }
+//         if (placedorder != null && avlcourier.length != 0) {
+//             console.log("Total Found:" + avlcourier.length);
+//             let courierfound = arraySort(avlcourier, "distance");
+//             var newrequest = new requestSchema({
+//                 _id: new config.mongoose.Types.ObjectId(),
+//                 courierId: courierfound[0].courierId,
+//                 orderId: courierfound[0].orderId,
+//                 distance: courierfound[0].distance,
+//                 status: courierfound[0].status,
+//                 reason: courierfound[0].reason,
+//                 fcmToken: courierfound[0].fcmToken,
+//             });
+//             await newrequest.save();
+//             // var payload = {
+//             //     notification: {
+//             //         title: "Order Alert",
+//             //         body: "New Order Alert Found For You.",
+//             //     },
+//             //     data: {
+//             //         sound: "surprise.mp3",
+//             //         orderid: courierfound[0].orderId.toString(),
+//             //         distance: courierfound[0].distance.toString(),
+//             //         click_action: "FLUTTER_NOTIFICATION_CLICK",
+//             //     },
+//             // };
+//             // var options = {
+//             //     priority: "high",
+//             //     timeToLive: 60 * 60 * 24,
+//             // };
+//             // config.firebase
+//             //     .messaging()
+//             //     .sendToDevice(courierfound[0].fcmToken, payload, options)
+//             //     .then((doc) => {
+//             //         console.log("Sending Notification");
+//             //         console.log(doc);
+//             //     });
+//             // config.firebase
+//             // .messaging()
+//             // .sendToDevice(courierfound[0].fcmToken, payload, options)
+//             // .then((doc) => {                    
+//             //     console.log("Sending Notification");
+//             //     console.log(doc);
+//             // // });    
+//             // orderstatus[0]["isActive"] == true &&
+//             // orderstatus[0]["status"] == "Order Processing"
+
+//             // New Code 03-09-2020
+//             var payload = {
+//                 "title": "Order Alert",
+//                 "body": "New Order Alert Found For You.",
+//                 "data": {
+//                     "sound": "surprise.mp3",
+//                     "orderid": courierfound[0].orderId.toString(),
+//                     "distance": courierfound[0].distance.toString(),
+//                     "click_action": "FLUTTER_NOTIFICATION_CLICK"
+//                 },
+//                 "to": courierfound[0].fcmToken
+//             };
+//             var options = {
+//                 'method': 'POST',
+//                 'url': 'https://fcm.googleapis.com/fcm/send',
+//                 'headers': {
+//                     'authorization': 'key=AAAAb8BaOXA:APA91bGPf4oQWUscZcjXnuyIJhEQ_bcb6pifUozs9mjrEyNWJcyut7zudpYLBtXGGDU4uopV8dnIjCOyapZToJ1QxPZVBDBSbhP_wxhriQ7kFBlHN1_HVTRtClUla0XSKGVreSgsbgjH',
+//                     'Content-Type': 'application/json'
+//                 },
+//                 body: JSON.stringify(payload)
+//             };
+//             request(options, function (error, response) {
+//                 if (error) {
+//                     console.log(error.message);
+//                 } else {
+//                     console.log("Sending Notification");
+//                     console.log(response.body);
+//                 }
+//             });
+
+//         } else {
+//             console.log("No Courier Boys Available:: Waiting For Admin Response");
+//             var updateorder = {
+//                 status: "Admin",
+//             };
+//             await orderSchema.findByIdAndUpdate(placedorder.id, updateorder);
+//         }
+//         res
+//             .status(200)
+//             .json({ Message: "Order Placed!", Data: 1, IsSuccess: true });
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+//     }
+// });
+//End of testing transaction id
+
 router.post("/activeOrders", async function (req, res, next) {
     const { customerId } = req.body;
     try {
