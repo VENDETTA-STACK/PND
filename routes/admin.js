@@ -11,6 +11,7 @@ var multer = require("multer");
 var request = require('request');
 const { getDistance, convertDistance } = require("geolib");
 const isEmpty = require('lodash.isempty');
+const moment = require('moment');
 
 //image uploading
 var bannerlocation = multer.diskStorage({
@@ -251,6 +252,11 @@ router.post("/updatesetttings", async function (req, res, next) {
         FromTime,
         ToTime,
         CancelOrderTime,
+        AdminMObile1,
+        AdminMObile2,
+        AdminMObile3,
+        AdminMObile4,
+        AdminMObile5,
     } = req.body;
     try {
         var existData = await settingsSchema.find({});
@@ -268,7 +274,12 @@ router.post("/updatesetttings", async function (req, res, next) {
                 ToTime: ToTime,
                 NormalDelivery: "2.5 Hours",
                 ExpressDelivery: "60 Minutes",
-                CancelOrderTime: "30"
+                CancelOrderTime: "30",
+                AdminMObile1: AdminMObile1,
+                AdminMObile2: AdminMObile2,
+                AdminMObile3: AdminMObile3,
+                AdminMObile4: AdminMObile4,
+                AdminMObile5: AdminMObile5,
             };
             await settingsSchema.findByIdAndUpdate(id, updatedsettings);
             res
@@ -288,7 +299,12 @@ router.post("/updatesetttings", async function (req, res, next) {
                 ToTime: ToTime,
                 NormalDelivery: "2.5 Hours",
                 ExpressDelivery: "60 Minutes",
-                CancelOrderTime: "30" 
+                CancelOrderTime: "30",
+                AdminMObile1: AdminMObile1,
+                AdminMObile2: AdminMObile2,
+                AdminMObile3: AdminMObile3,
+                AdminMObile4: AdminMObile4,
+                AdminMObile5: AdminMObile5,
             });
             await newsettings.save();
             res
@@ -356,6 +372,17 @@ router.post("/orders", async function (req, res, next) {
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified"
             )
             .populate("customerId");
+
+        let cancelOrders = await requestSchema
+            .find({
+                $or: [
+                    { status: "Reject" }
+                ],
+            })
+            .select('courierId orderId reason isActive');
+        
+            console.log("cancel order");
+            //console.log(cancelOrders);
         //completed order API 
         // let completeOrders = await orderSchema
         //     .find({ status: "Order Delivered", isActive: false })
@@ -383,6 +410,8 @@ router.post("/orders", async function (req, res, next) {
             cancelledOrders: cancelledOrders,
             pendingOrders: pendingOrders,
         });
+        //console.log("newdataset by meeeeeeeeee.....................!!!");
+        //console.log(newdataset)
 
         res
             .status(200)

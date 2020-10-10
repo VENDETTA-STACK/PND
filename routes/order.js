@@ -80,7 +80,7 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
                     courierId: getpndpartners[i].id,
                     orderId: orderid,
                 });
-                if (totalrequests <= 3) {
+                if (totalrequests <= 4) {
                     if (partnerrequest.length == 0) {
                         let pickupcoords = { latitude: pickuplat, longitude: pickuplong };
                         let partnercoords = {
@@ -118,7 +118,7 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
                     courierId: getpndpartners[i].id,
                     orderId: orderid,
                 });
-                if (totalrequests <= 3) {
+                if (totalrequests <= 4) {
                     if (partnerrequest.length == 0) {
                         let pickupcoords = { latitude: pickuplat, longitude: pickuplong };
                         let partnercoords = {
@@ -312,6 +312,7 @@ router.post("/ordercalcV2", async (req, res, next) => {
         parcelcontents
     } = req.body;
 
+    console.log("OrderCalcV2 Request Body.................!!!!");
     console.log(req.body);
 
     let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
@@ -390,7 +391,9 @@ router.post("/ordercalcV2", async (req, res, next) => {
         }
         parcelContentsList.push(data);
     }
+    console.log("Parcel Contents List..............................!!!");
     console.log(parcelContentsList);
+    
     //Find ExtraCharges
     let sortParcelContents = arraySort(parcelContentsList, 'price', { reverse: true });
     let extracharges = 0;
@@ -412,6 +415,7 @@ router.post("/ordercalcV2", async (req, res, next) => {
         promoused: Math.ceil(promoused.toFixed(2)),
         totalamt: netamount
     },];
+    console.log(dataset);
 
     res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
 });
@@ -428,6 +432,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
     res,
     next
 ) {
+    console.log("Neworder api...............................!!!");
     console.log(req.body);
     const {
         customerId,
@@ -455,6 +460,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
         discount,
         additionalAmount,
         finalAmount,
+        schedualDateTime,
     } = req.body;
     const file = req.file;
     let num = getOrderNumber();
@@ -464,6 +470,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
             orderNo: num,
             customerId: customerId,
             deliveryType: deliveryType,
+            schedualDateTime: schedualDateTime,
             weightLimit: weightLimit,
             orderImg: file == undefined ? "" : file.path,
             pickupPoint: {
@@ -502,6 +509,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
             placedorder.id,
             placedorder.deliveryType
         );
+        
         if (promoCode != "0") {
             let usedpromo = new usedpromoSchema({
                 _id: new config.mongoose.Types.ObjectId(),
@@ -523,38 +531,83 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
                 fcmToken: courierfound[0].fcmToken,
             });
             await newrequest.save();
-            // var payload = {
+
+    var AdminMobile = await settingsSchema.find({}).select('AdminMObile1 -_id');
+    console.log("Admin number-------------------------------------------------");
+    let AdminNumber = AdminMobile[0].AdminMObile1 
+    console.log(AdminNumber);
+    
+    var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber }).select('fcmToken -_id');
+    let AdminFcmToken = findAdminFcmToken[0].fcmToken;
+    console.log("FCM Token");
+    console.log(AdminFcmToken);
+
+            // var payload2 = {
             //     notification: {
             //         title: "Order Alert",
             //         body: "New Order Alert Found For You.",
             //     },
             //     data: {
             //         sound: "surprise.mp3",
-            //         orderid: courierfound[0].orderId.toString(),
-            //         distance: courierfound[0].distance.toString(),
+            //         Message: "Hello New Order",
             //         click_action: "FLUTTER_NOTIFICATION_CLICK",
             //     },
             // };
-            // var options = {
+            // var options2 = {
             //     priority: "high",
             //     timeToLive: 60 * 60 * 24,
             // };
             // config.firebase
             //     .messaging()
-            //     .sendToDevice(courierfound[0].fcmToken, payload, options)
+            //     .sendToDevice(AdminFcmToken, payload2, options2)
             //     .then((doc) => {
-            //         console.log("Sending Notification");
+            //         console.log("Sending Notification Testing3.......!!!");
             //         console.log(doc);
             //     });
             // config.firebase
             // .messaging()
-            // .sendToDevice(courierfound[0].fcmToken, payload, options)
+            // .sendToDevice(AdminFcmToken, payload2, options2)
             // .then((doc) => {                    
-            //     console.log("Sending Notification");
+            //     console.log("Sending Notification Testing2.......!!!");
             //     console.log(doc);
-            // // });    
+            // });    
             // orderstatus[0]["isActive"] == true &&
             // orderstatus[0]["status"] == "Order Processing"
+
+            //Send notification to Admin FCM
+            
+            //Sending FCM Notification to Admin
+
+    var dataSendToAdmin = {
+        "title": "Order Alert",
+        "body": "New Order Alert Found For You.",
+        "data": {
+            "sound": "surprise.mp3",
+            "Message": "Hello New Order",
+            "click_action": "FLUTTER_NOTIFICATION_CLICK"
+        },
+        "to": AdminFcmToken
+    };
+    var options2 = {
+        'method': 'POST',
+        'url': 'https://fcm.googleapis.com/fcm/send',
+        'headers': {
+            'authorization': 'key=AAAAb8BaOXA:APA91bGPf4oQWUscZcjXnuyIJhEQ_bcb6pifUozs9mjrEyNWJcyut7zudpYLBtXGGDU4uopV8dnIjCOyapZToJ1QxPZVBDBSbhP_wxhriQ7kFBlHN1_HVTRtClUla0XSKGVreSgsbgjH',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dataSendToAdmin)
+    };
+    request(options2, function (error, response) {
+        if (error) {
+            console.log(error.message);
+        } else {
+            console.log("Sending Notification Testing....!!!");
+            console.log(response.body);
+        }
+    });
+    console.log("After sending notification");
+    
+    // FCM notification End
 
             // New Code 03-09-2020
             var payload = {
@@ -635,9 +688,10 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
 //         discount,
 //         additionalAmount,
 //         finalAmount,
-//         TransactionId,
+//         schedualDateTime,
 //     } = req.body;
 //     const file = req.file;
+//     const TransactionId  = req.TransactionId;
 //     let num = getOrderNumber();
 //     try {
 //         var newOrder = new orderSchema({
@@ -645,8 +699,10 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
 //             orderNo: num,
 //             customerId: customerId,
 //             deliveryType: deliveryType,
+//             schedualDateTime: schedualDateTime,
 //             weightLimit: weightLimit,
 //             orderImg: file == undefined ? "" : file.path,
+//             TransactionId: TransactionId == undefined ? "" : req.TransactionId,
 //             pickupPoint: {
 //                 name: pkName,
 //                 mobileNo: pkMobileNo,
@@ -945,11 +1001,16 @@ router.post("/rejectOrder", async function (req, res, next) {
     console.log(req.body);
     try {
         var orderData = await orderSchema.find({ _id: orderId, isActive: true });
+        orderData.status = "Order Cancel By Employee";
+        console.log(orderData);
         let courierData = await courierSchema.find({ _id: courierId });
         if (orderData.length != 0) {
             let getlocation = await currentLocation(courierId);
             if (getlocation.duty == "ON") {
                 let updateRejection = await requestSchema.findOneAndUpdate({ courierId: courierId, orderId: orderId }, { status: "Reject", reason: reason });
+                let orderRejectInOrder = await orderSchema.insertOne(orderData);
+                console.log("Order cancel by Employeee..........................!!!");
+                console.log(orderRejectInOrder);
                 if (updateRejection != null) {
                     var avlcourier = await PNDfinder(
                         orderData[0].pickupPoint.lat,

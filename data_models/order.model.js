@@ -15,9 +15,9 @@ const orderSchema = mongoose.Schema({
     orderImg:{
         type:String,
     },
-    // TransactionId:{
-    //     type:String,
-    // },
+    TransactionId:{
+        type:String,
+    },
     pickupPoint: {
         name: {
             type: String,
@@ -127,6 +127,9 @@ const orderSchema = mongoose.Schema({
     courierId: [
         { type: mongoose.Types.ObjectId, ref: "Couriers", default: null },
     ],
+    schedualDateTime: {
+        type: Date
+    }
 });
 
 module.exports = mongoose.model("Orders", orderSchema);

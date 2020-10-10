@@ -10,11 +10,17 @@ const orderSettingsSchema = mongoose.Schema({
   DefaultWMessage: { type: String},
   AmountPayKM: { type: Number,},
   TermsnConditionURL: { type: String,},
-  FromTime: { type: Date,},
-  ToTime: { type: Date,},
+  FromTime: { type: String,},
+  ToTime: { type: String,},
   NormalDelivery: { type: String,},
   ExpressDelivery: { type: String,},
   CancelOrderTime: { type: Number,},
+  AdminMObile1: { type: String,},
+  AdminMObile2: { type: String,},
+  AdminMObile3: { type: String,},
+  AdminMObile4: { type: String,},
+  AdminMObile5: { type: String,},
 });
 
 module.exports = mongoose.model("Settings", orderSettingsSchema);
+
