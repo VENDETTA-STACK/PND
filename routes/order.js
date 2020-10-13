@@ -405,6 +405,27 @@ router.post("/ordercalcV2", async (req, res, next) => {
     promoused = prmcodes.length != 0 ? (amt * prmcodes[0].discount) / 100 : 0;
     let netamount = amt - Math.ceil(promoused.toFixed(2));
 
+    //TESTING FCMTOKEN
+    let AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
+    console.log("Admin numbers-------------------------------------------------");
+    let AdminNumber1 = AdminMobile[0].AdminMObile1; 
+    let AdminNumber2 = AdminMobile[0].AdminMObile2; 
+    let AdminNumber3 = AdminMobile[0].AdminMObile3; 
+    let AdminNumber4 = AdminMobile[0].AdminMObile4; 
+    let AdminNumber5 = AdminMobile[0].AdminMObile5;
+
+    // var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber1 }).select('fcmToken -_id');
+    // var findAdminFcmToken2 = await customerSchema.find({ mobileNo: AdminNumber2 }).select('fcmToken -_id');
+    // var findAdminFcmToken3 = await customerSchema.find({ mobileNo: AdminNumber3 }).select('fcmToken -_id');
+    // var findAdminFcmToken4 = await customerSchema.find({ mobileNo: AdminNumber4 }).select('fcmToken -_id');
+    // var findAdminFcmToken5 = await customerSchema.find({ mobileNo: AdminNumber5 }).select('fcmToken -_id');
+    // console.log(findAdminFcmToken);
+    // var AdminFcmToken = [findAdminFcmToken[0].fcmToken,findAdminFcmToken2[0].fcmToken,findAdminFcmToken3[0].fcmToken,findAdminFcmToken4[0].fcmToken,findAdminFcmToken5[0].fcmToken];
+    // var AdminFcmToken2 = findAdminFcmToken2[0].fcmToken;
+    // var AdminFcmToken3 = findAdminFcmToken3[0].fcmToken;
+    // var AdminFcmToken4 = findAdminFcmToken4[0].fcmToken;
+    // var AdminFcmToken5 = findAdminFcmToken5[0].fcmToken;
+    
     let dataset = [{
         note: note,
         totaldistance: Math.round(totaldistance.toFixed(2)),
@@ -539,10 +560,15 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
     var AdminNumber3 = AdminMobile[0].AdminMObile3; 
     var AdminNumber4 = AdminMobile[0].AdminMObile4; 
     var AdminNumber5 = AdminMobile[0].AdminMObile5; 
-    
+
     var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber1 }).select('fcmToken -_id');
-    var AdminFcmToken = findAdminFcmToken[0].fcmToken;
-    console.log("FCM Token");
+    var findAdminFcmToken2 = await customerSchema.find({ mobileNo: AdminNumber2 }).select('fcmToken -_id');
+    var findAdminFcmToken3 = await customerSchema.find({ mobileNo: AdminNumber3 }).select('fcmToken -_id');
+    var findAdminFcmToken4 = await customerSchema.find({ mobileNo: AdminNumber4 }).select('fcmToken -_id');
+    var findAdminFcmToken5 = await customerSchema.find({ mobileNo: AdminNumber5 }).select('fcmToken -_id');
+
+    var AdminFcmToken = [findAdminFcmToken[0].fcmToken,findAdminFcmToken2[0].fcmToken,findAdminFcmToken3[0].fcmToken,findAdminFcmToken4[0].fcmToken,findAdminFcmToken5[0].fcmToken];
+    console.log("-------------------------ADMINS TOKENS-----------------------------");
     console.log(AdminFcmToken);
 
     let newOrderData = newOrder.orderNo;
@@ -609,34 +635,41 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
             //Send notification to Admin FCM
             
             //Sending FCM Notification to Admin
-
-    var dataSendToAdmin = {
-        "to":"cPrdi2U1MP0:APA91bFSRIoWlzN0NNAyGzPiG3TAtqAb5-IsSSCzuKspP8cpFnOZndEMmvBVtl3r1FvdUCanyy6xvReZaTk0CxTkQUi-2b4jEPlHrypTfVPt2H_R3AwXrQZAKA4ODuhks1Y916lpFJWG",
-        "priority":"high",
-        "content_available":true,
-        "notification":{
-                    "body": newOrderNotification,
-                    "title":"New Order Received",
-                    "badge":1
+            console.log(AdminFcmToken.length);
+        for(let i=0;i<AdminFcmToken.length;i++){
+            console.log(`--------------------------------------- ${i}`);
+            console.log(AdminFcmToken[i])
+            var dataSendToAdmin = {
+                "to":AdminFcmToken[i],
+                "priority":"high",
+                "content_available":true,
+                "notification":{
+                            "body": newOrderNotification,
+                            "title":"New Order Received",
+                            "badge":1
+                        }
+            };
+    
+            var options2 = {
+                'method': 'POST',
+                'url': 'https://fcm.googleapis.com/fcm/send',
+                'headers': {
+                    'authorization': 'key=AAAAb8BaOXA:APA91bGPf4oQWUscZcjXnuyIJhEQ_bcb6pifUozs9mjrEyNWJcyut7zudpYLBtXGGDU4uopV8dnIjCOyapZToJ1QxPZVBDBSbhP_wxhriQ7kFBlHN1_HVTRtClUla0XSKGVreSgsbgjH',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataSendToAdmin)
+            };
+            request(options2, function (error, response) {
+                console.log("--------------------Sender--------------------")
+                if (error) {
+                    console.log(error.message);
+                } else {
+                    console.log("Sending Notification Testing....!!!");
+                    console.log(response.body);
                 }
-    };
-    var options2 = {
-        'method': 'POST',
-        'url': 'https://fcm.googleapis.com/fcm/send',
-        'headers': {
-            'authorization': 'key=AAAAb8BaOXA:APA91bGPf4oQWUscZcjXnuyIJhEQ_bcb6pifUozs9mjrEyNWJcyut7zudpYLBtXGGDU4uopV8dnIjCOyapZToJ1QxPZVBDBSbhP_wxhriQ7kFBlHN1_HVTRtClUla0XSKGVreSgsbgjH',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dataSendToAdmin)
-    };
-    request(options2, function (error, response) {
-        if (error) {
-            console.log(error.message);
-        } else {
-            console.log("Sending Notification Testing....!!!");
-            console.log(response.body);
+            });
         }
-    });
+
     console.log("After sending notification");
     
     // FCM notification End
