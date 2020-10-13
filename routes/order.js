@@ -532,16 +532,48 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
             });
             await newrequest.save();
 
-    var AdminMobile = await settingsSchema.find({}).select('AdminMObile1 -_id');
-    console.log("Admin number-------------------------------------------------");
-    let AdminNumber = AdminMobile[0].AdminMObile1 
-    console.log(AdminNumber);
+    var AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
+    console.log("Admin numbers-------------------------------------------------");
+    var AdminNumber1 = AdminMobile[0].AdminMObile1; 
+    var AdminNumber2 = AdminMobile[0].AdminMObile2; 
+    var AdminNumber3 = AdminMobile[0].AdminMObile3; 
+    var AdminNumber4 = AdminMobile[0].AdminMObile4; 
+    var AdminNumber5 = AdminMobile[0].AdminMObile5; 
     
-    var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber }).select('fcmToken -_id');
-    let AdminFcmToken = findAdminFcmToken[0].fcmToken;
+    var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber1 }).select('fcmToken -_id');
+    var AdminFcmToken = findAdminFcmToken[0].fcmToken;
     console.log("FCM Token");
     console.log(AdminFcmToken);
 
+    let newOrderData = newOrder.orderNo;
+    let newOrderPickUp = newOrder.pickupPoint.address;
+    let newOrderDelivery = newOrder.deliveryPoint.address;
+    let newOrderCustomerId = newOrder.customerId;
+    console.log(newOrderCustomerId);
+    let newOrderCustomer = await customerSchema.find({ _id: newOrderCustomerId }).select('name mobileNo -_id');
+    
+    let newOrderNotification = `New Order Received 
+    OrderID: ${newOrderData}
+    Customer: ${newOrderCustomer[0].name}
+    Mobile: ${newOrderCustomer[0].mobileNo}  
+    PickUp: ${newOrderPickUp}`;
+    console.log(newOrderNotification);
+
+    if(AdminNumber1 != null){
+        sendMessages(AdminNumber1,newOrderNotification);
+    }
+    if(AdminNumber2 != null){
+        sendMessages(AdminNumber2,newOrderNotification);
+    }
+    if(AdminNumber3 != null){
+        sendMessages(AdminNumber3,newOrderNotification);
+    }
+    if(AdminNumber4 != null){
+        sendMessages(AdminNumber4,newOrderNotification);
+    }
+    if(AdminNumber5 != null){
+        sendMessages(AdminNumber5,newOrderNotification);
+    }
             // var payload2 = {
             //     notification: {
             //         title: "Order Alert",
@@ -579,14 +611,14 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
             //Sending FCM Notification to Admin
 
     var dataSendToAdmin = {
-        "title": "Order Alert",
-        "body": "New Order Alert Found For You.",
-        "data": {
-            "sound": "surprise.mp3",
-            "Message": "Hello New Order",
-            "click_action": "FLUTTER_NOTIFICATION_CLICK"
-        },
-        "to": AdminFcmToken
+        "to":"cPrdi2U1MP0:APA91bFSRIoWlzN0NNAyGzPiG3TAtqAb5-IsSSCzuKspP8cpFnOZndEMmvBVtl3r1FvdUCanyy6xvReZaTk0CxTkQUi-2b4jEPlHrypTfVPt2H_R3AwXrQZAKA4ODuhks1Y916lpFJWG",
+        "priority":"high",
+        "content_available":true,
+        "notification":{
+                    "body": newOrderNotification,
+                    "title":"New Order Received",
+                    "badge":1
+                }
     };
     var options2 = {
         'method': 'POST',
@@ -654,6 +686,14 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
+
+async function sendMessages(mobileNo, message) {
+    let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno=" + mobileNo + "&text= " + message;
+    console.log(msgportal);
+    axios.get(msgportal);
+    var data = await axios.get(msgportal);
+    return data;
+}
 
 //Orderplaced for testing and storing transaction id
 // router.post("/newoder_2", orderimg.single("orderimg"), async function (
