@@ -585,21 +585,22 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
     PickUp: ${newOrderPickUp}`;
     console.log(newOrderNotification);
 
-    if(AdminNumber1 != null){
-        sendMessages(AdminNumber1,newOrderNotification);
-    }
-    if(AdminNumber2 != null){
-        sendMessages(AdminNumber2,newOrderNotification);
-    }
-    if(AdminNumber3 != null){
-        sendMessages(AdminNumber3,newOrderNotification);
-    }
-    if(AdminNumber4 != null){
-        sendMessages(AdminNumber4,newOrderNotification);
-    }
-    if(AdminNumber5 != null){
-        sendMessages(AdminNumber5,newOrderNotification);
-    }
+    // if(AdminNumber1 != null){
+    //     sendMessages(AdminNumber1,newOrderNotification);
+    // }
+    // if(AdminNumber2 != null){
+    //     sendMessages(AdminNumber2,newOrderNotification);
+    // }
+    // if(AdminNumber3 != null){
+    //     sendMessages(AdminNumber3,newOrderNotification);
+    // }
+    // if(AdminNumber4 != null){
+    //     sendMessages(AdminNumber4,newOrderNotification);
+    // }
+    // if(AdminNumber5 != null){
+    //     sendMessages(AdminNumber5,newOrderNotification);
+    // }
+    var AdminPhoneNumbers = [AdminNumber1,AdminNumber2,AdminNumber3,AdminNumber4,AdminNumber5];
             // var payload2 = {
             //     notification: {
             //         title: "Order Alert",
@@ -659,13 +660,25 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
                 },
                 body: JSON.stringify(dataSendToAdmin)
             };
-            request(options2, function (error, response) {
-                console.log("--------------------Sender--------------------")
+            request(options2, function (error, response , body) {
+                console.log("--------------------Sender--------------------");
+                let myJsonBody = JSON.stringify(body);
+                //console.log(myJsonBody);
+                //myJsonBody[51] USED TO ACCESS RESPONSE DATA SUCCESS FIELD
+                console.log(myJsonBody[51]);
+                if(myJsonBody[51]==0){
+                    console.log("Send Text notification of new order..........!!!");
+                    sendMessages(AdminPhoneNumbers[i],newOrderNotification);
+                }
                 if (error) {
                     console.log(error.message);
                 } else {
                     console.log("Sending Notification Testing....!!!");
                     console.log(response.body);
+                    if(response.body.success=="1"){
+                        console.log("Send Text notification of new order..........!!!");
+                        sendMessages(AdminPhoneNumbers[i],newOrderNotification);
+                    }
                 }
             });
         }
