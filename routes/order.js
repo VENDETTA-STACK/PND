@@ -644,6 +644,10 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
                 "to":AdminFcmToken[i],
                 "priority":"high",
                 "content_available":true,
+                "data": {
+                    "sound": "surprise.mp3",
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                },
                 "notification":{
                             "body": newOrderNotification,
                             "title":"New Order Received",

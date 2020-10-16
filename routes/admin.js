@@ -102,6 +102,7 @@ var poatypesSchema = require("../data_models/poatype.model");
 var parcelcategories = require("../data_models/category.model");
 var prooftypeSchema = require("../data_models/prooftype.modal");
 var orderCancelSchema = require("../data_models/orderCancelReason");
+var sumulOrderSchema = require('../data_models/sumulOrderModel');
 
 async function currentLocation(id) {
     var CourierRef = config.docref.child(id);
@@ -351,6 +352,8 @@ router.post("/orders", async function (req, res, next) {
             )
             .populate("customerId");
 
+            console.log(cancelledOrders);
+
         let pendingOrders = await orderSchema
             .find({ status: "Admin" })
             .populate(
@@ -373,13 +376,13 @@ router.post("/orders", async function (req, res, next) {
             )
             .populate("customerId");
 
-        let cancelOrders = await requestSchema
-            .find({
-                $or: [
-                    { status: "Reject" }
-                ],
-            })
-            .select('courierId orderId reason isActive');
+        // let cancelOrders = await requestSchema
+        //     .find({
+        //         $or: [
+        //             { status: "Reject" }
+        //         ],
+        //     })
+        //     .select('courierId orderId reason isActive');
         
             console.log("cancel order");
             //console.log(cancelOrders);
@@ -410,8 +413,8 @@ router.post("/orders", async function (req, res, next) {
             cancelledOrders: cancelledOrders,
             pendingOrders: pendingOrders,
         });
-        //console.log("newdataset by meeeeeeeeee.....................!!!");
-        //console.log(newdataset)
+        // console.log("newdataset by meeeeeeeeee.....................!!!");
+        // console.log(newdataset)
 
         res
             .status(200)
@@ -1660,5 +1663,24 @@ router.post("/getdateorder", async function(req, res, next){
 //         res.status(400).json({ Success : false , Message : "Data Not Found" })
 //     }
 // });
+
+router.post('/apiOrder', async function(req,res,next){
+    const { name , address , mobileNo , dateTime , quantity} = req.body;
+
+    try {
+        let sumulOrderDetails = await new sumulOrderSchema({
+            name : name,
+            address : address,
+            mobileNo : mobileNo,
+            dateTime : dateTime,
+            quantity : quantity
+        });
+        let data = await sumulOrderDetails.save();
+        console.log(data);
+        res.status(200).json({ IsSuccess : true , Message : "Order Added...!!!" , Data : data });
+    } catch (error) {
+        res.status(500).json({ IsSuccess : false , Message : "Something Wrong" });
+    }
+});
 
 module.exports = router;
