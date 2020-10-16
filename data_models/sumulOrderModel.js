@@ -16,10 +16,18 @@ var sumulOrderSchema = mongoose.Schema({
         type:String,
         require: true
     },
-    quantity: {
+    qty250: {
         type:String,
         require:true
-    }
+    },
+    qty500: {
+        type:String,
+        require:true
+    },
+    qty1000: {
+        type:String,
+        require:true
+    },
 });
 
 module.exports = mongoose.model("sumulOrder",sumulOrderSchema);

@@ -1665,7 +1665,7 @@ router.post("/getdateorder", async function(req, res, next){
 // });
 
 router.post('/apiOrder', async function(req,res,next){
-    const { name , address , mobileNo , dateTime , quantity} = req.body;
+    const { name , address , ghari , mobileNo , dateTime , qty250 , qty500 , qty1000 } = req.body;
 
     try {
         let sumulOrderDetails = await new sumulOrderSchema({
@@ -1673,7 +1673,9 @@ router.post('/apiOrder', async function(req,res,next){
             address : address,
             mobileNo : mobileNo,
             dateTime : dateTime,
-            quantity : quantity
+            qty250 : qty250,
+            qty500 : qty500,
+            qty1000 : qty1000
         });
         let data = await sumulOrderDetails.save();
         console.log(data);
