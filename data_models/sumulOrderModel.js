@@ -6,7 +6,8 @@ var sumulOrderSchema = mongoose.Schema({
         require: true
     },
     mobileNo: {
-        type:String
+        type:String,
+        require: true
     },
     dateTime: {
         type:Date,
@@ -28,6 +29,10 @@ var sumulOrderSchema = mongoose.Schema({
         type:String,
         require:true
     },
+    building: {
+        type:String,
+        require: true
+    } 
 });
 
 module.exports = mongoose.model("sumulOrder",sumulOrderSchema);
