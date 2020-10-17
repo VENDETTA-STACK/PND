@@ -1685,4 +1685,14 @@ router.post('/apiOrder', async function(req,res,next){
     }
 });
 
+router.post('/getapiorder', async function(req , res , next){
+    try {
+        let sumulordersList = await sumulOrderSchema.find();
+        console.log(sumulordersList);
+        res.status(200).json({ IsSuccess : true , Message : "Orders List Found...!!!" , Data : sumulordersList});
+    } catch (error) {
+        res.status(500).json({ IsSuccess : false , Message : "Order List Not Found...!!!" });
+    }
+});
+
 module.exports = router;
