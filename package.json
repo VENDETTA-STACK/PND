@@ -25,6 +25,7 @@
     "http-errors": "^1.6.3",
     "lodash.isempty": "^4.4.0",
     "moment": "^2.29.1",
+    "moment-timezone": "^0.5.31",
     "mongodb": "^3.5.7",
     "mongoose": "^5.9.12",
     "morgan": "~1.9.1",

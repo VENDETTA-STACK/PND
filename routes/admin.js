@@ -11,7 +11,7 @@ var multer = require("multer");
 var request = require('request');
 const { getDistance, convertDistance } = require("geolib");
 const isEmpty = require('lodash.isempty');
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 //image uploading
 var bannerlocation = multer.diskStorage({
@@ -1665,8 +1665,20 @@ router.post("/getdateorder", async function(req, res, next){
 // });
 
 router.post('/apiOrder', async function(req,res,next){
-    const { name , address , building , ghari , mobileNo , dateTime , qty250 , qty500 , qty1000 } = req.body;
+    const { name , address , building , ghari , mobileNo , dateTime , qty250 , qty500 , qty1000 , date , time} = req.body;
+    var order_date = moment()
+                .tz("Asia/Calcutta")
+                .format("DD MM YYYY, h:mm:ss a")
+                .split(",")[0];
+    var order_time = moment()
+                .tz("Asia/Calcutta")
+                .format("DD MM YYYY, h:mm:ss a")
+                .split(",")[1];
 
+    // var parts = order_date.split(' ');
+    // var newDateIs = new Date(parts[2], parts[1] - 1, parts[0]); 
+    // console.log(newDateIs);
+    
     try {
         let sumulOrderDetails = await new sumulOrderSchema({
             name : name,
@@ -1676,7 +1688,9 @@ router.post('/apiOrder', async function(req,res,next){
             qty250 : qty250,
             qty500 : qty500,
             qty1000 : qty1000,
-            building : building
+            building : building,
+            date: order_date,
+            time: order_time
         });
         let data = await sumulOrderDetails.save();
         console.log(data);

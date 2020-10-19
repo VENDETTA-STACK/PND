@@ -32,6 +32,12 @@ var sumulOrderSchema = mongoose.Schema({
     building: {
         type:String,
         require: true
+    },
+    date: {
+       type:String
+    },
+    time: {
+        type:String
     } 
 });
 
