@@ -355,7 +355,7 @@ router.post("/orders", async function (req, res, next) {
             console.log(cancelledOrders);
 
         let pendingOrders = await orderSchema
-            .find({ status: "Admin" })
+            .find({ status: "Order Processing" })
             .populate(
                 "courierId",
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified"
