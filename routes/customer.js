@@ -334,6 +334,7 @@ router.post("/promocodes", async function(req, res, next) {
 });
 
 router.post('/getOtp', (req, res, next) => {
+    console.log("---------------------hello logout----------------------");
     res.json({
         Message: "Data Found!",
         Data: 0,
