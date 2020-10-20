@@ -165,21 +165,35 @@ router.post("/sendotp", async function(req, res, next) {
 
 //20-10-2020 ----- FCM Token remove cause if no fcm token then user cant login/register
 router.post("/verify", async function(req, res, next) {
-    const { mobileNo } = req.body;
+    const { mobileNo , fcmToken } = req.body;
     try {
-        let updateCustomer = await customerSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true, fcmToken: fcmToken });
-        console.log(updateCustomer);
-
-        if (updateCustomer != null) {
-            res
-                .status(200)
-                .json({ Message: "Verification Complete!", Data: 1, IsSuccess: true });
-        } else {
-            res
-                .status(200)
-                .json({ Message: "Verification Failed!", Data: 0, IsSuccess: true });
+        if(fcmToken == ""){
+            let updateCustomer = await customerSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true });
+            console.log(updateCustomer);
+            if (updateCustomer != null) {
+                res
+                    .status(200)
+                    .json({ Message: "Verification Complete!", Data: 1, IsSuccess: true });
+            } else {
+                res
+                    .status(200)
+                    .json({ Message: "Verification Failed!", Data: 0, IsSuccess: true });
+            }
+        }else{
+            let updateCustomer = await customerSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true, fcmToken: fcmToken });
+            if (updateCustomer != null) {
+                res
+                    .status(200)
+                    .json({ Message: "Verification Complete!", Data: 1, IsSuccess: true });
+            } else {
+                res
+                    .status(200)
+                    .json({ Message: "Verification Failed!", Data: 0, IsSuccess: true });
+            }
         }
+        
     } catch (err) {
+        console.log(err.message);
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
