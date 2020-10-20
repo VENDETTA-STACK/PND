@@ -165,7 +165,7 @@ router.post("/sendotp", async function(req, res, next) {
 
 //20-10-2020 ----- FCM Token remove cause if no fcm token then user cant login/register
 router.post("/verify", async function(req, res, next) {
-    const { mobileNo , fcmToken } = req.body;
+    const { mobileNo } = req.body;
     try {
         if(fcmToken == ""){
             let updateCustomer = await customerSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true });
