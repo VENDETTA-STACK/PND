@@ -399,7 +399,7 @@ router.post("/sendNotification", async function(req, res, next) {
 });
 
 router.post('/updateCustomerLocation' , async function(req , res , next){
-    const { orderId , lat , long, completeAddress, distance } = req.body;
+    const { orderId , name , mobileNo , address , lat , long, completeAddress, distance } = req.body;
     try { 
         let updateLocation = {
             deliveryPoint:{
@@ -409,7 +409,7 @@ router.post('/updateCustomerLocation' , async function(req , res , next){
                 distance : distance
             }
         };
-        let UpdatedCustomerLocation = await orderSchema.updateOne({orderId : orderId},updateLocation);
+        let UpdatedCustomerLocation = await orderSchema.findOneAndUpdate({orderId : orderId},updateLocation);
         if(UpdatedCustomerLocation != null){
             res.status(200).json({ Message : "Customer Location Update" , IsSuccess : true , Data : UpdatedCustomerLocation});
         }else{

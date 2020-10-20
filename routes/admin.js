@@ -353,7 +353,7 @@ router.post("/orders", async function (req, res, next) {
             .populate("customerId");
 
             console.log(cancelledOrders);
-        let mysort = { dateTime: 1 };
+        let mysort = { dateTime: -1 };
         let pendingOrders = await orderSchema
             .find({ status: "Order Processing" })
             .populate(
