@@ -145,10 +145,31 @@ router.post("/sendotp", async function(req, res, next) {
     }
 });
 
-router.post("/verify", async function(req, res, next) {
-    const { mobileNo, fcmToken } = req.body;
+/* router.post("/verify", async function(req, res, next) {
+    onst { mobileNo, fcmToken } = req.body;
     try {
         let updateCustomer = await customerSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true, fcmToken: fcmToken });
+        if (updateCustomer != null) {
+            res
+                .status(200)
+                .json({ Message: "Verification Complete!", Data: 1, IsSuccess: true });
+        } else {
+            res
+                .status(200)
+                .json({ Message: "Verification Failed!", Data: 0, IsSuccess: true });
+        }
+    } catch (err) {
+        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+}); */
+
+//20-10-2020 ----- FCM Token remove cause if no fcm token then user cant login/register
+router.post("/verify", async function(req, res, next) {
+    const { mobileNo } = req.body;
+    try {
+        let updateCustomer = await customerSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true, fcmToken: fcmToken });
+        console.log(updateCustomer);
+
         if (updateCustomer != null) {
             res
                 .status(200)
@@ -336,7 +357,7 @@ router.post("/promocodes", async function(req, res, next) {
 router.post('/getOtp', (req, res, next) => {
     console.log("---------------------hello logout----------------------");
     res.json({
-        Message: "Data Found!",
+        Message: "Customer Logout!",
         Data: 0,
         IsSuccess: true
     })
