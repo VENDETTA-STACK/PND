@@ -353,14 +353,20 @@ router.post("/orders", async function (req, res, next) {
             .populate("customerId");
 
             console.log(cancelledOrders);
-
+        let mysort = { dateTime: 1 };
         let pendingOrders = await orderSchema
             .find({ status: "Order Processing" })
             .populate(
                 "courierId",
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified"
             )
-            .populate("customerId");
+            .populate("customerId")
+            .sort(mysort);
+            // .toArray(function(err,result){
+            //     if(err){
+            //         res.status(500).json({ Message : "Sorting Not Done...!!!" , IsSuccess : false});
+            //     }
+            // });
 
         let runningOrders = await orderSchema
             .find({

@@ -37,6 +37,7 @@ var courierNotificationSchema = require("../data_models/courier.notification.mod
 var locationLoggerSchema = require("../data_models/location.logger.model");
 var poatypesSchema = require("../data_models/poatype.model");
 var prooftypeSchema = require("../data_models/prooftype.modal");
+var orderSchema = require("../data_models/order.model");
 /* Routes. */
 router.get("/", function(req, res, next) {
     res.render("index", { title: "Invalid URL" });
@@ -394,6 +395,28 @@ router.post("/sendNotification", async function(req, res, next) {
         }
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
+
+router.post('/updateCustomerLocation' , async function(req , res , next){
+    const { orderId , lat , long, completeAddress, distance } = req.body;
+    try { 
+        let updateLocation = {
+            deliveryPoint:{
+                lat : lat,
+                long : long,
+                completeAddress : completeAddress,
+                distance : distance
+            }
+        };
+        let UpdatedCustomerLocation = await orderSchema.updateOne({orderId : orderId},updateLocation);
+        if(UpdatedCustomerLocation != null){
+            res.status(200).json({ Message : "Customer Location Update" , IsSuccess : true , Data : UpdatedCustomerLocation});
+        }else{
+            res.status(400).json({ Message : "Customer Location Not Update" , IsSuccess : false });
+        }
+    } catch (error) {
+        res.status(500).json({ Message : "Something Went Wrong" , ErrorMessage : error.message });
     }
 });
 
