@@ -8,6 +8,9 @@ const bannerSchema = mongoose.Schema({
     image: {
         type: String,
     },
+    // bottomImage : {
+    //     type: String
+    // },
     dateTime: {
         type: Date,
         default: Date.now,

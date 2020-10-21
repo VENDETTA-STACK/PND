@@ -399,17 +399,22 @@ router.post("/sendNotification", async function(req, res, next) {
 });
 
 router.post('/updateCustomerLocation' , async function(req , res , next){
+    // const { orderId , name , mobileNo , address , lat , long, completeAddress, distance } = req.body;
     const { orderId , name , mobileNo , address , lat , long, completeAddress, distance } = req.body;
     try { 
         let updateLocation = {
             deliveryPoint:{
+                name : name,
+                mobileNo : mobileNo,
+                address : address,
                 lat : lat,
                 long : long,
                 completeAddress : completeAddress,
                 distance : distance
             }
         };
-        let UpdatedCustomerLocation = await orderSchema.findOneAndUpdate({orderId : orderId},updateLocation);
+        
+        let UpdatedCustomerLocation = await orderSchema.findOneAndUpdate({_id : orderId},updateLocation);
         if(UpdatedCustomerLocation != null){
             res.status(200).json({ Message : "Customer Location Update" , IsSuccess : true , Data : UpdatedCustomerLocation});
         }else{

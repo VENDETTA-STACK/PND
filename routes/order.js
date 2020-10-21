@@ -36,6 +36,7 @@ var locationLoggerSchema = require("../data_models/location.logger.model");
 var courierNotificationSchema = require("../data_models/courier.notification.model");
 var deliverytypesSchema = require("../data_models/deliverytype.model");
 var categorySchema = require('../data_models/category.model');
+const { json } = require("body-parser");
 
 //required functions
 async function GoogleMatrix(fromlocation, tolocation) {
@@ -555,17 +556,26 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
 
     var AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
     console.log("Admin numbers-------------------------------------------------");
+    console.log(AdminMobile);
     var AdminNumber1 = AdminMobile[0].AdminMObile1; 
     var AdminNumber2 = AdminMobile[0].AdminMObile2; 
     var AdminNumber3 = AdminMobile[0].AdminMObile3; 
     var AdminNumber4 = AdminMobile[0].AdminMObile4; 
-    var AdminNumber5 = AdminMobile[0].AdminMObile5; 
+    var AdminNumber5 = AdminMobile[0].AdminMObile5;
+    
+    console.log(AdminNumber1);
 
     var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber1 }).select('fcmToken -_id');
     var findAdminFcmToken2 = await customerSchema.find({ mobileNo: AdminNumber2 }).select('fcmToken -_id');
     var findAdminFcmToken3 = await customerSchema.find({ mobileNo: AdminNumber3 }).select('fcmToken -_id');
     var findAdminFcmToken4 = await customerSchema.find({ mobileNo: AdminNumber4 }).select('fcmToken -_id');
     var findAdminFcmToken5 = await customerSchema.find({ mobileNo: AdminNumber5 }).select('fcmToken -_id');
+    
+    console.log(findAdminFcmToken);
+    console.log(findAdminFcmToken2);
+    console.log(findAdminFcmToken3);
+    console.log(findAdminFcmToken4);
+    console.log(findAdminFcmToken5);
 
     var AdminFcmToken = [findAdminFcmToken[0].fcmToken,findAdminFcmToken2[0].fcmToken,findAdminFcmToken3[0].fcmToken,findAdminFcmToken4[0].fcmToken,findAdminFcmToken5[0].fcmToken];
     console.log("-------------------------ADMINS TOKENS-----------------------------");
@@ -1488,4 +1498,83 @@ router.post("/orderStatus", async function (req, res, next) {
     }
 });
 
+router.post("/orderCancelByCustomer", async function(req , res ,next){
+    const { id , customerId } = req.body;
+    var TimeHours = "";
+    var TimeMinutes = "";
+    var TimeSeconds = "";
+    var TimeYear = "";
+    var TimeMonth = "";
+    var TimeDate = "";
+
+    try {
+        let customerOrder = await orderSchema.find({ $and: [ { _id: id }, { customerId: customerId } ] });
+        console.log(customerOrder);
+        if(customerOrder.length == 1){
+            let orderNo = customerOrder[0].orderNo;
+            let OrderTime = customerOrder[0].schedualDateTime;
+            console.log(OrderTime);
+
+            var getextractData = await orderSchema.aggregate(
+                [
+                    {$match:
+                        {'orderNo': orderNo}
+                    },
+                  {
+                    $project:
+                      {
+                        year: { $year: "$schedualDateTime" },
+                        month: { $month: "$schedualDateTime" },
+                        day: { $dayOfMonth: "$schedualDateTime" },
+                        hour: { $hour: "$schedualDateTime" },
+                        minutes: { $minute: "$schedualDateTime" },
+                        seconds: { $second: "$schedualDateTime" },
+                        milliseconds: { $millisecond: "$schedualDateTime" },
+                        dayOfYear: { $dayOfYear: "$schedualDateTime" },
+                        dayOfWeek: { $dayOfWeek: "$schedualDateTime" },
+                        week: { $week: "$schedualDateTime" }
+                      }
+                  }
+                ]
+             ).then(dataList => {
+                var timeData = dataList;
+                TimeHours = timeData[0].hour;
+                TimeMinutes = timeData[0].minutes;
+                TimeSeconds = timeData[0].seconds;
+                TimeYear = timeData[0].year;
+                TimeMonth = timeData[0].month;
+                TimeDate = timeData[0].day;
+
+                console.log(timeData[0].year);
+                console.log(timeData);
+                
+             });
+             console.log(`Year : ${TimeHours}`);
+             console.log(`Minutes : ${TimeMinutes}`);
+             console.log(`Seconds : ${TimeSeconds}`);
+             console.log(`Year : ${TimeYear}`);
+             console.log(`Month : ${TimeMonth}`);
+             console.log(`Day : ${TimeDate}`);
+             //console.log(`Seconds : ${TimeSeconds}`);
+            let myNewDate = new Date(TimeYear,TimeMonth,TimeDate,TimeHours,TimeMinutes,TimeSeconds);
+            console.log(myNewDate.getMinutes());
+            myNewDate.setMinutes(myNewDate.getMinutes() - 15);
+            console.log(myNewDate);
+
+            var hh = myNewDate.getHours();
+            var mm = myNewDate.getMinutes();
+            var ss = myNewDate.getSeconds();
+            
+            res.status(200).json({ 
+                        IsSuccess : true , 
+                        Message : "Order Cancel Limit!!!" ,
+                        OrderCancelLimit : myNewDate,
+                        ReadableFormat : [hh, mm, ss].join(':') });
+        }else{
+            res.status(400).json({ IsSuccess : false , Message : "Not Found...!!!" , Data : 0 });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess : false , Message : error.message});
+    }
+});
 module.exports = router;

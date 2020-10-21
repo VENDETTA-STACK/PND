@@ -27,6 +27,19 @@ var bannerlocation = multer.diskStorage({
 });
 var uploadbanner = multer({ storage: bannerlocation });
 
+// var bottomBannerlocation = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         cb(null, "uploads/bottomBanner");
+//     },
+//     filename: function (req, file, cb) {
+//         cb(
+//             null,
+//             file.fieldname + "_" + Date.now() + path.extname(file.originalname)
+//         );
+//     },
+// });
+// var uploadBottomBanner = multer({ storage: bottomBannerlocation });
+
 var promocodelocation = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, "uploads/promocodes");
@@ -103,6 +116,7 @@ var parcelcategories = require("../data_models/category.model");
 var prooftypeSchema = require("../data_models/prooftype.modal");
 var orderCancelSchema = require("../data_models/orderCancelReason");
 var sumulOrderSchema = require('../data_models/sumulOrderModel');
+var ecommOrderSchema = require('../data_models/ecommModel');
 
 async function currentLocation(id) {
     var CourierRef = config.docref.child(id);
@@ -259,6 +273,11 @@ router.post("/updatesetttings", async function (req, res, next) {
         AdminMObile4,
         AdminMObile5,
     } = req.body;
+
+    // let FromTimeField = new Date(0,0,0,9,0,0);
+    // console.log(FromTimeField);
+    // console.log(FromTimeField.getHours());
+ 
     try {
         var existData = await settingsSchema.find({});
         if (existData.length == 1) {
@@ -343,6 +362,7 @@ router.post("/settings", async function (req, res, next) {
 router.post("/orders", async function (req, res, next) {
     try {
         let newdataset = [];
+        let mysort = { dateTime: -1 };
 
         let cancelledOrders = await orderSchema
             .find({ status: "Order Cancelled", isActive: false })
@@ -350,10 +370,11 @@ router.post("/orders", async function (req, res, next) {
                 "courierId",
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified"
             )
-            .populate("customerId");
+            .populate("customerId")
+            .sort(mysort);
 
             console.log(cancelledOrders);
-        let mysort = { dateTime: -1 };
+        
         let pendingOrders = await orderSchema
             .find({ status: "Order Processing" })
             .populate(
@@ -380,7 +401,8 @@ router.post("/orders", async function (req, res, next) {
                 "courierId",
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified"
             )
-            .populate("customerId");
+            .populate("customerId")
+            .sort(mysort);;
 
         // let cancelOrders = await requestSchema
         //     .find({
@@ -1101,6 +1123,7 @@ router.post("/addbanner", uploadbanner.single("image"), async function (
     next
 ) {
     const { title, type } = req.body;
+    // type must be "bottom" for bottom
     try {
         const file = req.file;
         let newbanner = new bannerSchema({
@@ -1711,6 +1734,43 @@ router.post('/getapiorder', async function(req , res , next){
         let sumulordersList = await sumulOrderSchema.find();
         console.log(sumulordersList);
         res.status(200).json({ IsSuccess : true , Message : "Orders List Found...!!!" , Data : sumulordersList});
+    } catch (error) {
+        res.status(500).json({ IsSuccess : false , Message : "Order List Not Found...!!!" });
+    }
+});
+
+router.post("/ecommOrder" , async function(req , res , next){
+    const { amountCollection ,
+            handlingCharge ,
+            pkName,
+            pkMobileNo,
+            pkAddress,
+            pkLat,
+            pkLong,
+            pkCompleteAddress, } = req.body;
+    try {
+        let ecommOrder = await new ecommOrderSchema({
+            amountCollection : amountCollection,
+            handlingCharge : handlingCharge,
+            pkName : pkName,
+            pkMobileNo : pkMobileNo,
+            pkAddress : pkAddress,
+            pkLat : pkLat,
+            pkLong : pkLong,
+            pkCompleteAddress : pkCompleteAddress,
+        });
+        let ecommOrderSave = await ecommOrder.save();
+        res.status(200).json({ IsSuccess : true , Message : "Ecommerce Orders Added...!!!" , Data : ecommOrderSave});
+    } catch (error) {
+        res.status(500).json({ IsSuccess : false , Message : error.message });
+    }
+});
+
+router.post('/getEcommOrder', async function(req , res , next){
+    try {
+        let EcommOrdersList = await ecommOrderSchema.find();
+        console.log(EcommOrdersList);
+        res.status(200).json({ IsSuccess : true , Message : "Orders List Found...!!!" , Data : EcommOrdersList});
     } catch (error) {
         res.status(500).json({ IsSuccess : false , Message : "Order List Not Found...!!!" });
     }
