@@ -1577,4 +1577,22 @@ router.post("/orderCancelByCustomer", async function(req , res ,next){
         res.status(500).json({ IsSuccess : false , Message : error.message});
     }
 });
+
+router.post("/cancelOrder" , async function(req,res,next){
+    const { id } = req.body;
+    try {
+        var orderWant = await orderSchema.findByIdAndUpdate({ _id: id },{ status : "Order Cancelled" });
+        if (orderWant.length == 1) {
+            res
+                .status(200)
+                .json({ Message: "Orders Cancel!", Data: orderWant, IsSuccess: true });
+        } else {
+            res
+                .status(200)
+                .json({ Message: "Orders Not Found!", Data: orderWant, IsSuccess: true });
+        }
+    } catch (err) {
+        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
 module.exports = router;
