@@ -755,6 +755,18 @@ async function sendMessages(mobileNo, message) {
     return data;
 }
 
+// router.post("/multiNewOrder", async function(req,res,next){
+//     let latData = [];
+//     let longData = [];
+//     const { countDelivery } = req.body;
+//     console.log(countDelivery);
+//     for(let i=0;i<countDelivery.length;i++){
+//         let { lat , long } = req.body;
+//         latData.push(lat);
+//         longData.push(long);
+//     }
+// });
+
 //Orderplaced for testing and storing transaction id
 // router.post("/newoder_2", orderimg.single("orderimg"), async function (
 //     req,

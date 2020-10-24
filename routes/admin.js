@@ -1692,9 +1692,28 @@ router.post("/getdateorder", async function(req, res, next){
 //         res.status(400).json({ Success : false , Message : "Data Not Found" })
 //     }
 // });
+function getOrderNumber() {
+    let orderNo = "ORD-" + Math.floor(Math.random() * 90000) + 10000;
+    return orderNo;
+}
 
 router.post('/apiOrder', async function(req,res,next){
-    const { name , address , building , ghari , mobileNo , dateTime , qty250 , qty500 , qty1000 , date , time} = req.body;
+    let num = getOrderNumber();
+    const { name , 
+            address , 
+            building , 
+            ghari , 
+            mobileNo , 
+            dateTime , 
+            qty250 , 
+            qty500 , 
+            qty1000 , 
+            date , 
+            time ,
+            totalAmount,
+            paymentMethod,
+            paymentStatus,
+        } = req.body;
     var order_date = moment()
                 .tz("Asia/Calcutta")
                 .format("DD MM YYYY, h:mm:ss a")
@@ -1719,7 +1738,11 @@ router.post('/apiOrder', async function(req,res,next){
             qty1000 : qty1000,
             building : building,
             date: order_date,
-            time: order_time
+            time: order_time,
+            orderNo: num,
+            totalAmount: totalAmount,
+            paymentMethod: paymentMethod,
+            paymentStatus: paymentStatus,
         });
         let data = await sumulOrderDetails.save();
         console.log(data);
@@ -1731,7 +1754,8 @@ router.post('/apiOrder', async function(req,res,next){
 
 router.post('/getapiorder', async function(req , res , next){
     try {
-        let sumulordersList = await sumulOrderSchema.find();
+        let SortType = { dateTime: -1 };
+        let sumulordersList = await sumulOrderSchema.find().sort(SortType);
         console.log(sumulordersList);
         res.status(200).json({ IsSuccess : true , Message : "Orders List Found...!!!" , Data : sumulordersList});
     } catch (error) {

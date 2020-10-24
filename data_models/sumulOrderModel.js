@@ -38,7 +38,19 @@ var sumulOrderSchema = mongoose.Schema({
     },
     time: {
         type:String
-    } 
+    },
+    orderNo: {
+        type:String
+    },
+    totalAmount: {
+        type:String
+    },
+    paymentMethod: {
+        type:String
+    },
+    paymentStatus: {
+        type:String
+    }, 
 });
 
 module.exports = mongoose.model("sumulOrder",sumulOrderSchema);
