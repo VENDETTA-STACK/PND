@@ -145,7 +145,7 @@ router.post("/sendotp", async function(req, res, next) {
     }
 });
 
-/* router.post("/verify", async function(req, res, next) {
+router.post("/verify", async function(req, res, next) {
     onst { mobileNo, fcmToken } = req.body;
     try {
         let updateCustomer = await customerSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true, fcmToken: fcmToken });
@@ -161,14 +161,14 @@ router.post("/sendotp", async function(req, res, next) {
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
-}); */
+});
 
 //20-10-2020 ----- FCM Token remove cause if no fcm token then user cant login/register
-router.post("/verify", async function(req, res, next) {
-    const { mobileNo , fcmToken} = req.body;
+/* router.post("/verify", async function(req, res, next) {
+    const { mobileNo } = req.body;
     console.log(req.body);
     try {
-        let updateCustomer = await customerSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true , fcmToken : fcmToken});
+        let updateCustomer = await customerSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true });
             if (updateCustomer != null) {
                 res
                     .status(200)
@@ -183,13 +183,40 @@ router.post("/verify", async function(req, res, next) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
+ */
+// router.post("/signin", async function(req, res, next) {
+//     const { mobileNo } = req.body;
+//     try {
+//         let existCustomer = await customerSchema.find({
+//             mobileNo: mobileNo,
+//             isVerified: true,
+//             isActive: true,
+//         });
+//         if (existCustomer.length == 1) {
+//             res.status(200).json({
+//                 Message: "Customer Found!",
+//                 Data: existCustomer,
+//                 IsSuccess: true,
+//             });
+//         } else {
+//             res.status(200).json({
+//                 Message: "Customer Not Found!",
+//                 Data: existCustomer,
+//                 IsSuccess: true,
+//             });
+//         }
+//     } catch (err) {
+//         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+//     }
+// });
 
+//27-10-2020 if isVerified : false then also user can signIn
 router.post("/signin", async function(req, res, next) {
     const { mobileNo } = req.body;
     try {
         let existCustomer = await customerSchema.find({
             mobileNo: mobileNo,
-            isVerified: true,
+            //isVerified: true,
             isActive: true,
         });
         if (existCustomer.length == 1) {
@@ -209,6 +236,7 @@ router.post("/signin", async function(req, res, next) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
+
 
 router.post("/updateprofile", uploadpic.single("profilepic"), async function(
     req,
