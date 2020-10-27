@@ -146,7 +146,7 @@ router.post("/sendotp", async function(req, res, next) {
 });
 
 router.post("/verify", async function(req, res, next) {
-    onst { mobileNo, fcmToken } = req.body;
+    const { mobileNo, fcmToken } = req.body;
     try {
         let updateCustomer = await customerSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true, fcmToken: fcmToken });
         if (updateCustomer != null) {
