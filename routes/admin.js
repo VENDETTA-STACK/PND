@@ -1432,6 +1432,7 @@ router.post("/poatypes", async (req, res, next) => {
     }
 });
 
+//Add Parcel Categories ---- Delivery Time field Add / 04-11-2020
 router.post(
     "/addcategories",
     uploadcategory.single("image"),
@@ -1440,6 +1441,10 @@ router.post(
         const title = req.body.title;
         const price = req.body.price;
         const note = req.body.note;
+
+        var timeOfDelivery = moment(req.body.deliveryTime);
+        timeOfDelivery = timeOfDelivery.utc().format('HH:mm:ss');
+        // console.log(timeOfDelivery);
         try {
             const file = req.file;
             if (id == "0") {
@@ -1448,20 +1453,24 @@ router.post(
                     title: title,
                     price: price,
                     note: note,
+                    deliveryTime: timeOfDelivery,
                     image: file == undefined ? null : file.path,
                 });
                 await category.save();
+                console.log(category);
                 res.json({
                     Message: "Category Added Successfully!",
-                    Data: 1,
+                    Data: category,
                     IsSuccess: true,
                 });
             } else {
                 if (file != undefined) {
+                    console.log("csds");
                     let category = {
                         title: title,
                         price: price,
                         note: note,
+                        deliveryTime: timeOfDelivery,
                         image: file == undefined ? null : file.path,
                     };
                     await parcelcategories.findByIdAndUpdate(id, category, { new: true });
@@ -1475,6 +1484,7 @@ router.post(
                         title: title,
                         price: price,
                         note: note,
+                        deliveryTime: timeOfDelivery,
                     };
                     await parcelcategories.findByIdAndUpdate(id, category, { new: true });
                     res.json({
@@ -1771,7 +1781,8 @@ router.post("/ecommOrder" , async function(req , res , next){
             pkAddress,
             pkLat,
             pkLong,
-            pkCompleteAddress, } = req.body;
+            pkCompleteAddress, 
+        } = req.body;
     try {
         let ecommOrder = await new ecommOrderSchema({
             amountCollection : amountCollection,

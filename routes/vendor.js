@@ -11,7 +11,8 @@ var Bcrypt = require("bcryptjs");
 var vendorModelSchema = require("../data_models/vendor.model");
 
 router.post("/vendor_register", async function(req , res , next){
-    const { name, mobileNo , company , email , gstNo , panNumber , lat , long , password} = req.body;
+    const { name, mobileNo , company , email , gstNo , panNumber , lat , 
+        long , password , FixKm , UnderFixKmCharge , perKmCharge } = req.body;
    
     let encryptPassword = Bcrypt.hashSync(req.body.password, 10);   
     console.log(encryptPassword);
@@ -28,7 +29,10 @@ router.post("/vendor_register", async function(req , res , next){
                 lat: lat,
                 long: long,
             },
-            password: encryptPassword
+            password: encryptPassword,
+            FixKm: FixKm,
+            UnderFixKmCharge: UnderFixKmCharge,
+            perKmCharge: perKmCharge
         });
 
         registerVendor = vendor.save();
@@ -47,14 +51,14 @@ router.post("/vendor_login" , async function(req , res, next){
     console.log(req.body);
     try {
         let userEmail = await vendorModelSchema.findOne({ email : email });
-        console.log(userEmail.password);
+        //console.log(userEmail.password);
         if(!userEmail) {
             return response.status(400).send({ message: "The username does not exist" });
         }
         if(!Bcrypt.compareSync(req.body.password, userEmail.password)) {
             return response.status(400).send({ message: "The password is invalid" });
         }
-        res.send({ message: "The username and password combination is correct!" });
+        res.status(200).send({ IsSuccess: true , message: "Vendor Logged In Successfull" });
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }

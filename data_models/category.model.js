@@ -22,6 +22,9 @@ const categorySchema = mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    deliveryTime: {
+        type: String
+    }
 });
 
 module.exports = mongoose.model("parcelcategories", categorySchema);

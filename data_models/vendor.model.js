@@ -40,6 +40,15 @@ const vendorSchema = mongoose.Schema({
   },
   password:{
       type:String
+  },
+  FixKm: {
+    type: Number,
+  },
+  UnderFixKmCharge: {
+      type: Number,
+  },
+  perKmCharge:{
+      type: Number,
   }
 });
 

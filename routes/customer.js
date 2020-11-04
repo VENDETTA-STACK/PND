@@ -334,10 +334,12 @@ router.post("/pickupAddress", async function(req, res, next) {
 router.post("/banners", async(req, res, next) => {
     try {
         let bannerlist = await bannerSchema.find({});
+        let bottomBannerlist = await bannerSchema.find({ type : "bottom" });
         let categories = await parcelcategories.find({});
         let datalist = [{
             banners: bannerlist,
-            categories: categories
+            categories: categories,
+            bottomBannerlist : bottomBannerlist
         }];
         res.json({ Message: "Banners List!", Data: datalist, IsSuccess: true });
     } catch (err) {
