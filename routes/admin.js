@@ -27,19 +27,6 @@ var bannerlocation = multer.diskStorage({
 });
 var uploadbanner = multer({ storage: bannerlocation });
 
-// var bottomBannerlocation = multer.diskStorage({
-//     destination: function (req, file, cb) {
-//         cb(null, "uploads/bottomBanner");
-//     },
-//     filename: function (req, file, cb) {
-//         cb(
-//             null,
-//             file.fieldname + "_" + Date.now() + path.extname(file.originalname)
-//         );
-//     },
-// });
-// var uploadBottomBanner = multer({ storage: bottomBannerlocation });
-
 var promocodelocation = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, "uploads/promocodes");
@@ -274,6 +261,15 @@ router.post("/updatesetttings", async function (req, res, next) {
         AdminMObile5,
     } = req.body;
 
+    var initialTime = moment(FromTime);
+    var endTime = moment(ToTime);
+
+    initialTime = initialTime.utc().format('h:mm a');
+    endTime = endTime.utc().format('h:mm a');
+    console.log(initialTime);
+    console.log(endTime);
+    
+
     // let FromTimeField = new Date(0,0,0,9,0,0);
     // console.log(FromTimeField);
     // console.log(FromTimeField.getHours());
@@ -290,8 +286,8 @@ router.post("/updatesetttings", async function (req, res, next) {
                 DefaultWMessage: DefaultWMessage,
                 AppLink: AppLink,
                 AmountPayKM: AmountPayKM,
-                FromTime: FromTime,
-                ToTime: ToTime,
+                FromTime: initialTime,
+                ToTime: endTime,
                 NormalDelivery: "2.5 Hours",
                 ExpressDelivery: "60 Minutes",
                 CancelOrderTime: "30",

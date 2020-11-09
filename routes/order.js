@@ -36,6 +36,7 @@ var locationLoggerSchema = require("../data_models/location.logger.model");
 var courierNotificationSchema = require("../data_models/courier.notification.model");
 var deliverytypesSchema = require("../data_models/deliverytype.model");
 var categorySchema = require('../data_models/category.model');
+var demoOrderSchema = require('../data_models/demoMultiModel');
 const { json } = require("body-parser");
 
 //required functions
@@ -754,18 +755,83 @@ async function sendMessages(mobileNo, message) {
     var data = await axios.get(msgportal);
     return data;
 }
+//MultiOrder Number ---04-11-2020
 
-// router.post("/multiNewOrder", async function(req,res,next){
-//     let latData = [];
-//     let longData = [];
-//     const { countDelivery } = req.body;
-//     console.log(countDelivery);
-//     for(let i=0;i<countDelivery.length;i++){
-//         let { lat , long } = req.body;
-//         latData.push(lat);
-//         longData.push(long);
-//     }
-// });
+function getMultiOrderNumber() {
+    let orderNo = "ORDMT-" + Math.floor(Math.random() * 90000) + 10000;
+    return orderNo;
+}
+//Multiorder API 04-11-2020
+router.post("/multiNewOrder", async function(req,res,next){
+    var {
+        customerId,
+        deliveryType,
+        weightLimit,
+        pkName,
+        pkMobileNo,
+        pkAddress,
+        pkLat,
+        pkLong,
+        pkCompleteAddress,
+        pkContent,
+        pkArriveType,
+        pkArriveTime,
+        deliveryAddresses,
+        collectCash,
+        promoCode,
+        amount,
+        discount,
+        additionalAmount,
+        finalAmount,
+        schedualDateTime,
+    } = req.body;
+    let num = getOrderNumber();
+    let numMulti = getMultiOrderNumber();
+    var MultiOrders = [];
+    for(let i=0;i<deliveryAddresses.length;i++){
+        let d1 = deliveryAddresses[i];
+        console.log("---------------------")
+        console.log(d1);
+        try {
+            var newMultiOrder = new demoOrderSchema({
+                _id: new config.mongoose.Types.ObjectId(),
+                orderNo: num,
+                customerId: customerId,
+                deliveryType: deliveryType,
+                schedualDateTime: schedualDateTime,
+                weightLimit: weightLimit,
+               // orderImg: file == undefined ? "" : file.path,
+                pickupPoint: {
+                    name: pkName,
+                    mobileNo: pkMobileNo,
+                    address: pkAddress,
+                    lat: pkLat,
+                    long: pkLong,
+                    completeAddress: pkCompleteAddress,
+                    contents: pkContent,
+                    arriveType: pkArriveType,
+                    arriveTime: pkArriveTime,
+                },
+                deliveryPoint:{
+                    name: deliveryAddresses[i].name,
+                },
+                collectCash: collectCash,
+                promoCode: promoCode,
+                amount: amount,
+                discount: discount,
+                additionalAmount: additionalAmount,
+                finalAmount: finalAmount,
+                status: "Order Processing",
+                note: "Your order is processing!",
+            });
+            var placeMultiOrder = await newMultiOrder.save();
+            MultiOrders.push(placeMultiOrder);
+        }catch(err) {
+            res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+        }
+    } 
+    res.status(200).json({ IsSuccess:true , Data: MultiOrders , Message: "Multiorder Added" });
+});
 
 //Orderplaced for testing and storing transaction id
 // router.post("/newoder_2", orderimg.single("orderimg"), async function (
