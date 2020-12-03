@@ -431,13 +431,23 @@ router.post("/getEmployeeOrderDetails", async function(req,res,next){
                     )
                     .populate("customerId");
         var totalPrice = 0;
+        var totalDistance = 0;
         for(var i=0;i<record.length;i++){
             totalPrice = totalPrice + record[i].finalAmount;
-            // console.log(totalPrice);
+            totalDistance = totalDistance + record[i].deliveryPoint.distance;
+            // console.log(totalDistance);
         }
         console.log(totalPrice);
+        console.log(totalDistance);
         if(record.length > 0){
-            res.status(200).json({ IsSuccess: true , TotalPriceCollected: totalPrice ,Counter: record.length , Data: record , Message: "Orders Found" });
+            res.status(200).json({
+                                   IsSuccess: true,
+                                   TotalPriceCollected: totalPrice,
+                                   TotalDistanceTravell: totalDistance,
+                                   TotalOrders: record.length, 
+                                   Data: record, 
+                                   Message: "Orders Found" 
+                                });
         }else{
             res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Orders Not Found" });
         }
