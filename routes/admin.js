@@ -241,7 +241,7 @@ router.post("/adminusers", async function (req, res, next) {
     }
 });
 
-//update settings by admin panel
+//update settings by admin panel / 09-11-2020
 router.post("/updatesetttings", async function (req, res, next) {
     const {
         PerUnder5KM,
@@ -476,12 +476,13 @@ router.post("/orders", async function (req, res, next) {
 router.post("/completed_orders", async function (req, res, next) {
     try {
         let newdataset = [];
+        console.log("hello");
 
         //completed order API 
         let completeOrders = await orderSchema
             .find({ status: "Order Delivered", isActive: false })
             .populate(
-                "courierId",
+                "courierId[]",
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified"
             )
             .populate("customerId");
@@ -502,7 +503,7 @@ router.post("/completed_orders", async function (req, res, next) {
         newdataset.push({
             completeOrders: orderscomplete,
         });
-
+        console.log(newdataset);
         res
             .status(200)
             .json({ Message: "Order Found!", Data: newdataset, IsSuccess: true });

@@ -398,6 +398,55 @@ router.post("/sendNotification", async function(req, res, next) {
     }
 });
 
+function convertStringDateToISO(date){
+    var dateList = date;
+    // console.log(dateList.split("/"));
+    let list = dateList.split("/");
+    
+    let dISO = list[2] + "-" + list[1] + "-" + list[0] + "T" + "00:00:00.0Z";
+    // console.log(dISO);
+    return dISO;
+}
+
+//Employee Order History------25-11-2020---Monil
+router.post("/getEmployeeOrderDetails", async function(req,res,next){
+    const { courierId , startdate , enddate } = req.body;
+    
+    let date1 = convertStringDateToISO(startdate);
+    let date2 = convertStringDateToISO(enddate);
+
+    try {
+        var record = await orderSchema.find({ 
+                    courierId: courierId,
+                    status: "Order Delivered", 
+                    isActive: false,
+                    dateTime: {
+                        $gte : date1,
+                        $lte : date2
+                    }
+                    })
+                    .populate(
+                            "courierId",
+                            "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+                    )
+                    .populate("customerId");
+        var totalPrice = 0;
+        for(var i=0;i<record.length;i++){
+            totalPrice = totalPrice + record[i].finalAmount;
+            // console.log(totalPrice);
+        }
+        console.log(totalPrice);
+        if(record.length > 0){
+            res.status(200).json({ IsSuccess: true , TotalPriceCollected: totalPrice ,Counter: record.length , Data: record , Message: "Orders Found" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Orders Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ Message: error.message, Data: 0, IsSuccess: false });
+    }
+});
+
+//Not Completed Yet----Not Any update for changes
 router.post('/updateCustomerLocation' , async function(req , res , next){
     // const { orderId , name , mobileNo , address , lat , long, completeAddress, distance } = req.body;
     const { orderId , name , mobileNo , address , lat , long, completeAddress, distance } = req.body;
