@@ -1808,4 +1808,20 @@ router.post('/getEcommOrder', async function(req , res , next){
     }
 });
 
+router.post("/getAllEmployee" , async function(req,res,next){
+    try {
+        var record = await courierSchema.find();
+        if(record){
+            res.status(200).json({ IsSuccess: true , NoOfEmployee: record.length , 
+                        Data: record , 
+                        Message: "Employee Data Found" 
+                    });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "No Employee Data Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
 module.exports = router;

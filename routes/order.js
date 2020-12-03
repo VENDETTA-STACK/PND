@@ -8,6 +8,7 @@ var express = require("express");
 var config = require("../config");
 var router = express.Router();
 var arraySort = require("array-sort");
+const geolib = require("geolib");
 // For Third Party Service Call
 var request = require('request');
 var imguploader = multer.diskStorage({
@@ -38,6 +39,45 @@ var deliverytypesSchema = require("../data_models/deliverytype.model");
 var categorySchema = require('../data_models/category.model');
 var demoOrderSchema = require('../data_models/demoMultiModel');
 const { json } = require("body-parser");
+
+//Function for finding distance between two locations
+function calculatelocation(lat1, long1, lat2, long2) {
+    if (lat1 == 0 || long1 == 0) {
+      area = 1; // Company Lat and Long is not defined.
+    } else {
+      const location1 = {
+        lat: parseFloat(lat1),
+        lon: parseFloat(long1),
+      };
+      const location2 = {
+        lat: parseFloat(lat2),
+        lon: parseFloat(long2),
+      };
+      heading = geolib.getDistance(location1, location2);
+      if (!isNaN(heading)) {
+          return heading;
+      } else {
+        heading =  -1; //  Lat and Long is not defined.
+    }
+    return heading;
+  }
+}
+
+//Return Index Min value of Array Element ------(03/12/2020)
+function indexOfMinFromArray(arr) {
+    if (arr.length === 0) {
+        return -1;
+    }
+    var min = arr[0];
+    var minIndex = 0;
+    for (var i = 1; i < arr.length; i++) {
+        if (arr[i] < min) {
+            minIndex = i;
+            min = arr[i];
+        }
+    }
+    return minIndex;
+}
 
 //required functions
 async function GoogleMatrix(fromlocation, tolocation) {
@@ -790,12 +830,13 @@ router.post("/multiNewOrder", async function(req,res,next){
     var MultiOrders = [];
     for(let i=0;i<deliveryAddresses.length;i++){
         let d1 = deliveryAddresses[i];
-        console.log("---------------------")
-        console.log(d1);
+        // console.log("---------------------")
+        // console.log(d1);
         try {
             var newMultiOrder = new demoOrderSchema({
                 _id: new config.mongoose.Types.ObjectId(),
                 orderNo: num,
+                multiOrderNo: numMulti,
                 customerId: customerId,
                 deliveryType: deliveryType,
                 schedualDateTime: schedualDateTime,
@@ -813,7 +854,13 @@ router.post("/multiNewOrder", async function(req,res,next){
                     arriveTime: pkArriveTime,
                 },
                 deliveryPoint:{
-                    name: deliveryAddresses[i].name,
+                    name: deliveryAddresses[i].dpName,
+                    mobileNo: deliveryAddresses[i].dpMobileNo,
+                    address: deliveryAddresses[i].dpAddress,
+                    lat: deliveryAddresses[i].dpLat,
+                    long: deliveryAddresses[i].dpLong,
+                    completeAddress: deliveryAddresses[i].dpCompleteAddress,
+                    distance: deliveryAddresses[i].dpDistance,
                 },
                 collectCash: collectCash,
                 promoCode: promoCode,
@@ -831,6 +878,39 @@ router.post("/multiNewOrder", async function(req,res,next){
         }
     } 
     res.status(200).json({ IsSuccess:true , Data: MultiOrders , Message: "Multiorder Added" });
+});
+
+//Optimize Route---------MONIL(03/12/2020)
+router.post("/getOptimizeRoute", async function(req,res,next){
+    const { orderMTNum } = req.body;
+    // console.log(calculatelocation(21.1411089,72.80367319999999,22.98551,75.36289));
+    try {
+        var orderIs = await demoOrderSchema.find({ multiOrderNo: orderMTNum });
+        console.log(orderIs.length);
+        let PickPoint = [orderIs[0].pickupPoint.lat,orderIs[0].pickupPoint.long];
+        // console.log(PickPoint);
+        var distanceFromPickUp = [];
+        for(var i=0;i<orderIs.length;i++){
+            var deliveryPoint = [orderIs[i].deliveryPoint.lat,orderIs[i].deliveryPoint.long];
+                
+            let distance = calculatelocation(PickPoint[0],PickPoint[1],deliveryPoint[0],deliveryPoint[1]);
+            distance = distance/1000;
+            // console.log(distance);
+            distanceFromPickUp.push(distance); 
+        }
+        console.log(distanceFromPickUp);
+        console.log(indexOfMinFromArray(distanceFromPickUp));
+        var optimizeOrderRoute = [];
+        optimizeOrderRoute.push({ deliveryAddNo: indexOfMinFromArray(distanceFromPickUp) });
+        console.log(optimizeOrderRoute);
+        // for(var j=0;j<distanceFromPickUp.length;j++){
+            
+        // }
+        
+        res.status(200).json({ IsSuccess: true , Data: orderIs , Message: "Yo Nigga...!!!" })
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
 });
 
 //Orderplaced for testing and storing transaction id
