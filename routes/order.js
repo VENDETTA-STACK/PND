@@ -636,21 +636,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
     PickUp: ${newOrderPickUp}`;
     console.log(newOrderNotification);
 
-    // if(AdminNumber1 != null){
-    //     sendMessages(AdminNumber1,newOrderNotification);
-    // }
-    // if(AdminNumber2 != null){
-    //     sendMessages(AdminNumber2,newOrderNotification);
-    // }
-    // if(AdminNumber3 != null){
-    //     sendMessages(AdminNumber3,newOrderNotification);
-    // }
-    // if(AdminNumber4 != null){
-    //     sendMessages(AdminNumber4,newOrderNotification);
-    // }
-    // if(AdminNumber5 != null){
-    //     sendMessages(AdminNumber5,newOrderNotification);
-    // }
+
     var AdminPhoneNumbers = [AdminNumber1,AdminNumber2,AdminNumber3,AdminNumber4,AdminNumber5];
             // var payload2 = {
             //     notification: {
@@ -1550,36 +1536,41 @@ router.post("/reachDropPoint", async function (req, res, next) {
 
 router.post("/c_activeOrder", async function (req, res, next) {
     const { courierId } = req.body;
-    var data = await requestSchema.find({
-        courierId: courierId,
-        status: "Takethisorder",
-    });
-    var datalist = [];
-    if (data.length != 0) {
-        for (var i = 0; i < data.length; i++) {
-            var orderdata = await orderSchema.findOne({
-                _id: data[i].orderId,
-                courierId: courierId,
-                isActive: true,
-            });
-            if (orderdata != null) datalist.push(orderdata);
-        }
-        // console.log(datalist);
-        if (datalist.length != 0) {
-            res
-                .status(200)
-                .json({ Message: "Orders Found!", Data: datalist, IsSuccess: true });
+    try {
+        var data = await requestSchema.find({
+            courierId: courierId,
+            status: "Takethisorder",
+        });
+        var datalist = [];
+        if (data.length != 0) {
+            for (var i = 0; i < data.length; i++) {
+                var orderdata = await orderSchema.findOne({
+                    _id: data[i].orderId,
+                    courierId: courierId,
+                    isActive: true,
+                });
+                if (orderdata != null) datalist.push(orderdata);
+            }
+            // console.log(datalist);
+            if (datalist.length != 0) {
+                res
+                    .status(200)
+                    .json({ Message: "Orders Found!", Data: datalist, IsSuccess: true });
+            } else {
+                res
+                    .status(200)
+                    .json({ Message: "No Orders Found!", Data: datalist, IsSuccess: true });
+            }
         } else {
+            let orderdata = [];
             res
                 .status(200)
-                .json({ Message: "No Orders Found!", Data: datalist, IsSuccess: true });
-        }
-    } else {
-        let orderdata = [];
-        res
-            .status(200)
-            .json({ Message: "No Orders Found!", Data: orderdata, IsSuccess: true });
+                .json({ Message: "No Orders Found!", Data: orderdata, IsSuccess: true });
+        }    
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
     }
+    
 });
 
 router.post("/c_completeOrder", async function (req, res, next) {
@@ -1598,38 +1589,43 @@ router.post("/c_completeOrder", async function (req, res, next) {
 
 router.post("/c_responseOrder", async function (req, res, next) {
     const { courierId } = req.body;
-    var data = await requestSchema.find({
-        courierId: courierId,
-        status: "Accept",
-    });
-    var datalist = [];
-    if (data.length != 0) {
-        for (var i = 0; i < data.length; i++) {
-            var orderdata = await orderSchema.findOne({
-                _id: data[i].orderId,
-                courierId: courierId,
-                isActive: true,
-            });
-            if (orderdata != null) {
-                datalist.push(orderdata);
+    try {
+        var data = await requestSchema.find({
+            courierId: courierId,
+            status: "Accept",
+        });
+        var datalist = [];
+        if (data.length != 0) {
+            for (var i = 0; i < data.length; i++) {
+                var orderdata = await orderSchema.findOne({
+                    _id: data[i].orderId,
+                    courierId: courierId,
+                    isActive: true,
+                });
+                if (orderdata != null) {
+                    datalist.push(orderdata);
+                }
             }
-        }
-        // console.log(datalist);
-        if (datalist.length != 0) {
-            res
-                .status(200)
-                .json({ Message: "Orders Found!", Data: datalist, IsSuccess: true });
+            // console.log(datalist);
+            if (datalist.length != 0) {
+                res
+                    .status(200)
+                    .json({ Message: "Orders Found!", Data: datalist, IsSuccess: true });
+            } else {
+                res
+                    .status(200)
+                    .json({ Message: "No Orders Found!", Data: datalist, IsSuccess: true });
+            }
         } else {
+            let orderdata = [];
             res
                 .status(200)
-                .json({ Message: "No Orders Found!", Data: datalist, IsSuccess: true });
-        }
-    } else {
-        let orderdata = [];
-        res
-            .status(200)
-            .json({ Message: "No Orders Found!", Data: orderdata, IsSuccess: true });
+                .json({ Message: "No Orders Found!", Data: orderdata, IsSuccess: true });
+        }    
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
     }
+    
 });
 
 router.post("/orderDetails", async function (req, res, next) {

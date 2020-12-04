@@ -510,14 +510,15 @@ router.post("/cancelOrder", async function (req, res, next) {
             res
                 .status(200)
                 .json({ Message: "Order Cancelled!", Data: 1, IsSuccess: true });
-        } {
+        } 
+        else{
             res.status(200).json({
                 Message: "Unable to Cancell Order!",
                 Data: 0,
                 IsSuccess: true,
             });
         }
-    } catch {
+    } catch(err){
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
