@@ -368,8 +368,6 @@ router.post("/orders", async function (req, res, next) {
             )
             .populate("customerId")
             .sort(mysort);
-
-            // console.log(cancelledOrders);
         
         let pendingOrders = await orderSchema
             .find({ status: "Order Processing" })
@@ -379,11 +377,6 @@ router.post("/orders", async function (req, res, next) {
             )
             .populate("customerId")
             .sort(mysort);
-            // .toArray(function(err,result){
-            //     if(err){
-            //         res.status(500).json({ Message : "Sorting Not Done...!!!" , IsSuccess : false});
-            //     }
-            // });
 
         let runningOrders = await orderSchema
             .find({
@@ -437,12 +430,8 @@ router.post("/orders", async function (req, res, next) {
             cancelledOrders: cancelledOrders,
             pendingOrders: pendingOrders,
         });
-        // console.log("newdataset by meeeeeeeeee.....................!!!");
-        // console.log(newdataset)
 
-        res
-            .status(200)
-            .json({ Message: "Order Found!", Data: newdataset, IsSuccess: true });
+        res.status(200).json({ Message: "Order Found!", Data: newdataset, IsSuccess: true });
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
@@ -669,25 +658,31 @@ router.post("/couriersDelete", async function (req, res, next) {
 
 //get live location of courier boys whose duty is on: used in dashboard adminpanel
 router.post("/getLiveLocation", async function (req, res, next) {
-    var list_courier = [];
-    var listIds = await courierSchema
-        .find({ isActive: true, "accStatus.flag": true, isVerified: true })
-        .select("id firstName lastName");
-    var counter = 0;
-    for (let i = 0; i < listIds.length; i++) {
-        let location = await currentLocation(listIds[i].id);
-        // console.log(location);
-        if (location != null && location.duty == "ON") {
-            counter++;
-            let name = listIds[i].firstName + " " + listIds[i].lastName;
-            let lat = Number(location.latitude);
-            let long = Number(location.longitude);
-            var data = [name, lat, long, counter];
-            list_courier.push(data);
-            // console.log(data);
+    try {
+        var list_courier = [];
+        var listIds = await courierSchema
+            .find({ isActive: true, "accStatus.flag": true, isVerified: true })
+            .select("id firstName lastName");
+        var counter = 0;
+        for (let i = 0; i < listIds.length; i++) {
+            let location = await currentLocation(listIds[i].id);
+            // console.log(location);
+            if (location != null && location.duty == "ON") {
+                counter++;
+                let name = listIds[i].firstName + " " + listIds[i].lastName;
+                let lat = Number(location.latitude);
+                let long = Number(location.longitude);
+                var data = [name, lat, long, counter];
+                list_courier.push(data);
+                // console.log(data);
+            }
         }
+
+        res.status(200).json(list_courier);
+    } catch(err) {
+        res.status(500).json({ IsSuccess: false , Message: err.message });
     }
-    res.status(200).json(list_courier);
+    
 });
 
 //get todays extra kilometers done by courier boys during orders
