@@ -168,7 +168,7 @@ router.post("/verify", async function(req, res, next) {
     const { mobileNo } = req.body;
     try {
         var existCourier = await courierSchema.findOneAndUpdate({ mobileNo: mobileNo }, { isVerified: true });
-        console.log(existCourier);
+        // console.log(existCourier);
         if (existCourier != null) {
             var newfirebase = config.docref.child(existCourier.id);
             newfirebase.set({
@@ -378,7 +378,7 @@ router.post("/sendNotification", async function(req, res, next) {
                 description,
                 data
             );
-            console.log(datdasa);
+            // console.log(datdasa);
             await newNotification.save();
 
             res.json({

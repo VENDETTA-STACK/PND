@@ -129,8 +129,8 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
                             latitude: partnerlocation.latitude,
                             longitude: partnerlocation.longitude,
                         };
-                        console.log(partnerlocation);
-                        console.log(pickupcoords, partnercoords)
+                        // console.log(partnerlocation);
+                        // console.log(pickupcoords, partnercoords)
                         let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
                         if (distancebtnpp <= 15) {
                             available.push({
@@ -218,9 +218,9 @@ async function currentLocation(courierId) {
     const data = await CourierRef.once("value")
         .then((snapshot) => snapshot.val())
         .catch((err) => err);
-    console.log("---------");
-    console.log(data);
-    console.log("---------");
+    // console.log("---------");
+    // // console.log(data);
+    // console.log("---------");
     return data;
 }
 
@@ -354,8 +354,8 @@ router.post("/ordercalcV2", async (req, res, next) => {
         parcelcontents
     } = req.body;
 
-    console.log("OrderCalcV2 Request Body.................!!!!");
-    console.log(req.body);
+    // console.log("OrderCalcV2 Request Body.................!!!!");
+    // console.log(req.body);
 
     let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
     let tolocation = { latitude: Number(droplat), longitude: Number(droplong) };
@@ -433,8 +433,8 @@ router.post("/ordercalcV2", async (req, res, next) => {
         }
         parcelContentsList.push(data);
     }
-    console.log("Parcel Contents List..............................!!!");
-    console.log(parcelContentsList);
+    // console.log("Parcel Contents List..............................!!!");
+    // console.log(parcelContentsList);
     
     //Find ExtraCharges
     let sortParcelContents = arraySort(parcelContentsList, 'price', { reverse: true });
@@ -478,7 +478,7 @@ router.post("/ordercalcV2", async (req, res, next) => {
         promoused: Math.ceil(promoused.toFixed(2)),
         totalamt: netamount
     },];
-    console.log(dataset);
+    // console.log(dataset);
 
     res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
 });
@@ -495,8 +495,8 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
     res,
     next
 ) {
-    console.log("Neworder api...............................!!!");
-    console.log(req.body);
+    // console.log("Neworder api...............................!!!");
+    // console.log(req.body);
     const {
         customerId,
         deliveryType,
@@ -612,11 +612,11 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
     var findAdminFcmToken4 = await customerSchema.find({ mobileNo: AdminNumber4 }).select('fcmToken -_id');
     var findAdminFcmToken5 = await customerSchema.find({ mobileNo: AdminNumber5 }).select('fcmToken -_id');
     
-    console.log(findAdminFcmToken);
-    console.log(findAdminFcmToken2);
-    console.log(findAdminFcmToken3);
-    console.log(findAdminFcmToken4);
-    console.log(findAdminFcmToken5);
+    // console.log(findAdminFcmToken);
+    // console.log(findAdminFcmToken2);
+    // console.log(findAdminFcmToken3);
+    // console.log(findAdminFcmToken4);
+    // console.log(findAdminFcmToken5);
 
     var AdminFcmToken = [findAdminFcmToken[0].fcmToken,findAdminFcmToken2[0].fcmToken,findAdminFcmToken3[0].fcmToken,findAdminFcmToken4[0].fcmToken,findAdminFcmToken5[0].fcmToken];
     console.log("-------------------------ADMINS TOKENS-----------------------------");
@@ -1268,11 +1268,11 @@ router.post("/takeThisOrder", async function (req, res, next) {
 router.post("/rejectOrder", async function (req, res, next) {
     const { courierId, orderId, reason } = req.body;
     console.log("Data for Reject Order");
-    console.log(req.body);
+    // console.log(req.body);
     try {
         var orderData = await orderSchema.find({ _id: orderId, isActive: true });
         orderData.status = "Order Cancel By Employee";
-        console.log(orderData);
+        // console.log(orderData);
         let courierData = await courierSchema.find({ _id: courierId });
         if (orderData.length != 0) {
             let getlocation = await currentLocation(courierId);
@@ -1280,7 +1280,7 @@ router.post("/rejectOrder", async function (req, res, next) {
                 let updateRejection = await requestSchema.findOneAndUpdate({ courierId: courierId, orderId: orderId }, { status: "Reject", reason: reason });
                 let orderRejectInOrder = await orderSchema.insertOne(orderData);
                 console.log("Order cancel by Employeee..........................!!!");
-                console.log(orderRejectInOrder);
+                // console.log(orderRejectInOrder);
                 if (updateRejection != null) {
                     var avlcourier = await PNDfinder(
                         orderData[0].pickupPoint.lat,
@@ -1564,7 +1564,7 @@ router.post("/c_activeOrder", async function (req, res, next) {
             });
             if (orderdata != null) datalist.push(orderdata);
         }
-        console.log(datalist);
+        // console.log(datalist);
         if (datalist.length != 0) {
             res
                 .status(200)
@@ -1614,7 +1614,7 @@ router.post("/c_responseOrder", async function (req, res, next) {
                 datalist.push(orderdata);
             }
         }
-        console.log(datalist);
+        // console.log(datalist);
         if (datalist.length != 0) {
             res
                 .status(200)
@@ -1679,11 +1679,11 @@ router.post("/orderCancelByCustomer", async function(req , res ,next){
 
     try {
         let customerOrder = await orderSchema.find({ $and: [ { _id: id }, { customerId: customerId } ] });
-        console.log(customerOrder);
+        // console.log(customerOrder);
         if(customerOrder.length == 1){
             let orderNo = customerOrder[0].orderNo;
             let OrderTime = customerOrder[0].schedualDateTime;
-            console.log(OrderTime);
+            // console.log(OrderTime);
 
             var getextractData = await orderSchema.aggregate(
                 [
@@ -1715,21 +1715,21 @@ router.post("/orderCancelByCustomer", async function(req , res ,next){
                 TimeMonth = timeData[0].month;
                 TimeDate = timeData[0].day;
 
-                console.log(timeData[0].year);
-                console.log(timeData);
+                // console.log(timeData[0].year);
+                // console.log(timeData);
                 
-             });
-             console.log(`Year : ${TimeHours}`);
-             console.log(`Minutes : ${TimeMinutes}`);
-             console.log(`Seconds : ${TimeSeconds}`);
-             console.log(`Year : ${TimeYear}`);
-             console.log(`Month : ${TimeMonth}`);
-             console.log(`Day : ${TimeDate}`);
+            //  });
+            //  console.log(`Year : ${TimeHours}`);
+            //  console.log(`Minutes : ${TimeMinutes}`);
+            //  console.log(`Seconds : ${TimeSeconds}`);
+            //  console.log(`Year : ${TimeYear}`);
+            //  console.log(`Month : ${TimeMonth}`);
+            //  console.log(`Day : ${TimeDate}`);
              //console.log(`Seconds : ${TimeSeconds}`);
             let myNewDate = new Date(TimeYear,TimeMonth,TimeDate,TimeHours,TimeMinutes,TimeSeconds);
-            console.log(myNewDate.getMinutes());
+            // console.log(myNewDate.getMinutes());
             myNewDate.setMinutes(myNewDate.getMinutes() - 15);
-            console.log(myNewDate);
+            // console.log(myNewDate);
 
             var hh = myNewDate.getHours();
             var mm = myNewDate.getMinutes();

@@ -147,7 +147,7 @@ router.post("/signup", async function (req, res, next) {
 //admin panel login
 router.post("/login", async function (req, res, next) {
     const { username, password, type } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
     try {
         var existAdmin = await adminSchema.find({
             username: username,
@@ -266,8 +266,8 @@ router.post("/updatesetttings", async function (req, res, next) {
 
     initialTime = initialTime.utc().format('h:mm a');
     endTime = endTime.utc().format('h:mm a');
-    console.log(initialTime);
-    console.log(endTime);
+    // console.log(initialTime);
+    // console.log(endTime);
     
 
     // let FromTimeField = new Date(0,0,0,9,0,0);
@@ -369,7 +369,7 @@ router.post("/orders", async function (req, res, next) {
             .populate("customerId")
             .sort(mysort);
 
-            console.log(cancelledOrders);
+            // console.log(cancelledOrders);
         
         let pendingOrders = await orderSchema
             .find({ status: "Order Processing" })
@@ -408,7 +408,7 @@ router.post("/orders", async function (req, res, next) {
         //     })
         //     .select('courierId orderId reason isActive');
         
-            console.log("cancel order");
+            // console.log("cancel order");
             //console.log(cancelOrders);
         //completed order API 
         // let completeOrders = await orderSchema
@@ -476,7 +476,6 @@ router.post("/orders", async function (req, res, next) {
 router.post("/completed_orders", async function (req, res, next) {
     try {
         let newdataset = [];
-        console.log("hello");
 
         //completed order API 
         let completeOrders = await orderSchema
@@ -503,7 +502,7 @@ router.post("/completed_orders", async function (req, res, next) {
         newdataset.push({
             completeOrders: orderscomplete,
         });
-        console.log(newdataset);
+        // console.log(newdataset);
         res
             .status(200)
             .json({ Message: "Order Found!", Data: newdataset, IsSuccess: true });
@@ -784,8 +783,8 @@ router.post("/ftExtraKms", async function (req, res, next) {
     const { FromDate, ToDate } = req.body;
     let fdate = new Date(FromDate);
     let tdate = new Date(ToDate);
-    console.log(fdate);
-    console.log(tdate);
+    // console.log(fdate);
+    // console.log(tdate);
     try {
         let exttime = await ExtatimeSchema.find({
             dateTime: {
@@ -935,7 +934,7 @@ router.post("/AssignOrder", async function (req, res, next) {
                 "--" +
                 courierData[0].mobileNo +
                 ".He Will Reach To You Shortly.";
-            console.log(courierData[0].mobileNo + createMsg);
+            // console.log(courierData[0].mobileNo + createMsg);
             sendMessages(OrderData[0].pickupPoint.mobileNo, createMsg);
 
             // New Code 03-09-2020
@@ -1454,7 +1453,7 @@ router.post(
                     image: file == undefined ? null : file.path,
                 });
                 await category.save();
-                console.log(category);
+                // console.log(category);
                 res.json({
                     Message: "Category Added Successfully!",
                     Data: category,
@@ -1462,7 +1461,7 @@ router.post(
                 });
             } else {
                 if (file != undefined) {
-                    console.log("csds");
+                    // console.log("csds");
                     let category = {
                         title: title,
                         price: price,
@@ -1643,7 +1642,7 @@ router.post("/ordercancelreason", async function(req, res, next){
             DefaultReason : req.body.DefaultReason,
             CustomeReason : req.body.CustomeReason  
         });
-        console.log(record);
+        // console.log(record);
         record.save();
         return res.status(200).send({success: true, Message : "Your Reasons Added"});
       }
@@ -1670,7 +1669,7 @@ router.post("/getdateorder", async function(req, res, next){
         //         message: 'Please ensure you pick two dates'
         //          })
         //         }
-        console.log({ startDate, endDate});
+        // console.log({ startDate, endDate});
         let dataset = await orderSchema.find( { "courierId" : empId , dateTime:{$gte:startDate,$lte:endDate}} )
         .populate(
             "courierId",
@@ -1752,7 +1751,7 @@ router.post('/apiOrder', async function(req,res,next){
             paymentStatus: paymentStatus,
         });
         let data = await sumulOrderDetails.save();
-        console.log(data);
+        // console.log(data);
         res.status(200).json({ IsSuccess : true , Message : "Order Added...!!!" , Data : data });
     } catch (error) {
         res.status(500).json({ IsSuccess : false , Message : "Something Wrong" });
@@ -1801,7 +1800,7 @@ router.post("/ecommOrder" , async function(req , res , next){
 router.post('/getEcommOrder', async function(req , res , next){
     try {
         let EcommOrdersList = await ecommOrderSchema.find();
-        console.log(EcommOrdersList);
+        // console.log(EcommOrdersList);
         res.status(200).json({ IsSuccess : true , Message : "Orders List Found...!!!" , Data : EcommOrdersList});
     } catch (error) {
         res.status(500).json({ IsSuccess : false , Message : "Order List Not Found...!!!" });
