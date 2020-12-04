@@ -890,22 +890,34 @@ router.post("/getOptimizeRoute", async function(req,res,next){
         let PickPoint = [orderIs[0].pickupPoint.lat,orderIs[0].pickupPoint.long];
         // console.log(PickPoint);
         var distanceFromPickUp = [];
+        function pushToAry(name, val , ary) {
+            var obj = {};
+            obj[name] = val;
+            ary.push(obj);
+         }
         for(var i=0;i<orderIs.length;i++){
             var deliveryPoint = [orderIs[i].deliveryPoint.lat,orderIs[i].deliveryPoint.long];
                 
             let distance = calculatelocation(PickPoint[0],PickPoint[1],deliveryPoint[0],deliveryPoint[1]);
             distance = distance/1000;
             // console.log(distance);
-            distanceFromPickUp.push(distance); 
+            
+            // distanceFromPickUp.push({ i: distance});
+            pushToAry(i,distance,distanceFromPickUp); 
         }
         console.log(distanceFromPickUp);
         console.log(indexOfMinFromArray(distanceFromPickUp));
-        var optimizeOrderRoute = [];
-        optimizeOrderRoute.push({ deliveryAddNo: indexOfMinFromArray(distanceFromPickUp) });
-        console.log(optimizeOrderRoute);
-        // for(var j=0;j<distanceFromPickUp.length;j++){
-            
-        // }
+        let nextStartNodeIndex = indexOfMinFromArray(distanceFromPickUp);
+        let NextStartNodeLat = orderIs[nextStartNodeIndex].deliveryPoint.lat;
+        let NextStartNodeLong = orderIs[nextStartNodeIndex].deliveryPoint.long;
+        console.log(NextStartNodeLat);
+        console.log(NextStartNodeLong);
+        // var optimizeOrderRoute = [];
+        // // optimizeOrderRoute.push({ deliveryAddNo: indexOfMinFromArray(distanceFromPickUp) });
+        // console.log(optimizeOrderRoute);
+        for(var j=0;j<distanceFromPickUp.length;j++){
+
+        }
         
         res.status(200).json({ IsSuccess: true , Data: orderIs , Message: "Yo Nigga...!!!" })
     } catch (error) {
