@@ -10,6 +10,10 @@ const promoCodeSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  isForNewUser: {
+    type: Boolean,
+    default: false,
+  },
   image:{
     type:String,
     required: true,

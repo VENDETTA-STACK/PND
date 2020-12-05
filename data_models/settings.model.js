@@ -20,6 +20,9 @@ const orderSettingsSchema = mongoose.Schema({
   AdminMObile3: { type: String,},
   AdminMObile4: { type: String,},
   AdminMObile5: { type: String,},
+  NewUserUnderKm: {
+    type: Number,
+  },
 });
 
 module.exports = mongoose.model("Settings", orderSettingsSchema);

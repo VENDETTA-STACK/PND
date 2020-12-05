@@ -11,6 +11,8 @@ var arraySort = require("array-sort");
 const geolib = require("geolib");
 // For Third Party Service Call
 var request = require('request');
+const mongoose = require("mongoose");
+
 var imguploader = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, "uploads/orderimg");
@@ -433,8 +435,6 @@ router.post("/ordercalcV2", async (req, res, next) => {
         }
         parcelContentsList.push(data);
     }
-    // console.log("Parcel Contents List..............................!!!");
-    // console.log(parcelContentsList);
     
     //Find ExtraCharges
     let sortParcelContents = arraySort(parcelContentsList, 'price', { reverse: true });
@@ -455,18 +455,6 @@ router.post("/ordercalcV2", async (req, res, next) => {
     let AdminNumber3 = AdminMobile[0].AdminMObile3; 
     let AdminNumber4 = AdminMobile[0].AdminMObile4; 
     let AdminNumber5 = AdminMobile[0].AdminMObile5;
-
-    // var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber1 }).select('fcmToken -_id');
-    // var findAdminFcmToken2 = await customerSchema.find({ mobileNo: AdminNumber2 }).select('fcmToken -_id');
-    // var findAdminFcmToken3 = await customerSchema.find({ mobileNo: AdminNumber3 }).select('fcmToken -_id');
-    // var findAdminFcmToken4 = await customerSchema.find({ mobileNo: AdminNumber4 }).select('fcmToken -_id');
-    // var findAdminFcmToken5 = await customerSchema.find({ mobileNo: AdminNumber5 }).select('fcmToken -_id');
-    // console.log(findAdminFcmToken);
-    // var AdminFcmToken = [findAdminFcmToken[0].fcmToken,findAdminFcmToken2[0].fcmToken,findAdminFcmToken3[0].fcmToken,findAdminFcmToken4[0].fcmToken,findAdminFcmToken5[0].fcmToken];
-    // var AdminFcmToken2 = findAdminFcmToken2[0].fcmToken;
-    // var AdminFcmToken3 = findAdminFcmToken3[0].fcmToken;
-    // var AdminFcmToken4 = findAdminFcmToken4[0].fcmToken;
-    // var AdminFcmToken5 = findAdminFcmToken5[0].fcmToken;
     
     let dataset = [{
         note: note,
@@ -497,6 +485,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
 ) {
     // console.log("Neworder api...............................!!!");
     // console.log(req.body);
+    
     const {
         customerId,
         deliveryType,
@@ -525,46 +514,108 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
         finalAmount,
         schedualDateTime,
     } = req.body;
+    
     const file = req.file;
     let num = getOrderNumber();
     try {
-        var newOrder = new orderSchema({
-            _id: new config.mongoose.Types.ObjectId(),
-            orderNo: num,
-            customerId: customerId,
-            deliveryType: deliveryType,
-            schedualDateTime: schedualDateTime,
-            weightLimit: weightLimit,
-            orderImg: file == undefined ? "" : file.path,
-            pickupPoint: {
-                name: pkName,
-                mobileNo: pkMobileNo,
-                address: pkAddress,
-                lat: pkLat,
-                long: pkLong,
-                completeAddress: pkCompleteAddress,
-                contents: pkContent,
-                arriveType: pkArriveType,
-                arriveTime: pkArriveTime,
-            },
-            deliveryPoint: {
-                name: dpName,
-                mobileNo: dpMobileNo,
-                address: dpAddress,
-                lat: dpLat,
-                long: dpLong,
-                completeAddress: dpCompleteAddress,
-                distance: dpDistance,
-            },
-            collectCash: collectCash,
-            promoCode: promoCode,
-            amount: amount,
-            discount: discount,
-            additionalAmount: additionalAmount,
-            finalAmount: finalAmount,
-            status: "Order Processing",
-            note: "Your order is processing!",
+        var UserOrders = await orderSchema({
+            customerId : mongoose.Types.ObjectId(customerId),
         });
+        
+        let a = Object.keys(UserOrders).map((key) => [Number(key), UserOrders[key]]);
+        console.log("------------------------------------nnnnnnnnnnnnnnnnnnnnnnnnnnn");
+        // console.log(a);
+        console.log(a.length);
+        // console.log(UserOrders);
+        var promoValidUnderKm = await settingsSchema.find().select("NewUserUnderKm");
+        // console.log(promoValidUnderKm);
+        console.log(dpDistance);
+        if(a.length <=6 && dpDistance <= promoValidUnderKm){
+            var promocode = await promoCodeSchema.find({ isForNewUser: true });
+            console.log(promocode);
+            let discountPercentage = parseFloat(promocode[0].discount);
+            var newUserDiscount = 0
+            newUserDiscount = (parseFloat(finalAmount) * discountPercentage)/100;
+            console.log("Yeahhhhhhhhhhhhhhhhhhh....................................");
+            console.log(newUserDiscount);
+            var newOrder = new orderSchema({
+                _id: new config.mongoose.Types.ObjectId(),
+                orderNo: num,
+                customerId: customerId,
+                deliveryType: deliveryType,
+                schedualDateTime: schedualDateTime,
+                weightLimit: weightLimit,
+                orderImg: file == undefined ? "" : file.path,
+                pickupPoint: {
+                    name: pkName,
+                    mobileNo: pkMobileNo,
+                    address: pkAddress,
+                    lat: pkLat,
+                    long: pkLong,
+                    completeAddress: pkCompleteAddress,
+                    contents: pkContent,
+                    arriveType: pkArriveType,
+                    arriveTime: pkArriveTime,
+                },
+                deliveryPoint: {
+                    name: dpName,
+                    mobileNo: dpMobileNo,
+                    address: dpAddress,
+                    lat: dpLat,
+                    long: dpLong,
+                    completeAddress: dpCompleteAddress,
+                    distance: dpDistance,
+                },
+                collectCash: collectCash,
+                promoCode: promoCode,
+                amount: amount,
+                discount: promocode[0].discount,
+                additionalAmount: additionalAmount,
+                finalAmount: finalAmount - newUserDiscount,
+                status: "Order Processing",
+                note: "Your order is processing!",
+            }); 
+        }else{
+            console.log("Noppppppppppppppppppppppppppppppppppppppppppppppp................!!!!");
+            newOrder = new orderSchema({
+                _id: new config.mongoose.Types.ObjectId(),
+                orderNo: num,
+                customerId: customerId,
+                deliveryType: deliveryType,
+                schedualDateTime: schedualDateTime,
+                weightLimit: weightLimit,
+                orderImg: file == undefined ? "" : file.path,
+                pickupPoint: {
+                    name: pkName,
+                    mobileNo: pkMobileNo,
+                    address: pkAddress,
+                    lat: pkLat,
+                    long: pkLong,
+                    completeAddress: pkCompleteAddress,
+                    contents: pkContent,
+                    arriveType: pkArriveType,
+                    arriveTime: pkArriveTime,
+                },
+                deliveryPoint: {
+                    name: dpName,
+                    mobileNo: dpMobileNo,
+                    address: dpAddress,
+                    lat: dpLat,
+                    long: dpLong,
+                    completeAddress: dpCompleteAddress,
+                    distance: dpDistance,
+                },
+                collectCash: collectCash,
+                promoCode: promoCode,
+                amount: amount,
+                discount: discount,
+                additionalAmount: additionalAmount,
+                finalAmount: finalAmount,
+                status: "Order Processing",
+                note: "Your order is processing!",
+            });
+        }
+        
         var placedorder = await newOrder.save();
         var avlcourier = await PNDfinder(
             pkLat,

@@ -26,6 +26,8 @@ var bannerSchema = require("../data_models/banner.model");
 var promoCodeSchema = require("../data_models/promocode.model");
 var usedpromoSchema = require("../data_models/used.promocode.model");
 var parcelcategories = require("../data_models/category.model");
+const orderRequestModel = require("../data_models/order.request.model");
+const orderModel = require("../data_models/order.model");
 
 /* Routes. */
 router.get("/", function(req, res, next) {
@@ -381,6 +383,27 @@ router.post("/promocodes", async function(req, res, next) {
         }
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
+
+router.post("/getNewCustomerPromocode", async function(req,res,next){
+    const { customerId } = req.body;
+    try {
+        var record = await orderModel({
+            customerId : customerId,
+        });
+        if(record.length == 0){
+            var promocode = await promoCodeSchema.find({ isForNewUser: true });
+            if(promocode){
+                res.status(200).json({ IsSuccess: true , Data: promocode , Message: "Applicable for NewUser Promocode" });
+            }else{
+                res.status(200).json({ IsSuccess: true , Data: 0 , Message: "No Promocode For New User" });
+            }
+        }else{
+            res.status(200).json({ IsSuccess: false , Data: 0 , Message: "Not a New User" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
     }
 });
 

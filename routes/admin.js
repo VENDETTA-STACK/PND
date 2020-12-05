@@ -259,6 +259,7 @@ router.post("/updatesetttings", async function (req, res, next) {
         AdminMObile3,
         AdminMObile4,
         AdminMObile5,
+        NewUserUnderKm,
     } = req.body;
 
     // var initialTime = moment(FromTime);
@@ -296,6 +297,7 @@ router.post("/updatesetttings", async function (req, res, next) {
                 AdminMObile3: AdminMObile3,
                 AdminMObile4: AdminMObile4,
                 AdminMObile5: AdminMObile5,
+                NewUserUnderKm: NewUserUnderKm,
             };
             await settingsSchema.findByIdAndUpdate(id, updatedsettings);
             res
@@ -321,6 +323,7 @@ router.post("/updatesetttings", async function (req, res, next) {
                 AdminMObile3: AdminMObile3,
                 AdminMObile4: AdminMObile4,
                 AdminMObile5: AdminMObile5,
+                NewUserUnderKm: NewUserUnderKm,
             });
             await newsettings.save();
             res
@@ -1029,6 +1032,7 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
         discount,
         validfrom,
         validupto,
+        isForNewUser,
     } = req.body;
     const file = req.file;
     try {
@@ -1037,6 +1041,7 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
                 _id: new config.mongoose.Types.ObjectId(),
                 title: title,
                 description: description,
+                isForNewUser: isForNewUser,
                 code: code,
                 discount: discount,
                 validfrom: validfrom,
@@ -1053,6 +1058,7 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
                         description: description,
                         code: code,
                         discount: discount,
+                        isForNewUser: isForNewUser,
                         validfrom: validfrom,
                         validupto: validupto,
                         image: file.path,
@@ -1063,6 +1069,7 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
                         title: title,
                         description: description,
                         code: code,
+                        isForNewUser: isForNewUser,
                         discount: discount,
                         validfrom: validfrom,
                         validupto: validupto,
