@@ -261,12 +261,12 @@ router.post("/updatesetttings", async function (req, res, next) {
         AdminMObile5,
     } = req.body;
 
-    var initialTime = moment(FromTime);
-    var endTime = moment(ToTime);
+    // var initialTime = moment(FromTime);
+    // var endTime = moment(ToTime);
 
-    initialTime = initialTime.utc().format('h:mm a');
-    endTime = endTime.utc().format('h:mm a');
-    // console.log(initialTime);
+    // initialTime = initialTime.utc().format('h:mm a');
+    // endTime = endTime.utc().format('h:mm a');
+    // // console.log(initialTime);
     // console.log(endTime);
     
 
@@ -286,8 +286,8 @@ router.post("/updatesetttings", async function (req, res, next) {
                 DefaultWMessage: DefaultWMessage,
                 AppLink: AppLink,
                 AmountPayKM: AmountPayKM,
-                FromTime: initialTime,
-                ToTime: endTime,
+                FromTime: FromTime,
+                ToTime: ToTime,
                 NormalDelivery: "2.5 Hours",
                 ExpressDelivery: "60 Minutes",
                 CancelOrderTime: "30",
@@ -1818,5 +1818,39 @@ router.post("/getAllEmployee" , async function(req,res,next){
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
 });
+
+router.post("/getBusinessOfDay", async function(req,res,next){
+    const { startdate , enddate } = req.body;
+    try {
+        let date1 = convertStringDateToISO(startdate);
+        let date2 = convertStringDateToISO(enddate);
+        var record = await orderSchema.find({ 
+            courierId: courierId,
+            status: "Order Delivered", 
+            isActive: false,
+            dateTime: {
+                $gte : date1,
+                $lte : date2
+            }
+            })
+            .populate(
+                    "courierId",
+                    "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+            )
+            .populate("customerId");
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.messag });
+    }
+});
+
+function convertStringDateToISO(date){
+    var dateList = date;
+    // console.log(dateList.split("/"));
+    let list = dateList.split("/");
+    
+    let dISO = list[2] + "-" + list[1] + "-" + list[0] + "T" + "00:00:00.0Z";
+    // console.log(dISO);
+    return dISO;
+}
 
 module.exports = router;
