@@ -1134,7 +1134,15 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
 
 router.post("/promocodes", async function (req, res, next) {
     try {
-        let dataset = await promocodeSchema.find({});
+        const { customerId } = req.body;
+        var newUser = await orderSchema.find({
+            customerId : mongoose.Types.ObjectId(customerId),
+        });
+        if(newUser.length == 0){
+            var dataset = await promocodeSchema.find({ isForNewUser: true });
+        }else{
+            dataset = await promocodeSchema.find({});
+        }
         res
             .status(200)
             .json({ Message: "Promocode List!", Data: dataset, IsSuccess: true });
