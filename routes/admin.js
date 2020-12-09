@@ -1033,48 +1033,94 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
         validfrom,
         validupto,
         isForNewUser,
+        status
     } = req.body;
     const file = req.file;
     try {
-        if (id == 0) {
-            let newPromo = new promocodeSchema({
-                _id: new config.mongoose.Types.ObjectId(),
-                title: title,
-                description: description,
-                isForNewUser: isForNewUser,
-                code: code,
-                discount: discount,
-                validfrom: validfrom,
-                validupto: validupto,
-                image: file != undefined ? file.path : "",
-            });
-            await newPromo.save();
-        } else {
-            let dataset = await promocodeSchema.find({ _id: id });
-            if (dataset.length == 1) {
-                if (file != undefined) {
-                    let newPromo = {
-                        title: title,
-                        description: description,
-                        code: code,
-                        discount: discount,
-                        isForNewUser: isForNewUser,
-                        validfrom: validfrom,
-                        validupto: validupto,
-                        image: file.path,
-                    };
-                    await promocodeSchema.findByIdAndUpdate(id, newPromo);
-                } else {
-                    let newPromo = {
-                        title: title,
-                        description: description,
-                        code: code,
-                        isForNewUser: isForNewUser,
-                        discount: discount,
-                        validfrom: validfrom,
-                        validupto: validupto,
-                    };
-                    await promocodeSchema.findByIdAndUpdate(id, newPromo);
+        if(status == 0){
+            if (id == 0) {
+                let newPromo = new promocodeSchema({
+                    _id: new config.mongoose.Types.ObjectId(),
+                    title: title,
+                    description: description,
+                    isForNewUser: true,
+                    code: code,
+                    discount: discount,
+                    validfrom: validfrom,
+                    validupto: validupto,
+                    image: file != undefined ? file.path : "",
+                });
+                await newPromo.save();
+            } else {
+                let dataset = await promocodeSchema.find({ _id: id });
+                if (dataset.length == 1) {
+                    if (file != undefined) {
+                        let newPromo = {
+                            title: title,
+                            description: description,
+                            code: code,
+                            discount: discount,
+                            isForNewUser: true,
+                            validfrom: validfrom,
+                            validupto: validupto,
+                            image: file.path,
+                        };
+                        await promocodeSchema.findByIdAndUpdate(id, newPromo);
+                    } else {
+                        let newPromo = {
+                            title: title,
+                            description: description,
+                            code: code,
+                            isForNewUser: true,
+                            discount: discount,
+                            validfrom: validfrom,
+                            validupto: validupto,
+                        };
+                        await promocodeSchema.findByIdAndUpdate(id, newPromo);
+                    }
+                }
+            }
+        }else{
+            if (id == 0) {
+                let newPromo = new promocodeSchema({
+                    _id: new config.mongoose.Types.ObjectId(),
+                    title: title,
+                    description: description,
+                    isForNewUser: false,
+                    code: code,
+                    discount: discount,
+                    validfrom: validfrom,
+                    validupto: validupto,
+                    image: file != undefined ? file.path : "",
+                });
+                await newPromo.save();
+            } else {
+                let dataset = await promocodeSchema.find({ _id: id });
+                if (dataset.length == 1) {
+                    if (file != undefined) {
+                        let newPromo = {
+                            title: title,
+                            description: description,
+                            code: code,
+                            discount: discount,
+                            isForNewUser: false,
+                            validfrom: validfrom,
+                            validupto: validupto,
+                            image: file.path,
+                        };
+                        await promocodeSchema.findByIdAndUpdate(id, newPromo);
+                    } else {
+                        let newPromo = {
+                            title: title,
+                            description: description,
+                            code: code,
+                            isForNewUser: false,
+                            discount: discount,
+                            validfrom: validfrom,
+                            validupto: validupto,
+                        };
+                        await promocodeSchema.findByIdAndUpdate(id, newPromo);
+                    }
                 }
             }
         }
