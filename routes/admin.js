@@ -1135,13 +1135,16 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
 router.post("/promocodes", async function (req, res, next) {
     try {
         const { customerId } = req.body;
-        var newUser = await orderSchema.find({
-            customerId : mongoose.Types.ObjectId(customerId),
-        });
+    
         var dataset = await promocodeSchema.find({ isForNewUser: false });
-        res
+        console.log(dataset);
+        if(dataset){
+            res
             .status(200)
             .json({ Message: "Promocode List!", Data: dataset, IsSuccess: true });
+        }else{
+            res.status(200).json({ Message: "Empty List!", Data: 0, IsSuccess: true })
+        }
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
