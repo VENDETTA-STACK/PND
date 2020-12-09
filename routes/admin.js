@@ -1138,11 +1138,7 @@ router.post("/promocodes", async function (req, res, next) {
         var newUser = await orderSchema.find({
             customerId : mongoose.Types.ObjectId(customerId),
         });
-        if(newUser.length == 0){
-            var dataset = await promocodeSchema.find({ isForNewUser: true });
-        }else{
-            dataset = await promocodeSchema.find({});
-        }
+        var dataset = await promocodeSchema.find({ isForNewUser: false });
         res
             .status(200)
             .json({ Message: "Promocode List!", Data: dataset, IsSuccess: true });
