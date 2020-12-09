@@ -23,6 +23,9 @@ const orderSettingsSchema = mongoose.Schema({
   NewUserUnderKm: {
     type: Number,
   },
+  NewUserprice: {
+    type: Number,
+  },
 });
 
 module.exports = mongoose.model("Settings", orderSettingsSchema);

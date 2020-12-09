@@ -394,6 +394,17 @@ router.post("/getNewCustomerPromocode", async function(req,res,next){
             customerId : mongoose.Types.ObjectId(customerId),
         });
         console.log(record);
+        var newUserPromocodeLimit = await settingsSchema.find().select("NewUserUnderKm");
+        console.log(newUserPromocodeLimit[0].NewUserUnderKm);
+        let dist = 7;
+        if(record.length == 0 && dist < newUserPromocodeLimit[0].NewUserUnderKm )
+        {
+            var newUserpromocode = await promoCodeSchema.find({ isForNewUser: true });
+            let discountPercent = newUserpromocode[0].discount;
+            console.log(discountPercent);
+            let NewUserDiscountAmount = (140 * parseFloat(discountPercent)) / 100;
+            console.log(NewUserDiscountAmount);
+        }
         if(record.length == 0){
             var promocode = await promoCodeSchema.find({ isForNewUser: true });
             if(promocode){

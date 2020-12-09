@@ -345,8 +345,146 @@ router.post("/ordercalc", async (req, res, next) => {
 });
 
 
+// router.post("/ordercalcV2", async (req, res, next) => {
+//     const {
+//         picklat,
+//         picklong,
+//         droplat,
+//         droplong,
+//         deliverytype,
+//         promocode,
+//         parcelcontents
+//     } = req.body;
+
+//     // console.log("OrderCalcV2 Request Body.................!!!!");
+//     // console.log(req.body);
+
+//     let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
+//     let tolocation = { latitude: Number(droplat), longitude: Number(droplong) };
+//     let prmcodes = await promoCodeSchema.find({ code: promocode });
+//     let settings = await settingsSchema.find({});
+//     let delivery = await deliverytypesSchema.find({});
+//     let totaldistance = await GoogleMatrix(fromlocation, tolocation);
+
+//     let basickm = 0;
+//     let basicamt = 0;
+//     let extrakm = 0;
+//     let extraamt = 0;
+//     let extadeliverycharges = 0;
+//     let promoused = 0;
+//     let amount = 0;
+//     let totalamt = 0;
+
+//     if (totaldistance <= 5) {
+//         if (deliverytype == "Normal Delivery") {
+//             basickm = totaldistance;
+//             basicamt = settings[0].PerUnder5KM;
+//             extrakm = 0;
+//             extraamt = 0;
+//             extadeliverycharges = delivery[0].cost;
+//             amount = basicamt + extraamt + extadeliverycharges;
+//             totalamt = amount;
+//         } else {
+//             for (let i = 1; i < delivery.length; i++) {
+//                 if (deliverytype == delivery[i].title) {
+//                     basickm = totaldistance;
+//                     basicamt = settings[0].PerUnder5KM;
+//                     extrakm = 0;
+//                     extraamt = 0;
+//                     extadeliverycharges = delivery[i].cost;
+//                     amount = basicamt + extraamt + extadeliverycharges;
+//                     totalamt = amount;
+//                 }
+//             }
+//         }
+//     } else {
+//         if (deliverytype == "Normal Delivery") {
+//             let remdis = totaldistance - 5;
+//             basickm = 5;
+//             basicamt = settings[0].PerUnder5KM;
+//             extrakm = remdis;
+//             extraamt = remdis * settings[0].PerKM;
+//             extadeliverycharges = delivery[0].cost;
+//             amount = basicamt + extraamt + extadeliverycharges;
+//             totalamt = amount;
+//         } else {
+//             for (let i = 1; i < delivery.length; i++) {
+//                 if (deliverytype == delivery[i].title) {
+//                     let remdis = totaldistance - 5;
+//                     basickm = 5;
+//                     basicamt = settings[0].PerUnder5KM;
+//                     extrakm = remdis;
+//                     extraamt = remdis * settings[0].PerKM;
+//                     extadeliverycharges = delivery[i].cost;
+//                     amount = basicamt + extraamt + extadeliverycharges;
+//                     totalamt = amount;
+//                 }
+//             }
+//         }
+//     }
+
+//     let distamt = Number(basicamt.toFixed(2)) + Number(extraamt.toFixed(2));
+//     distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
+//     let note;
+//     //Find Parcel Content From Database
+//     let parcelContentsList = [];
+//     for (let e = 0; e < parcelcontents.length; e++) {
+//         let data = await categorySchema.findOne({ title: parcelcontents[e] });
+//         if (e == 0) {
+//             note = data.note;
+//         }
+//         parcelContentsList.push(data);
+//     }
+    
+//     //Find ExtraCharges
+//     let sortParcelContents = arraySort(parcelContentsList, 'price', { reverse: true });
+//     let extracharges = 0;
+//     for (let a = 0; a < sortParcelContents.length; a++) {
+//         extracharges = extracharges + sortParcelContents[a].price;
+//     }
+
+//     let amt = Number(distamt) + extracharges + Math.ceil(extadeliverycharges.toFixed(2));
+//     promoused = prmcodes.length != 0 ? (amt * prmcodes[0].discount) / 100 : 0;
+//     let netamount = amt - Math.ceil(promoused.toFixed(2));
+
+//     //TESTING FCMTOKEN
+//     let AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
+//     console.log("Admin numbers-------------------------------------------------");
+//     let AdminNumber1 = AdminMobile[0].AdminMObile1; 
+//     let AdminNumber2 = AdminMobile[0].AdminMObile2; 
+//     let AdminNumber3 = AdminMobile[0].AdminMObile3; 
+//     let AdminNumber4 = AdminMobile[0].AdminMObile4; 
+//     let AdminNumber5 = AdminMobile[0].AdminMObile5;
+
+//     // var newUserPromocodeLimit = await settingsSchema.find().select("NewUserUnderKm");
+//     // var userPastOrders = await orderSchema.find({
+//     //     customerId : mongoose.Types.ObjectId(customerId),
+//     // });
+
+//     // if(userPastOrders.length == 0 && totaldistance < newUserPromocodeLimit[0].NewUserUnderKm){
+//     //     var dataset
+//     // }else{
+        
+//     // }
+    
+//     dataset = [{
+//         note: note,
+//         totaldistance: Math.round(totaldistance.toFixed(2)),
+//         totaldistamt: Number(distamt),
+//         extracharges: extracharges,
+//         extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
+//         amount: amt,
+//         promoused: Math.ceil(promoused.toFixed(2)),
+//         totalamt: netamount
+//     },];
+//     // console.log(dataset);
+
+//     res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
+// });
+
 router.post("/ordercalcV2", async (req, res, next) => {
     const {
+        customerId,
         picklat,
         picklong,
         droplat,
@@ -455,22 +593,49 @@ router.post("/ordercalcV2", async (req, res, next) => {
     let AdminNumber3 = AdminMobile[0].AdminMObile3; 
     let AdminNumber4 = AdminMobile[0].AdminMObile4; 
     let AdminNumber5 = AdminMobile[0].AdminMObile5;
-    
-    let dataset = [{
-        note: note,
-        totaldistance: Math.round(totaldistance.toFixed(2)),
-        totaldistamt: Number(distamt),
-        extracharges: extracharges,
-        extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
-        amount: amt,
-        promoused: Math.ceil(promoused.toFixed(2)),
-        totalamt: netamount
-    },];
-    // console.log(dataset);
+
+    var newUserPromocodeLimit = await settingsSchema.find().select("NewUserUnderKm");
+    var userPastOrders = await orderSchema.find({
+        customerId : mongoose.Types.ObjectId(customerId),
+    });
+
+    if(userPastOrders.length == 0 && totaldistance < newUserPromocodeLimit[0].NewUserUnderKm){
+        var newUserpromocode = await promoCodeSchema.find({ isForNewUser: true });
+        console.log(newUserpromocode);
+        console.log("--------------------Hello-----------------------");
+        let discountPercent = newUserpromocode[0].discount;
+        console.log(discountPercent);
+        let NewUserDiscountAmount = (amt * parseFloat(discountPercent)) / 100;
+        let newUserNetAmount = amt - NewUserDiscountAmount;
+        console.log("New User Net Amount");
+        console.log(newUserNetAmount);
+        console.log("-------------------");
+        var dataset = [{
+            note: note,
+            totaldistance: Math.round(totaldistance.toFixed(2)),
+            totaldistamt: Number(distamt),
+            extracharges: extracharges,
+            extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
+            amount: amt,
+            promoused: Math.ceil(NewUserDiscountAmount.toFixed(2)),
+            totalamt: newUserNetAmount
+        },];
+    }else{
+        console.log("--------------------Out-----------------------");
+        dataset = [{
+            note: note,
+            totaldistance: Math.round(totaldistance.toFixed(2)),
+            totaldistamt: Number(distamt),
+            extracharges: extracharges,
+            extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
+            amount: amt,
+            promoused: Math.ceil(promoused.toFixed(2)),
+            totalamt: netamount
+        },];
+    }
 
     res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
 });
-
 
 var round = function (num, precision) {
     num = parseFloat(num);
@@ -518,15 +683,301 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
     const file = req.file;
     let num = getOrderNumber();
     try {
+        var newOrder = new orderSchema({
+            _id: new config.mongoose.Types.ObjectId(),
+            orderNo: num,
+            customerId: customerId,
+            deliveryType: deliveryType,
+            schedualDateTime: schedualDateTime,
+            weightLimit: weightLimit,
+            orderImg: file == undefined ? "" : file.path,
+            pickupPoint: {
+                name: pkName,
+                mobileNo: pkMobileNo,
+                address: pkAddress,
+                lat: pkLat,
+                long: pkLong,
+                completeAddress: pkCompleteAddress,
+                contents: pkContent,
+                arriveType: pkArriveType,
+                arriveTime: pkArriveTime,
+            },
+            deliveryPoint: {
+                name: dpName,
+                mobileNo: dpMobileNo,
+                address: dpAddress,
+                lat: dpLat,
+                long: dpLong,
+                completeAddress: dpCompleteAddress,
+                distance: dpDistance,
+            },
+            collectCash: collectCash,
+            promoCode: promoCode,
+            amount: amount,
+            discount: discount,
+            additionalAmount: additionalAmount,
+            finalAmount: finalAmount,
+            status: "Order Processing",
+            note: "Your order is processing!",
+        });
+        var placedorder = await newOrder.save();
+            var avlcourier = await PNDfinder(
+                pkLat,
+                pkLong,
+                placedorder.id,
+                placedorder.deliveryType
+            );
+        
+        if (promoCode != "0") {
+            let usedpromo = new usedpromoSchema({
+                _id: new config.mongoose.Types.ObjectId(),
+                customer: customerId,
+                code: promoCode,
+            });
+            usedpromo.save();
+        }
+        if (placedorder != null && avlcourier.length != 0) {
+            console.log("Total Found:" + avlcourier.length);
+            let courierfound = arraySort(avlcourier, "distance");
+            var newrequest = new requestSchema({
+                _id: new config.mongoose.Types.ObjectId(),
+                courierId: courierfound[0].courierId,
+                orderId: courierfound[0].orderId,
+                distance: courierfound[0].distance,
+                status: courierfound[0].status,
+                reason: courierfound[0].reason,
+                fcmToken: courierfound[0].fcmToken,
+            });
+            await newrequest.save();
+
+    var AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
+    console.log("Admin numbers-------------------------------------------------");
+    console.log(AdminMobile);
+    var AdminNumber1 = AdminMobile[0].AdminMObile1; 
+    var AdminNumber2 = AdminMobile[0].AdminMObile2; 
+    var AdminNumber3 = AdminMobile[0].AdminMObile3; 
+    var AdminNumber4 = AdminMobile[0].AdminMObile4; 
+    var AdminNumber5 = AdminMobile[0].AdminMObile5;
+    
+    console.log(AdminNumber1);
+
+    var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber1 }).select('fcmToken -_id');
+    var findAdminFcmToken2 = await customerSchema.find({ mobileNo: AdminNumber2 }).select('fcmToken -_id');
+    var findAdminFcmToken3 = await customerSchema.find({ mobileNo: AdminNumber3 }).select('fcmToken -_id');
+    var findAdminFcmToken4 = await customerSchema.find({ mobileNo: AdminNumber4 }).select('fcmToken -_id');
+    var findAdminFcmToken5 = await customerSchema.find({ mobileNo: AdminNumber5 }).select('fcmToken -_id');
+    
+    // console.log(findAdminFcmToken);
+    // console.log(findAdminFcmToken2);
+    // console.log(findAdminFcmToken3);
+    // console.log(findAdminFcmToken4);
+    // console.log(findAdminFcmToken5);
+
+    var AdminFcmToken = [findAdminFcmToken[0].fcmToken,findAdminFcmToken2[0].fcmToken,findAdminFcmToken3[0].fcmToken,findAdminFcmToken4[0].fcmToken,findAdminFcmToken5[0].fcmToken];
+    console.log("-------------------------ADMINS TOKENS-----------------------------");
+    console.log(AdminFcmToken);
+
+    let newOrderData = newOrder.orderNo;
+    let newOrderPickUp = newOrder.pickupPoint.address;
+    let newOrderDelivery = newOrder.deliveryPoint.address;
+    let newOrderCustomerId = newOrder.customerId;
+    console.log(newOrderCustomerId);
+    let newOrderCustomer = await customerSchema.find({ _id: newOrderCustomerId }).select('name mobileNo -_id');
+    
+    let newOrderNotification = `New Order Received 
+    OrderID: ${newOrderData}
+    Customer: ${newOrderCustomer[0].name}
+    Mobile: ${newOrderCustomer[0].mobileNo}  
+    PickUp: ${newOrderPickUp}`;
+    console.log(newOrderNotification);
+
+
+    var AdminPhoneNumbers = [AdminNumber1,AdminNumber2,AdminNumber3,AdminNumber4,AdminNumber5];
+            // var payload2 = {
+            //     notification: {
+            //         title: "Order Alert",
+            //         body: "New Order Alert Found For You.",
+            //     },
+            //     data: {
+            //         sound: "surprise.mp3",
+            //         Message: "Hello New Order",
+            //         click_action: "FLUTTER_NOTIFICATION_CLICK",
+            //     },
+            // };
+            // var options2 = {
+            //     priority: "high",
+            //     timeToLive: 60 * 60 * 24,
+            // };
+            // config.firebase
+            //     .messaging()
+            //     .sendToDevice(AdminFcmToken, payload2, options2)
+            //     .then((doc) => {
+            //         console.log("Sending Notification Testing3.......!!!");
+            //         console.log(doc);
+            //     });
+            // config.firebase
+            // .messaging()
+            // .sendToDevice(AdminFcmToken, payload2, options2)
+            // .then((doc) => {                    
+            //     console.log("Sending Notification Testing2.......!!!");
+            //     console.log(doc);
+            // });    
+            // orderstatus[0]["isActive"] == true &&
+            // orderstatus[0]["status"] == "Order Processing"
+
+            //Send notification to Admin FCM
+            
+            //Sending FCM Notification to Admin
+            console.log(AdminFcmToken.length);
+        for(let i=0;i<AdminFcmToken.length;i++){
+            console.log(`--------------------------------------- ${i}`);
+            console.log(AdminFcmToken[i])
+            var dataSendToAdmin = {
+                "to":AdminFcmToken[i],
+                "priority":"high",
+                "content_available":true,
+                "data": {
+                    "sound": "surprise.mp3",
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                },
+                "notification":{
+                            "body": newOrderNotification,
+                            "title":"New Order Received",
+                            "badge":1
+                        }
+            };
+    
+            var options2 = {
+                'method': 'POST',
+                'url': 'https://fcm.googleapis.com/fcm/send',
+                'headers': {
+                    'authorization': 'key=AAAAb8BaOXA:APA91bGPf4oQWUscZcjXnuyIJhEQ_bcb6pifUozs9mjrEyNWJcyut7zudpYLBtXGGDU4uopV8dnIjCOyapZToJ1QxPZVBDBSbhP_wxhriQ7kFBlHN1_HVTRtClUla0XSKGVreSgsbgjH',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataSendToAdmin)
+            };
+            request(options2, function (error, response , body) {
+                console.log("--------------------Sender--------------------");
+                let myJsonBody = JSON.stringify(body);
+                //console.log(myJsonBody);
+                //myJsonBody[51] USED TO ACCESS RESPONSE DATA SUCCESS FIELD
+                console.log(myJsonBody[51]);
+                if(myJsonBody[51]==0){
+                    console.log("Send Text notification of new order..........!!!");
+                    sendMessages(AdminPhoneNumbers[i],newOrderNotification);
+                }
+                if (error) {
+                    console.log(error.message);
+                } else {
+                    console.log("Sending Notification Testing....!!!");
+                    console.log(response.body);
+                    if(response.body.success=="1"){
+                        console.log("Send Text notification of new order..........!!!");
+                        sendMessages(AdminPhoneNumbers[i],newOrderNotification);
+                    }
+                }
+            });
+        }
+
+    console.log("After sending notification");
+    
+    // FCM notification End
+
+            // New Code 03-09-2020
+            var payload = {
+                "title": "Order Alert",
+                "body": "New Order Alert Found For You.",
+                "data": {
+                    "sound": "surprise.mp3",
+                    "orderid": courierfound[0].orderId.toString(),
+                    "distance": courierfound[0].distance.toString(),
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                },
+                "to": courierfound[0].fcmToken
+            };
+            var options = {
+                'method': 'POST',
+                'url': 'https://fcm.googleapis.com/fcm/send',
+                'headers': {
+                    'authorization': 'key=AAAAb8BaOXA:APA91bGPf4oQWUscZcjXnuyIJhEQ_bcb6pifUozs9mjrEyNWJcyut7zudpYLBtXGGDU4uopV8dnIjCOyapZToJ1QxPZVBDBSbhP_wxhriQ7kFBlHN1_HVTRtClUla0XSKGVreSgsbgjH',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            };
+            request(options, function (error, response) {
+                if (error) {
+                    console.log(error.message);
+                } else {
+                    console.log("Sending Notification");
+                    console.log(response.body);
+                }
+            });
+
+        } else {
+            console.log("No Courier Boys Available:: Waiting For Admin Response");
+            var updateorder = {
+                status: "Admin",
+            };
+            await orderSchema.findByIdAndUpdate(placedorder.id, updateorder);
+        }
+        res
+            .status(200)
+            .json({ Message: "Order Placed!", Data: 1, IsSuccess: true });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
+
+router.post("/newoder_v2", orderimg.single("orderimg"), async function (
+    req,
+    res,
+    next
+) {
+    // console.log("Neworder api...............................!!!");
+    // console.log(req.body);
+    
+    const {
+        customerId,
+        deliveryType,
+        weightLimit,
+        pkName,
+        pkMobileNo,
+        pkAddress,
+        pkLat,
+        pkLong,
+        pkCompleteAddress,
+        pkContent,
+        pkArriveType,
+        pkArriveTime,
+        dpName,
+        dpMobileNo,
+        dpAddress,
+        dpLat,
+        dpLong,
+        dpCompleteAddress,
+        dpDistance,
+        collectCash,
+        promoCode,
+        amount,
+        discount,
+        additionalAmount,
+        finalAmount,
+        schedualDateTime,
+    } = req.body;
+    
+    const file = req.file;
+    let num = getOrderNumber();
+    try {
         var UserOrders = await orderSchema.find({
             customerId : mongoose.Types.ObjectId(customerId),
         });
-        // console.log(UserOrders);
+        console.log(UserOrders.length);
         
-        let a = Object.keys(UserOrders).map((key) => [Number(key), UserOrders[key]]);
-        console.log("------------------------------------nnnnnnnnnnnnnnnnnnnnnnnnnnn");
-        // console.log(a);
-        console.log(a.length);
+        // let a = Object.keys(UserOrders).map((key) => [Number(key), UserOrders[key]]);
+        // console.log("------------------------------------nnnnnnnnnnnnnnnnnnnnnnnnnnn");
+        // // console.log(a);
+        // console.log(a.length);
         // console.log(UserOrders);
         var promoValidUnderKm = await settingsSchema.find().select("NewUserUnderKm");
         // console.log(promoValidUnderKm);
@@ -616,43 +1067,6 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
                 note: "Your order is processing!",
             });
         }
-        // newOrder = new orderSchema({
-        //     _id: new config.mongoose.Types.ObjectId(),
-        //     orderNo: num,
-        //     customerId: customerId,
-        //     deliveryType: deliveryType,
-        //     schedualDateTime: schedualDateTime,
-        //     weightLimit: weightLimit,
-        //     orderImg: file == undefined ? "" : file.path,
-        //     pickupPoint: {
-        //         name: pkName,
-        //         mobileNo: pkMobileNo,
-        //         address: pkAddress,
-        //         lat: pkLat,
-        //         long: pkLong,
-        //         completeAddress: pkCompleteAddress,
-        //         contents: pkContent,
-        //         arriveType: pkArriveType,
-        //         arriveTime: pkArriveTime,
-        //     },
-        //     deliveryPoint: {
-        //         name: dpName,
-        //         mobileNo: dpMobileNo,
-        //         address: dpAddress,
-        //         lat: dpLat,
-        //         long: dpLong,
-        //         completeAddress: dpCompleteAddress,
-        //         distance: dpDistance,
-        //     },
-        //     collectCash: collectCash,
-        //     promoCode: promoCode,
-        //     amount: amount,
-        //     discount: discount,
-        //     additionalAmount: additionalAmount,
-        //     finalAmount: finalAmount,
-        //     status: "Order Processing",
-        //     note: "Your order is processing!",
-        // });
         
         var placedorder = await newOrder.save();
         var avlcourier = await PNDfinder(
@@ -862,6 +1276,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
+
 
 async function sendMessages(mobileNo, message) {
     let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno=" + mobileNo + "&text= " + message;
