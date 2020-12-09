@@ -1134,8 +1134,6 @@ router.post("/addpromocode", uploadpromocode.single("image"), async function (
 
 router.post("/promocodes", async function (req, res, next) {
     try {
-        const { customerId } = req.body;
-    
         var dataset = await promocodeSchema.find({ isForNewUser: false });
         console.log(dataset);
         if(dataset){
@@ -1147,6 +1145,22 @@ router.post("/promocodes", async function (req, res, next) {
         }
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
+
+router.post("/adminProcodes", async function(req,res,next){
+    try {
+        var dataset = await promocodeSchema.find();
+        console.log(dataset);
+        if(dataset){
+            res
+            .status(200)
+            .json({ Message: "Promocode List!", Data: dataset, IsSuccess: true });
+        }else{
+            res.status(200).json({ Message: "Empty List!", Data: 0, IsSuccess: true })
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.messag });
     }
 });
 
