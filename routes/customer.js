@@ -5,6 +5,7 @@ var path = require("path");
 var axios = require("axios");
 var router = express.Router();
 var config = require("../config");
+var mongoose = require("mongoose");
 var upload = multer.diskStorage({
     destination: function(req, file, cb) {
         cb(null, "uploads/customers");
@@ -389,9 +390,10 @@ router.post("/promocodes", async function(req, res, next) {
 router.post("/getNewCustomerPromocode", async function(req,res,next){
     const { customerId } = req.body;
     try {
-        var record = await orderModel({
-            customerId : customerId,
+        var record = await orderModel.find({
+            customerId : mongoose.Types.ObjectId(customerId),
         });
+        console.log(record);
         if(record.length == 0){
             var promocode = await promoCodeSchema.find({ isForNewUser: true });
             if(promocode){

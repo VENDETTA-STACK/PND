@@ -518,9 +518,10 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
     const file = req.file;
     let num = getOrderNumber();
     try {
-        var UserOrders = await orderSchema({
+        var UserOrders = await orderSchema.find({
             customerId : mongoose.Types.ObjectId(customerId),
         });
+        // console.log(UserOrders);
         
         let a = Object.keys(UserOrders).map((key) => [Number(key), UserOrders[key]]);
         console.log("------------------------------------nnnnnnnnnnnnnnnnnnnnnnnnnnn");
@@ -615,6 +616,43 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
                 note: "Your order is processing!",
             });
         }
+        // newOrder = new orderSchema({
+        //     _id: new config.mongoose.Types.ObjectId(),
+        //     orderNo: num,
+        //     customerId: customerId,
+        //     deliveryType: deliveryType,
+        //     schedualDateTime: schedualDateTime,
+        //     weightLimit: weightLimit,
+        //     orderImg: file == undefined ? "" : file.path,
+        //     pickupPoint: {
+        //         name: pkName,
+        //         mobileNo: pkMobileNo,
+        //         address: pkAddress,
+        //         lat: pkLat,
+        //         long: pkLong,
+        //         completeAddress: pkCompleteAddress,
+        //         contents: pkContent,
+        //         arriveType: pkArriveType,
+        //         arriveTime: pkArriveTime,
+        //     },
+        //     deliveryPoint: {
+        //         name: dpName,
+        //         mobileNo: dpMobileNo,
+        //         address: dpAddress,
+        //         lat: dpLat,
+        //         long: dpLong,
+        //         completeAddress: dpCompleteAddress,
+        //         distance: dpDistance,
+        //     },
+        //     collectCash: collectCash,
+        //     promoCode: promoCode,
+        //     amount: amount,
+        //     discount: discount,
+        //     additionalAmount: additionalAmount,
+        //     finalAmount: finalAmount,
+        //     status: "Order Processing",
+        //     note: "Your order is processing!",
+        // });
         
         var placedorder = await newOrder.save();
         var avlcourier = await PNDfinder(
