@@ -26,6 +26,12 @@ const orderSettingsSchema = mongoose.Schema({
   NewUserprice: {
     type: Number,
   },
+  addKm: {
+    type: Number,
+  },
+  newpromocode: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("Settings", orderSettingsSchema);
