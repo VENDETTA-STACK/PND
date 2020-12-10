@@ -631,53 +631,53 @@ router.post("/ordercalcV3", async (req, res, next) => {
 
     if(userPastOrders.length == 0 && totaldistance < newUserPromocodeLimit[0].NewUserUnderKm && newUserpromocode.length == 1){
         // console.log("-------------in-------------------");
-        // if (totaldistance <= 5) {
-        //     if (deliverytype == "Normal Delivery") {
-        //         basickm = totaldistance;
-        //         basicamt = settings[0].NewUserprice;
-        //         extrakm = 0;
-        //         extraamt = 0;
-        //         extadeliverycharges = delivery[0].cost;
-        //         amount = basicamt + extraamt + extadeliverycharges;
-        //         totalamt = amount;
-        //     } else {
-        //         for (let i = 1; i < delivery.length; i++) {
-        //             if (deliverytype == delivery[i].title) {
-        //                 basickm = totaldistance;
-        //                 basicamt = settings[0].NewUserprice;
-        //                 extrakm = 0;
-        //                 extraamt = 0;
-        //                 extadeliverycharges = delivery[i].cost;
-        //                 amount = basicamt + extraamt + extadeliverycharges;
-        //                 totalamt = amount;
-        //             }
-        //         }
-        //     }
-        // } else {
-        //     if (deliverytype == "Normal Delivery") {
-        //         let remdis = totaldistance - 5;
-        //         basickm = 5;
-        //         basicamt = settings[0].NewUserprice;
-        //         extrakm = remdis;
-        //         extraamt = remdis * settings[0].PerKM;
-        //         extadeliverycharges = delivery[0].cost;
-        //         amount = basicamt + extraamt + extadeliverycharges;
-        //         totalamt = amount;
-        //     } else {
-        //         for (let i = 1; i < delivery.length; i++) {
-        //             if (deliverytype == delivery[i].title) {
-        //                 let remdis = totaldistance - 5;
-        //                 basickm = 5;
-        //                 basicamt = settings[0].NewUserprice;
-        //                 extrakm = remdis;
-        //                 extraamt = remdis * settings[0].PerKM;
-        //                 extadeliverycharges = delivery[i].cost;
-        //                 amount = basicamt + extraamt + extadeliverycharges;
-        //                 totalamt = amount;
-        //             }
-        //         }
-        //     }
-        // }
+        if (totaldistance <= 5) {
+            if (deliverytype == "Normal Delivery") {
+                basickm = totaldistance;
+                basicamt = settings[0].NewUserprice;
+                extrakm = 0;
+                extraamt = 0;
+                extadeliverycharges = delivery[0].cost;
+                amount = basicamt + extraamt + extadeliverycharges;
+                totalamt = amount;
+            } else {
+                for (let i = 1; i < delivery.length; i++) {
+                    if (deliverytype == delivery[i].title) {
+                        basickm = totaldistance;
+                        basicamt = settings[0].NewUserprice;
+                        extrakm = 0;
+                        extraamt = 0;
+                        extadeliverycharges = delivery[i].cost;
+                        amount = basicamt + extraamt + extadeliverycharges;
+                        totalamt = amount;
+                    }
+                }
+            }
+        } else {
+            if (deliverytype == "Normal Delivery") {
+                let remdis = totaldistance - 5;
+                basickm = 5;
+                basicamt = settings[0].NewUserprice;
+                extrakm = remdis;
+                extraamt = remdis * settings[0].PerKM;
+                extadeliverycharges = delivery[0].cost;
+                amount = basicamt + extraamt + extadeliverycharges;
+                totalamt = amount;
+            } else {
+                for (let i = 1; i < delivery.length; i++) {
+                    if (deliverytype == delivery[i].title) {
+                        let remdis = totaldistance - 5;
+                        basickm = 5;
+                        basicamt = settings[0].NewUserprice;
+                        extrakm = remdis;
+                        extraamt = remdis * settings[0].PerKM;
+                        extadeliverycharges = delivery[i].cost;
+                        amount = basicamt + extraamt + extadeliverycharges;
+                        totalamt = amount;
+                    }
+                }
+            }
+        }
         // console.log("-------------Basics----------------");
         console.log(basicamt);
         console.log(extrakm);
@@ -707,7 +707,7 @@ router.post("/ordercalcV3", async (req, res, next) => {
         // },];
         console.log("--------------------In New User-----------------------");
         var newUserPromocode = await promoCodeSchema.find({ isForNewUser: true });
-
+        
         if(req.body.amountCollected){
             var handlingChargeIs = parseFloat(settings[0].handling_charges);
             console.log("--------------------Handling Charge-----------------------");
