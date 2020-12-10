@@ -263,8 +263,9 @@ router.post("/updatesetttings", async function (req, res, next) {
         NewUserprice,
         addKm,
         newpromocode,
+        handling_charges
     } = req.body;
-
+    
     // var initialTime = moment(FromTime);
     // var endTime = moment(ToTime);
 
@@ -304,7 +305,9 @@ router.post("/updatesetttings", async function (req, res, next) {
                 NewUserprice: NewUserprice,
                 addKm: addKm,
                 newpromocode: newpromocode,
+                handling_charges: handling_charges
             };
+            
             await settingsSchema.findByIdAndUpdate(id, updatedsettings);
             res
                 .status(200)
@@ -330,7 +333,12 @@ router.post("/updatesetttings", async function (req, res, next) {
                 AdminMObile4: AdminMObile4,
                 AdminMObile5: AdminMObile5,
                 NewUserUnderKm: NewUserUnderKm,
+                NewUserprice: NewUserprice,
+                addKm: addKm,
+                newpromocode: newpromocode,
+                handling_charges: handling_charges
             });
+            
             await newsettings.save();
             res
                 .status(200)
@@ -479,7 +487,7 @@ router.post("/completed_orders", async function (req, res, next) {
         let completeOrders = await orderSchema
             .find({ status: "Order Delivered", isActive: false })
             .populate(
-                "courierId[]",
+                "courierId",
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified"
             )
             .populate("customerId");
