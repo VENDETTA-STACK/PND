@@ -466,6 +466,11 @@ router.post("/ordercalcV2", async (req, res, next) => {
     // }else{
         
     // }
+    console.log("-------------Basics----------------");
+    console.log(basicamt);
+    console.log(extrakm);
+    console.log(extraamt);
+    console.log(amount);
     
     dataset = [{
         note: note,
@@ -477,7 +482,7 @@ router.post("/ordercalcV2", async (req, res, next) => {
         promoused: Math.ceil(promoused.toFixed(2)),
         totalamt: netamount
     },];
-    // console.log(dataset);
+    console.log(dataset);
 
     res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
 });
@@ -763,7 +768,12 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
         finalAmount,
         schedualDateTime,
     } = req.body;
-    
+    console.log("-------------New Order--------------------------");
+    console.log(req.body.amount);
+    console.log(req.body.amount);
+    console.log(req.body.discount);
+    console.log(req.body.additionalAmount);
+    console.log(req.body.finalAmount);
     const file = req.file;
     let num = getOrderNumber();
     try {
