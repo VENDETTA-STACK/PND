@@ -132,6 +132,15 @@ const orderSchema = mongoose.Schema({
     },
     orderType: {
         type: String
+    },
+    amountCollection: {
+        type: String,
+    },
+    eOrderDeliveryType: {
+        type: String,
+    },
+    handlingCharge: {
+        type: Number,
     }
 });
 
