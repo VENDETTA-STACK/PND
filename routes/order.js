@@ -704,8 +704,7 @@ router.post("/ordercalcV3", async (req, res, next) => {
             amount: amt,
             promoused: Math.ceil(NewUserDiscountAmount),
             totalamt: NewUserNetAmount
-        },];
-        
+        },];    
     }else{
         if(req.body.amountCollected){
             var handlingChargeIs = parseFloat(settings[0].handling_charges);
@@ -752,8 +751,12 @@ router.post("/ordercalcV3", async (req, res, next) => {
         
         console.log(dataset);
     }
-
-    res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
+    if(req.body.amountCollected){
+        let chargeIs = handlingChargeIs * 100 + "%";
+        res.json({ Message: "Calculation Found!", HandlingCharge: chargeIs ,Data: dataset, IsSuccess: true });
+    }else{
+        res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
+    }
 });
 
 var round = function (num, precision) {
