@@ -7,6 +7,7 @@ var multer = require("multer");
 var express = require("express");
 var config = require("../config");
 var router = express.Router();
+const mongoose = require("mongoose");
 
 /* Creating FileUpload Path */
 var filestorage = multer.diskStorage({
@@ -403,7 +404,7 @@ function convertStringDateToISO(date){
     // console.log(dateList.split("/"));
     let list = dateList.split("/");
     
-    let dISO = list[2] + "-" + list[1] + "-" + list[0] + "T" + "00:00:00.0Z";
+    let dISO = list[2] + "-" + list[1] + "-" + list[0] + "T" + "00:00:00.00Z";
     // console.log(dISO);
     return dISO;
 }
@@ -415,15 +416,19 @@ router.post("/getEmployeeOrderDetails", async function(req,res,next){
     let date1 = convertStringDateToISO(startdate);
     let date2 = convertStringDateToISO(enddate);
 
+    console.log(date1);
+    console.log(date2);
+
     try {
         var record = await orderSchema.find({ 
                     courierId: courierId,
                     status: "Order Delivered", 
                     isActive: false,
                     dateTime: {
-                        $gte : date1,
-                        $lte : date2
-                    }
+                        $gte : new ISODate(date1),
+                        $lte : new ISODate(date2)
+                    },
+                    // dateTime: "2020-12-09T08:34:06.969+00:00"
                     })
                     .populate(
                             "courierId",
@@ -432,6 +437,7 @@ router.post("/getEmployeeOrderDetails", async function(req,res,next){
                     .populate("customerId");
         var totalPrice = 0;
         var totalDistance = 0;
+        console.log(record);
         for(var i=0;i<record.length;i++){
             totalPrice = totalPrice + record[i].finalAmount;
             totalDistance = totalDistance + record[i].deliveryPoint.distance;

@@ -345,146 +345,8 @@ router.post("/ordercalc", async (req, res, next) => {
 });
 
 
-// router.post("/ordercalcV2", async (req, res, next) => {
-//     const {
-//         picklat,
-//         picklong,
-//         droplat,
-//         droplong,
-//         deliverytype,
-//         promocode,
-//         parcelcontents
-//     } = req.body;
-
-//     // console.log("OrderCalcV2 Request Body.................!!!!");
-//     // console.log(req.body);
-
-//     let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
-//     let tolocation = { latitude: Number(droplat), longitude: Number(droplong) };
-//     let prmcodes = await promoCodeSchema.find({ code: promocode });
-//     let settings = await settingsSchema.find({});
-//     let delivery = await deliverytypesSchema.find({});
-//     let totaldistance = await GoogleMatrix(fromlocation, tolocation);
-
-//     let basickm = 0;
-//     let basicamt = 0;
-//     let extrakm = 0;
-//     let extraamt = 0;
-//     let extadeliverycharges = 0;
-//     let promoused = 0;
-//     let amount = 0;
-//     let totalamt = 0;
-
-//     if (totaldistance <= 5) {
-//         if (deliverytype == "Normal Delivery") {
-//             basickm = totaldistance;
-//             basicamt = settings[0].PerUnder5KM;
-//             extrakm = 0;
-//             extraamt = 0;
-//             extadeliverycharges = delivery[0].cost;
-//             amount = basicamt + extraamt + extadeliverycharges;
-//             totalamt = amount;
-//         } else {
-//             for (let i = 1; i < delivery.length; i++) {
-//                 if (deliverytype == delivery[i].title) {
-//                     basickm = totaldistance;
-//                     basicamt = settings[0].PerUnder5KM;
-//                     extrakm = 0;
-//                     extraamt = 0;
-//                     extadeliverycharges = delivery[i].cost;
-//                     amount = basicamt + extraamt + extadeliverycharges;
-//                     totalamt = amount;
-//                 }
-//             }
-//         }
-//     } else {
-//         if (deliverytype == "Normal Delivery") {
-//             let remdis = totaldistance - 5;
-//             basickm = 5;
-//             basicamt = settings[0].PerUnder5KM;
-//             extrakm = remdis;
-//             extraamt = remdis * settings[0].PerKM;
-//             extadeliverycharges = delivery[0].cost;
-//             amount = basicamt + extraamt + extadeliverycharges;
-//             totalamt = amount;
-//         } else {
-//             for (let i = 1; i < delivery.length; i++) {
-//                 if (deliverytype == delivery[i].title) {
-//                     let remdis = totaldistance - 5;
-//                     basickm = 5;
-//                     basicamt = settings[0].PerUnder5KM;
-//                     extrakm = remdis;
-//                     extraamt = remdis * settings[0].PerKM;
-//                     extadeliverycharges = delivery[i].cost;
-//                     amount = basicamt + extraamt + extadeliverycharges;
-//                     totalamt = amount;
-//                 }
-//             }
-//         }
-//     }
-
-//     let distamt = Number(basicamt.toFixed(2)) + Number(extraamt.toFixed(2));
-//     distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
-//     let note;
-//     //Find Parcel Content From Database
-//     let parcelContentsList = [];
-//     for (let e = 0; e < parcelcontents.length; e++) {
-//         let data = await categorySchema.findOne({ title: parcelcontents[e] });
-//         if (e == 0) {
-//             note = data.note;
-//         }
-//         parcelContentsList.push(data);
-//     }
-    
-//     //Find ExtraCharges
-//     let sortParcelContents = arraySort(parcelContentsList, 'price', { reverse: true });
-//     let extracharges = 0;
-//     for (let a = 0; a < sortParcelContents.length; a++) {
-//         extracharges = extracharges + sortParcelContents[a].price;
-//     }
-
-//     let amt = Number(distamt) + extracharges + Math.ceil(extadeliverycharges.toFixed(2));
-//     promoused = prmcodes.length != 0 ? (amt * prmcodes[0].discount) / 100 : 0;
-//     let netamount = amt - Math.ceil(promoused.toFixed(2));
-
-//     //TESTING FCMTOKEN
-//     let AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
-//     console.log("Admin numbers-------------------------------------------------");
-//     let AdminNumber1 = AdminMobile[0].AdminMObile1; 
-//     let AdminNumber2 = AdminMobile[0].AdminMObile2; 
-//     let AdminNumber3 = AdminMobile[0].AdminMObile3; 
-//     let AdminNumber4 = AdminMobile[0].AdminMObile4; 
-//     let AdminNumber5 = AdminMobile[0].AdminMObile5;
-
-//     // var newUserPromocodeLimit = await settingsSchema.find().select("NewUserUnderKm");
-//     // var userPastOrders = await orderSchema.find({
-//     //     customerId : mongoose.Types.ObjectId(customerId),
-//     // });
-
-//     // if(userPastOrders.length == 0 && totaldistance < newUserPromocodeLimit[0].NewUserUnderKm){
-//     //     var dataset
-//     // }else{
-        
-//     // }
-    
-//     dataset = [{
-//         note: note,
-//         totaldistance: Math.round(totaldistance.toFixed(2)),
-//         totaldistamt: Number(distamt),
-//         extracharges: extracharges,
-//         extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
-//         amount: amt,
-//         promoused: Math.ceil(promoused.toFixed(2)),
-//         totalamt: netamount
-//     },];
-//     // console.log(dataset);
-
-//     res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
-// });
-
 router.post("/ordercalcV2", async (req, res, next) => {
     const {
-        customerId,
         picklat,
         picklong,
         droplat,
@@ -512,8 +374,6 @@ router.post("/ordercalcV2", async (req, res, next) => {
     let promoused = 0;
     let amount = 0;
     let totalamt = 0;
-
-    var newUserpromocode = await promoCodeSchema.find({ isForNewUser: true });
 
     if (totaldistance <= 5) {
         if (deliverytype == "Normal Delivery") {
@@ -563,20 +423,8 @@ router.post("/ordercalcV2", async (req, res, next) => {
         }
     }
 
-    var userPastOrders = await orderSchema.find({
-        customerId : mongoose.Types.ObjectId(customerId),
-    });
-
-    if(userPastOrders.length == 0){
-        console.log(totaldistance);
-        let newUserBasicPrice = parseFloat(settings[0].NewUserprice);
-        var distamt = Number(newUserBasicPrice.toFixed(2)) + Number(extraamt.toFixed(2));
-        distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
-    }else{
-        distamt = Number(basicamt.toFixed(2)) + Number(extraamt.toFixed(2));
-        distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
-    }
-    
+    let distamt = Number(basicamt.toFixed(2)) + Number(extraamt.toFixed(2));
+    distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
     let note;
     //Find Parcel Content From Database
     let parcelContentsList = [];
@@ -608,105 +456,270 @@ router.post("/ordercalcV2", async (req, res, next) => {
     let AdminNumber4 = AdminMobile[0].AdminMObile4; 
     let AdminNumber5 = AdminMobile[0].AdminMObile5;
 
-    var newUserPromocodeLimit = await settingsSchema.find().select("NewUserUnderKm");
-    
-    console.log(userPastOrders.length);
-    console.log(totaldistance);
-    console.log(newUserPromocodeLimit[0].NewUserUnderKm);
+    // var newUserPromocodeLimit = await settingsSchema.find().select("NewUserUnderKm");
+    // var userPastOrders = await orderSchema.find({
+    //     customerId : mongoose.Types.ObjectId(customerId),
+    // });
 
-    if(userPastOrders.length == 0 && totaldistance < newUserPromocodeLimit[0].NewUserUnderKm && newUserpromocode.length == 1){
-        console.log("-------------in-------------------");
-        if (totaldistance <= 5) {
-            if (deliverytype == "Normal Delivery") {
-                basickm = totaldistance;
-                basicamt = settings[0].NewUserprice;
-                extrakm = 0;
-                extraamt = 0;
-                extadeliverycharges = delivery[0].cost;
-                amount = basicamt + extraamt + extadeliverycharges;
-                totalamt = amount;
-            } else {
-                for (let i = 1; i < delivery.length; i++) {
-                    if (deliverytype == delivery[i].title) {
-                        basickm = totaldistance;
-                        basicamt = settings[0].NewUserprice;
-                        extrakm = 0;
-                        extraamt = 0;
-                        extadeliverycharges = delivery[i].cost;
-                        amount = basicamt + extraamt + extadeliverycharges;
-                        totalamt = amount;
-                    }
-                }
-            }
-        } else {
-            if (deliverytype == "Normal Delivery") {
-                let remdis = totaldistance - 5;
-                basickm = 5;
-                basicamt = settings[0].NewUserprice;
-                extrakm = remdis;
-                extraamt = remdis * settings[0].PerKM;
-                extadeliverycharges = delivery[0].cost;
-                amount = basicamt + extraamt + extadeliverycharges;
-                totalamt = amount;
-            } else {
-                for (let i = 1; i < delivery.length; i++) {
-                    if (deliverytype == delivery[i].title) {
-                        let remdis = totaldistance - 5;
-                        basickm = 5;
-                        basicamt = settings[0].NewUserprice;
-                        extrakm = remdis;
-                        extraamt = remdis * settings[0].PerKM;
-                        extadeliverycharges = delivery[i].cost;
-                        amount = basicamt + extraamt + extadeliverycharges;
-                        totalamt = amount;
-                    }
-                }
-            }
-        }
-        console.log("-------------Basics----------------");
-        console.log(basicamt);
-        console.log(extrakm);
-        console.log(extraamt);
-        console.log(amount);
-
-        let discountPercent = newUserpromocode[0].discount;
-        console.log("-------------------Discount % -----------------");
-        console.log(discountPercent);
-        let NewUserDiscountAmount = (parseFloat(amount) * parseFloat(discountPercent)) / 100;
-        console.log("--------------New User Discount Amount---------------");
-        NewUserDiscountAmount = (Math.round(NewUserDiscountAmount) % 10) > 5 ? round(NewUserDiscountAmount, 10) : round(NewUserDiscountAmount, 5);
-        console.log(NewUserDiscountAmount);
-        let NewUserNetAmount = parseFloat(amount) - parseFloat(NewUserDiscountAmount);
-        console.log("---------------Net Amount-------------------");
-        console.log(NewUserNetAmount);
-        NewUserNetAmount = (Math.round(NewUserNetAmount) % 10) > 5 ? round(NewUserNetAmount, 10) : round(NewUserNetAmount, 5);
-        var dataset = [{
-            note: note,
-            totaldistance: Math.round(totaldistance.toFixed(2)),
-            totaldistamt: Number(distamt),
-            extracharges: extracharges,
-            extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
-            amount: amt,
-            promoused: Math.ceil(NewUserDiscountAmount),
-            totalamt: NewUserNetAmount
-        },];
+    // if(userPastOrders.length == 0 && totaldistance < newUserPromocodeLimit[0].NewUserUnderKm){
+    //     var dataset
+    // }else{
         
-    }else{
-        console.log("--------------------Out-----------------------");
-        dataset = [{
-            note: note,
-            totaldistance: Math.round(totaldistance.toFixed(2)),
-            totaldistamt: Number(distamt),
-            extracharges: extracharges,
-            extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
-            amount: amt,
-            promoused: Math.ceil(promoused.toFixed(2)),
-            totalamt: netamount
-        },];
-    }
+    // }
+    
+    dataset = [{
+        note: note,
+        totaldistance: Math.round(totaldistance.toFixed(2)),
+        totaldistamt: Number(distamt),
+        extracharges: extracharges,
+        extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
+        amount: amt,
+        promoused: Math.ceil(promoused.toFixed(2)),
+        totalamt: netamount
+    },];
+    // console.log(dataset);
 
     res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
 });
+
+// router.post("/ordercalcV2", async (req, res, next) => {
+//     const {
+//         customerId,
+//         picklat,
+//         picklong,
+//         droplat,
+//         droplong,
+//         deliverytype,
+//         promocode,
+//         parcelcontents
+//     } = req.body;
+
+//     // console.log("OrderCalcV2 Request Body.................!!!!");
+//     // console.log(req.body);
+
+//     let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
+//     let tolocation = { latitude: Number(droplat), longitude: Number(droplong) };
+//     let prmcodes = await promoCodeSchema.find({ code: promocode });
+//     let settings = await settingsSchema.find({});
+//     let delivery = await deliverytypesSchema.find({});
+//     let totaldistance = await GoogleMatrix(fromlocation, tolocation);
+
+//     let basickm = 0;
+//     let basicamt = 0;
+//     let extrakm = 0;
+//     let extraamt = 0;
+//     let extadeliverycharges = 0;
+//     let promoused = 0;
+//     let amount = 0;
+//     let totalamt = 0;
+
+//     var newUserpromocode = await promoCodeSchema.find({ isForNewUser: true });
+
+//     if (totaldistance <= 5) {
+//         if (deliverytype == "Normal Delivery") {
+//             basickm = totaldistance;
+//             basicamt = settings[0].PerUnder5KM;
+//             extrakm = 0;
+//             extraamt = 0;
+//             extadeliverycharges = delivery[0].cost;
+//             amount = basicamt + extraamt + extadeliverycharges;
+//             totalamt = amount;
+//         } else {
+//             for (let i = 1; i < delivery.length; i++) {
+//                 if (deliverytype == delivery[i].title) {
+//                     basickm = totaldistance;
+//                     basicamt = settings[0].PerUnder5KM;
+//                     extrakm = 0;
+//                     extraamt = 0;
+//                     extadeliverycharges = delivery[i].cost;
+//                     amount = basicamt + extraamt + extadeliverycharges;
+//                     totalamt = amount;
+//                 }
+//             }
+//         }
+//     } else {
+//         if (deliverytype == "Normal Delivery") {
+//             let remdis = totaldistance - 5;
+//             basickm = 5;
+//             basicamt = settings[0].PerUnder5KM;
+//             extrakm = remdis;
+//             extraamt = remdis * settings[0].PerKM;
+//             extadeliverycharges = delivery[0].cost;
+//             amount = basicamt + extraamt + extadeliverycharges;
+//             totalamt = amount;
+//         } else {
+//             for (let i = 1; i < delivery.length; i++) {
+//                 if (deliverytype == delivery[i].title) {
+//                     let remdis = totaldistance - 5;
+//                     basickm = 5;
+//                     basicamt = settings[0].PerUnder5KM;
+//                     extrakm = remdis;
+//                     extraamt = remdis * settings[0].PerKM;
+//                     extadeliverycharges = delivery[i].cost;
+//                     amount = basicamt + extraamt + extadeliverycharges;
+//                     totalamt = amount;
+//                 }
+//             }
+//         }
+//     }
+
+//     var userPastOrders = await orderSchema.find({
+//         customerId : mongoose.Types.ObjectId(customerId),
+//     });
+
+//     if(userPastOrders.length == 0){
+//         console.log(totaldistance);
+//         let newUserBasicPrice = parseFloat(settings[0].NewUserprice);
+//         var distamt = Number(newUserBasicPrice.toFixed(2)) + Number(extraamt.toFixed(2));
+//         distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
+//     }else{
+//         distamt = Number(basicamt.toFixed(2)) + Number(extraamt.toFixed(2));
+//         distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
+//     }
+    
+//     let note;
+//     //Find Parcel Content From Database
+//     let parcelContentsList = [];
+//     for (let e = 0; e < parcelcontents.length; e++) {
+//         let data = await categorySchema.findOne({ title: parcelcontents[e] });
+//         if (e == 0) {
+//             note = data.note;
+//         }
+//         parcelContentsList.push(data);
+//     }
+    
+//     //Find ExtraCharges
+//     let sortParcelContents = arraySort(parcelContentsList, 'price', { reverse: true });
+//     let extracharges = 0;
+//     for (let a = 0; a < sortParcelContents.length; a++) {
+//         extracharges = extracharges + sortParcelContents[a].price;
+//     }
+
+//     let amt = Number(distamt) + extracharges + Math.ceil(extadeliverycharges.toFixed(2));
+//     promoused = prmcodes.length != 0 ? (amt * prmcodes[0].discount) / 100 : 0;
+//     let netamount = amt - Math.ceil(promoused.toFixed(2));
+
+//     //TESTING FCMTOKEN
+//     let AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
+//     console.log("Admin numbers-------------------------------------------------");
+//     let AdminNumber1 = AdminMobile[0].AdminMObile1; 
+//     let AdminNumber2 = AdminMobile[0].AdminMObile2; 
+//     let AdminNumber3 = AdminMobile[0].AdminMObile3; 
+//     let AdminNumber4 = AdminMobile[0].AdminMObile4; 
+//     let AdminNumber5 = AdminMobile[0].AdminMObile5;
+
+//     var newUserPromocodeLimit = await settingsSchema.find().select("NewUserUnderKm");
+    
+//     console.log(userPastOrders.length);
+//     console.log(totaldistance);
+//     console.log(newUserPromocodeLimit[0].NewUserUnderKm);
+//     console.log("-------------Basics out----------------");
+//         console.log(basicamt);
+//         console.log(extrakm);
+//         console.log(extraamt);
+//         console.log(amount);
+//     console.log("----------------NAN-------------------");
+//     console.log(distamt);
+//     console.log(amt);
+//     console.log(totalamt);
+
+//     if(userPastOrders.length == 0 && totaldistance < newUserPromocodeLimit[0].NewUserUnderKm && newUserpromocode.length == 1){
+//         console.log("-------------in-------------------");
+//         if (totaldistance <= 5) {
+//             if (deliverytype == "Normal Delivery") {
+//                 basickm = totaldistance;
+//                 basicamt = settings[0].NewUserprice;
+//                 extrakm = 0;
+//                 extraamt = 0;
+//                 extadeliverycharges = delivery[0].cost;
+//                 amount = basicamt + extraamt + extadeliverycharges;
+//                 totalamt = amount;
+//             } else {
+//                 for (let i = 1; i < delivery.length; i++) {
+//                     if (deliverytype == delivery[i].title) {
+//                         basickm = totaldistance;
+//                         basicamt = settings[0].NewUserprice;
+//                         extrakm = 0;
+//                         extraamt = 0;
+//                         extadeliverycharges = delivery[i].cost;
+//                         amount = basicamt + extraamt + extadeliverycharges;
+//                         totalamt = amount;
+//                     }
+//                 }
+//             }
+//         } else {
+//             if (deliverytype == "Normal Delivery") {
+//                 let remdis = totaldistance - 5;
+//                 basickm = 5;
+//                 basicamt = settings[0].NewUserprice;
+//                 extrakm = remdis;
+//                 extraamt = remdis * settings[0].PerKM;
+//                 extadeliverycharges = delivery[0].cost;
+//                 amount = basicamt + extraamt + extadeliverycharges;
+//                 totalamt = amount;
+//             } else {
+//                 for (let i = 1; i < delivery.length; i++) {
+//                     if (deliverytype == delivery[i].title) {
+//                         let remdis = totaldistance - 5;
+//                         basickm = 5;
+//                         basicamt = settings[0].NewUserprice;
+//                         extrakm = remdis;
+//                         extraamt = remdis * settings[0].PerKM;
+//                         extadeliverycharges = delivery[i].cost;
+//                         amount = basicamt + extraamt + extadeliverycharges;
+//                         totalamt = amount;
+//                     }
+//                 }
+//             }
+//         }
+//         console.log("-------------Basics----------------");
+//         console.log(basicamt);
+//         console.log(extrakm);
+//         console.log(extraamt);
+//         console.log(amount);
+
+//         let discountPercent = newUserpromocode[0].discount;
+//         console.log("-------------------Discount % -----------------");
+//         console.log(discountPercent);
+//         let NewUserDiscountAmount = (parseFloat(amount) * parseFloat(discountPercent)) / 100;
+//         console.log("--------------New User Discount Amount---------------");
+//         NewUserDiscountAmount = (Math.round(NewUserDiscountAmount) % 10) > 5 ? round(NewUserDiscountAmount, 10) : round(NewUserDiscountAmount, 5);
+//         console.log(NewUserDiscountAmount);
+//         let NewUserNetAmount = parseFloat(amount) - parseFloat(NewUserDiscountAmount);
+//         console.log("---------------Net Amount-------------------");
+//         console.log(NewUserNetAmount);
+//         NewUserNetAmount = (Math.round(NewUserNetAmount) % 10) > 5 ? round(NewUserNetAmount, 10) : round(NewUserNetAmount, 5);
+//         var dataset = [{
+//             note: note,
+//             totaldistance: Math.round(totaldistance.toFixed(2)),
+//             totaldistamt: Number(distamt),
+//             extracharges: extracharges,
+//             extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
+//             amount: amt,
+//             promoused: Math.ceil(NewUserDiscountAmount),
+//             totalamt: NewUserNetAmount
+//         },];
+        
+//     }else{
+//         console.log("--------------------Out-----------------------");
+//         console.log(distamt);
+//         console.log(amt);
+//         console.log(totalamt);
+//         dataset = [{
+//             note: note,
+//             totaldistance: Math.round(totaldistance.toFixed(2)),
+//             totaldistamt: Number(distamt),
+//             extracharges: extracharges,
+//             extadeliverycharges: Math.ceil(extadeliverycharges.toFixed(2)),
+//             amount: amt,
+//             promoused: Math.ceil(promoused.toFixed(2)),
+//             totalamt: netamount
+//         },];
+//         console.log(dataset);
+//     }
+
+//     res.json({ Message: "Calculation Found!", Data: dataset, IsSuccess: true });
+// });
 
 var round = function (num, precision) {
     num = parseFloat(num);
