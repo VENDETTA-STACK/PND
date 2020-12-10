@@ -707,14 +707,20 @@ router.post("/ordercalcV3", async (req, res, next) => {
         },];
         
     }else{
-        if(req.body.type == "eorder"){
+        if(req.body.amountCollected){
             var handlingChargeIs = parseFloat(settings[0].handling_charges);
             console.log("--------------------Handling Charge-----------------------");
             console.log(distamt);
             console.log(amt);
             console.log(totalamt);
             console.log(netamount);
-            let additionalChargeOfHandling = parseFloat(amountCollected) * parseFloat(handlingChargeIs);
+            let temp = amountCollected == null ? "0" : amountCollected;
+            console.log("-----------Yeah---------------");
+            console.log(temp);
+            let additionalChargeOfHandling = parseFloat(temp) * parseFloat(handlingChargeIs);
+            console.log("---------------Amount Collected---------------");
+            console.log(amountCollected);
+            console.log("--------------Addtion HAndling Charge-------------");
             console.log(additionalChargeOfHandling); 
             dataset = [{
                 note: note,
@@ -1097,87 +1103,128 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
     const file = req.file;
     let num = getOrderNumber();
     try {
-        if(req.body.type == "eorder"){
-            console.log("---------EOrder------------");
-            var newOrder = new orderSchema({
-                _id: new config.mongoose.Types.ObjectId(),
-                orderNo: num,
-                customerId: customerId,
-                deliveryType: deliveryType,
-                // schedualDateTime: schedualDateTime,
-                weightLimit: weightLimit,
-                orderImg: file == undefined ? "" : file.path,
-                pickupPoint: {
-                    name: pkName,
-                    mobileNo: pkMobileNo,
-                    address: pkAddress,
-                    lat: pkLat,
-                    long: pkLong,
-                    completeAddress: pkCompleteAddress,
-                    contents: pkContent,
-                    arriveType: pkArriveType,
-                    arriveTime: pkArriveTime,
-                },
-                deliveryPoint: {
-                    name: dpName,
-                    mobileNo: dpMobileNo,
-                    address: dpAddress,
-                    lat: dpLat,
-                    long: dpLong,
-                    completeAddress: dpCompleteAddress,
-                    distance: dpDistance,
-                },
-                collectCash: collectCash,
-                amountCollection: amountCollection,
-                handlingCharge: handlingChargeIs,
-                // eOrderDeliveryType: eOrderDeliveryType,
-                promoCode: promoCode,
-                amount: amount,
-                discount: discount,
-                additionalAmount: additionalAmount,
-                finalAmount: finalAmount,
-                status: "Order Processing",
-                note: "Your order is processing!",
-            }); 
-        }else{
-            newOrder = new orderSchema({
-                _id: new config.mongoose.Types.ObjectId(),
-                orderNo: num,
-                customerId: customerId,
-                deliveryType: deliveryType,
-                schedualDateTime: schedualDateTime,
-                weightLimit: weightLimit,
-                orderImg: file == undefined ? "" : file.path,
-                pickupPoint: {
-                    name: pkName,
-                    mobileNo: pkMobileNo,
-                    address: pkAddress,
-                    lat: pkLat,
-                    long: pkLong,
-                    completeAddress: pkCompleteAddress,
-                    contents: pkContent,
-                    arriveType: pkArriveType,
-                    arriveTime: pkArriveTime,
-                },
-                deliveryPoint: {
-                    name: dpName,
-                    mobileNo: dpMobileNo,
-                    address: dpAddress,
-                    lat: dpLat,
-                    long: dpLong,
-                    completeAddress: dpCompleteAddress,
-                    distance: dpDistance,
-                },
-                collectCash: collectCash,
-                promoCode: promoCode,
-                amount: amount,
-                discount: discount,
-                additionalAmount: additionalAmount,
-                finalAmount: finalAmount,
-                status: "Order Processing",
-                note: "Your order is processing!",
-            });
-        }
+        // if(req.body.type == "eorder"){
+        //     console.log("---------EOrder------------");
+        //     var newOrder = new orderSchema({
+        //         _id: new config.mongoose.Types.ObjectId(),
+        //         orderNo: num,
+        //         customerId: customerId,
+        //         deliveryType: deliveryType,
+        //         // schedualDateTime: schedualDateTime,
+        //         weightLimit: weightLimit,
+        //         orderImg: file == undefined ? "" : file.path,
+        //         pickupPoint: {
+        //             name: pkName,
+        //             mobileNo: pkMobileNo,
+        //             address: pkAddress,
+        //             lat: pkLat,
+        //             long: pkLong,
+        //             completeAddress: pkCompleteAddress,
+        //             contents: pkContent,
+        //             arriveType: pkArriveType,
+        //             arriveTime: pkArriveTime,
+        //         },
+        //         deliveryPoint: {
+        //             name: dpName,
+        //             mobileNo: dpMobileNo,
+        //             address: dpAddress,
+        //             lat: dpLat,
+        //             long: dpLong,
+        //             completeAddress: dpCompleteAddress,
+        //             distance: dpDistance,
+        //         },
+        //         collectCash: collectCash,
+        //         amountCollection: amountCollection,
+        //         handlingCharge: handlingChargeIs,
+        //         // eOrderDeliveryType: eOrderDeliveryType,
+        //         promoCode: promoCode,
+        //         amount: amount,
+        //         discount: discount,
+        //         additionalAmount: additionalAmount,
+        //         finalAmount: finalAmount,
+        //         status: "Order Processing",
+        //         note: "Your order is processing!",
+        //     }); 
+        // }else{
+        //     newOrder = new orderSchema({
+        //         _id: new config.mongoose.Types.ObjectId(),
+        //         orderNo: num,
+        //         customerId: customerId,
+        //         deliveryType: deliveryType,
+        //         schedualDateTime: schedualDateTime,
+        //         weightLimit: weightLimit,
+        //         orderImg: file == undefined ? "" : file.path,
+        //         pickupPoint: {
+        //             name: pkName,
+        //             mobileNo: pkMobileNo,
+        //             address: pkAddress,
+        //             lat: pkLat,
+        //             long: pkLong,
+        //             completeAddress: pkCompleteAddress,
+        //             contents: pkContent,
+        //             arriveType: pkArriveType,
+        //             arriveTime: pkArriveTime,
+        //         },
+        //         deliveryPoint: {
+        //             name: dpName,
+        //             mobileNo: dpMobileNo,
+        //             address: dpAddress,
+        //             lat: dpLat,
+        //             long: dpLong,
+        //             completeAddress: dpCompleteAddress,
+        //             distance: dpDistance,
+        //         },
+        //         collectCash: collectCash,
+        //         promoCode: promoCode,
+        //         amount: amount,
+        //         discount: discount,
+        //         additionalAmount: additionalAmount,
+        //         finalAmount: finalAmount,
+        //         status: "Order Processing",
+        //         note: "Your order is processing!",
+        //     });
+        // }
+        var newOrder = new orderSchema({
+            _id: new config.mongoose.Types.ObjectId(),
+            orderNo: num,
+            customerId: customerId,
+            deliveryType: deliveryType,
+            // schedualDateTime: schedualDateTime,
+            weightLimit: weightLimit,
+            orderImg: file == undefined ? "" : file.path,
+            pickupPoint: {
+                name: pkName,
+                mobileNo: pkMobileNo,
+                address: pkAddress,
+                lat: pkLat,
+                long: pkLong,
+                completeAddress: pkCompleteAddress,
+                contents: pkContent,
+                arriveType: pkArriveType,
+                arriveTime: pkArriveTime,
+            },
+            deliveryPoint: {
+                name: dpName,
+                mobileNo: dpMobileNo,
+                address: dpAddress,
+                lat: dpLat,
+                long: dpLong,
+                completeAddress: dpCompleteAddress,
+                distance: dpDistance,
+            },
+            collectCash: collectCash,
+            amountCollection: amountCollection == undefined ? 0 : amountCollection,
+            handlingCharge: handlingChargeIs,
+            // eOrderDeliveryType: eOrderDeliveryType,
+            promoCode: promoCode,
+            amount: amount,
+            discount: discount,
+            additionalAmount: additionalAmount,
+            finalAmount: finalAmount,
+            status: "Order Processing",
+            note: "Your order is processing!",
+        });
+        console.log("---------------amount Collected-----------");
         var placedorder = await newOrder.save();
             var avlcourier = await PNDfinder(
                 pkLat,

@@ -355,7 +355,13 @@ router.post("/promocodes", async function(req, res, next) {
     const { customerId } = req.body;
     try {
         var datasets = [];
-        let listPromoCodes = await promoCodeSchema.find({ isActive: true , isForNewUser: false });
+        var customerPastOrder = await orderModel.find({ customerId: customerId });
+        console.log(customerPastOrder.length);
+        if(customerPastOrder.length == 0){
+            var listPromoCodes = await promoCodeSchema.find({ isActive: true });    
+        }else{
+            listPromoCodes = await promoCodeSchema.find({ isActive: true , isForNewUser: false });
+        }
 
         for (var i = 0; i < listPromoCodes.length; i++) {
             let exist = await usedpromoSchema.find({
