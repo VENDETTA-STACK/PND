@@ -135,6 +135,7 @@ const orderSchema = mongoose.Schema({
     },
     amountCollection: {
         type: String,
+        default: "0"
     },
     eOrderDeliveryType: {
         type: String,

@@ -1189,7 +1189,7 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
             orderNo: num,
             customerId: customerId,
             deliveryType: deliveryType,
-            // schedualDateTime: schedualDateTime,
+            schedualDateTime: schedualDateTime,
             weightLimit: weightLimit,
             orderImg: file == undefined ? "" : file.path,
             pickupPoint: {
@@ -1213,7 +1213,7 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
                 distance: dpDistance,
             },
             collectCash: collectCash,
-            amountCollection: amountCollection == undefined ? 0 : amountCollection,
+            amountCollection: amountCollection == "" ? "0" : amountCollection,
             handlingCharge: handlingChargeIs,
             // eOrderDeliveryType: eOrderDeliveryType,
             promoCode: promoCode,
@@ -2217,7 +2217,7 @@ router.post("/orderCancelByCustomer", async function(req , res ,next){
                         OrderCancelLimit : myNewDate,
                         ReadableFormat : [hh, mm, ss].join(':') })
         }else{
-            res.status(400).json({ IsSuccess : false , Message : "Not Found...!!!" , Data : 0 });
+            res.status(200).json({ IsSuccess : false , Message : "Not Found...!!!" , Data : 0 });
         }
     } catch (error) {
         res.status(500).json({ IsSuccess : false , Message : error.message});
