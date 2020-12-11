@@ -2214,7 +2214,10 @@ router.post("/orderCancelByCustomer", async function(req , res ,next){
             let orderNo = customerOrder[0].orderNo;
             let OrderTime = customerOrder[0].schedualDateTime;
             // console.log(OrderTime);
-
+            console.log("-----------------SSS---------------");
+            console.log(customerOrder[0].schedualDateTime);
+            let isoSchedule = customerOrder[0].schedualDateTime;
+             
             var getextractData = await orderSchema.aggregate(
                 [
                     {$match:
@@ -2256,20 +2259,29 @@ router.post("/orderCancelByCustomer", async function(req , res ,next){
             //  console.log(`Month : ${TimeMonth}`);
             //  console.log(`Day : ${TimeDate}`);
              //console.log(`Seconds : ${TimeSeconds}`);
-            let myNewDate = new Date(TimeYear,TimeMonth,TimeDate,TimeHours,TimeMinutes,TimeSeconds);
+            // let myNewDate = new Date(TimeYear,TimeMonth,TimeDate,TimeHours,TimeMinutes,TimeSeconds);
             // console.log(myNewDate.getMinutes());
-            myNewDate.setMinutes(myNewDate.getMinutes() - 15);
+            // myNewDate.setMinutes(myNewDate.getMinutes() - 15);
+            // console.log("--------MyDate---------");
             // console.log(myNewDate);
+            // console.log(myNewDate.getHours());
 
             var hh = myNewDate.getHours();
             var mm = myNewDate.getMinutes();
             var ss = myNewDate.getSeconds();
             
-            res.status(200).json({ 
-                        IsSuccess : true , 
-                        Message : "Order Cancel Limit!!!" ,
-                        OrderCancelLimit : myNewDate,
-                        ReadableFormat : [hh, mm, ss].join(':') })
+            let limitTime = new Date(myNewDate);
+            console.log("-----------Limit-------")
+            console.log(limitTime);
+            let timeNow = new Date();
+            console.log(timeNow.getHours() + ":" + timeNow.getMinutes());
+            console.log(isoSchedule.getHours() + ":" + isoSchedule.getMinutes()); 
+            console.log(myNewDate.getHours() + ":" + myNewDate.getMinutes()); 
+            // res.status(200).json({ 
+            //             IsSuccess : true , 
+            //             Message : "Order Cancel Limit!!!" ,
+            //             OrderCancelLimit : myNewDate,
+            //             ReadableFormat : [hh, mm, ss].join(':') })
         }else{
             res.status(200).json({ IsSuccess : false , Message : "Not Found...!!!" , Data : 0 });
         }
@@ -2278,6 +2290,50 @@ router.post("/orderCancelByCustomer", async function(req , res ,next){
     }
 });
 
+router.post("/cancelOrderV1", async function(req,res,next){
+    const { orderNo , customerId } = req.body;
+    try {
+        let orderIs = await orderSchema.find({ $and: [ { orderNo: orderNo }, { customerId: customerId } ] });
+        var scheduleTime = orderIs[0].schedualDateTime;
+        console.log(scheduleTime);
+        console.log("_ID IS :" + orderIs[0]._id);
+        
+        if(scheduleTime.getMinutes()<10){
+            scheduleTime = scheduleTime.getHours() + ":" + "0" + scheduleTime.getMinutes();
+        }else{
+            scheduleTime = scheduleTime.getHours() + ":" + scheduleTime.getMinutes();
+        }
+        console.log("Schedule Time :" + scheduleTime);
+        var TimeLimit = orderIs[0].schedualDateTime;
+        console.log(TimeLimit);
+        TimeLimit.setMinutes(TimeLimit.getMinutes() - 15);
+        console.log("Here :" + TimeLimit.toISOString());
+        
+        console.log("Order Cancel Limit :"+ TimeLimit.getHours() + ":" + TimeLimit.getMinutes());
+        console.log("Limit :" + TimeLimit.getHours() + ":" + TimeLimit.getMinutes());
+        var currentDateTime = new Date();
+        var currentTime = currentDateTime.getHours() + ":" + currentDateTime.getMinutes();
+        currentDateTime = currentDateTime.toISOString();
+        console.log("current :"+currentTime);
+        // console.log("TimeLimit :" + TimeLimit)
+        let cancelLimit = TimeLimit.toISOString();
+        console.log("aa" + cancelLimit);
+        // let t = "2020-12-11T05:30:03.872Z";
+        console.log("CurrentDateTime :" + currentDateTime);
+        console.log("aa :" + cancelLimit);
+        if(currentDateTime < cancelLimit){
+            console.log("you can");
+            var deleteOrder = await orderSchema.findByIdAndDelete(orderIs[0]._id);
+            res.status(200).json({ IsSuccess: true , Message: "Order Deleted" });
+        }
+        else{
+            console.log("oooooooooooo");
+            res.status(200).json({ IsSuccess: true , Message: "Order Can't Deleted Before 15 Minutes of ScheduleTime" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
 router.post("/cancelOrder" , async function(req,res,next){
     const { id } = req.body;
     try {
