@@ -705,6 +705,8 @@ router.post("/ordercalcV3", async (req, res, next) => {
         //     promoused: Math.ceil(NewUserDiscountAmount),
         //     totalamt: NewUserNetAmount
         // },];
+        console.log("----------Basic AMT--------------");
+        console.log(basicamt);
         console.log("--------------------In New User-----------------------");
         var newUserPromocode = await promoCodeSchema.find({ isForNewUser: true });
         
@@ -1234,6 +1236,8 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
         //         note: "Your order is processing!",
         //     });
         // }
+        console.log("-------------Schedule Time-------------------");
+        console.log(req.body.schedualDateTime);
         var newOrder = new orderSchema({
             _id: new config.mongoose.Types.ObjectId(),
             orderNo: num,

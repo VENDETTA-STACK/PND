@@ -425,8 +425,8 @@ router.post("/getEmployeeOrderDetails", async function(req,res,next){
                     status: "Order Delivered", 
                     isActive: false,
                     dateTime: {
-                        $gte : new ISODate(date1),
-                        $lte : new ISODate(date2)
+                        $gte : date1,
+                        $lte : date2
                     },
                     // dateTime: "2020-12-09T08:34:06.969+00:00"
                     })

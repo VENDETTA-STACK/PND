@@ -362,7 +362,7 @@ router.post("/promocodes", async function(req, res, next) {
         }else{
             listPromoCodes = await promoCodeSchema.find({ isActive: true , isForNewUser: false });
         }
-
+        console.log(listPromoCodes);
         for (var i = 0; i < listPromoCodes.length; i++) {
             let exist = await usedpromoSchema.find({
                 customer: customerId,
