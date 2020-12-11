@@ -2324,11 +2324,11 @@ router.post("/cancelOrderV1", async function(req,res,next){
         if(currentDateTime < cancelLimit){
             console.log("you can");
             var deleteOrder = await orderSchema.findByIdAndDelete(orderIs[0]._id);
-            res.status(200).json({ IsSuccess: true , Message: "Order Deleted" });
+            res.status(200).json({ IsSuccess: true , Data: 1 ,Message: "Order Deleted" });
         }
         else{
             console.log("oooooooooooo");
-            res.status(200).json({ IsSuccess: true , Message: "Order Can't Deleted Before 15 Minutes of ScheduleTime" });
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Order Can't Deleted Before 15 Minutes of ScheduleTime" });
         }
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
