@@ -508,6 +508,17 @@ router.post("/completed_orders", async function (req, res, next) {
         newdataset.push({
             completeOrders: orderscomplete,
         });
+        // let completeOrders = await orderSchema.aggregate([
+        //     {
+        //       $lookup:
+        //         {
+        //           from: "ExtraTime",
+        //           localField: "_id",
+        //           foreignField: "orderId",
+        //           as: "Extraa"
+        //         }
+        //    }
+        //  ])
         // console.log(newdataset);
         res
             .status(200)

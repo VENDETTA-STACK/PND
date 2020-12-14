@@ -207,12 +207,24 @@ async function sendMessages(mobileNo, message) {
     //     "&msg=" +
     //     message +
     //     "&fl=0&gwid=2";
+    // console.log("xs------------------------------");
     let msgportal = "http://websms.mitechsolution.com/api/push.json?apikey=" + process.env.SMS_API + "&route=vtrans&sender=PNDDEL&mobileno=" + mobileNo + "&text= " + message;
+    console.log("--------------------SEND TEXT---------------------------");
     console.log(msgportal);
     axios.get(msgportal);
     var data = await axios.get(msgportal);
     return data;
 }
+
+router.post("/sendText", async function(req,res,next){
+    try {
+        var aa = await sendMessages(8200682175,"hello");
+        // console.log(aa);
+        // res.status(200).json({ IsSuccess: true , Message: "Send...!!!" });    
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
 
 async function currentLocation(courierId) {
     console.log(courierId);
