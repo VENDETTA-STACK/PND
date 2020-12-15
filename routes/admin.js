@@ -1857,7 +1857,7 @@ router.post('/getapiorder', async function(req , res , next){
     try {
         let SortType = { dateTime: -1 };
         let sumulordersList = await sumulOrderSchema.find().sort(SortType);
-        console.log(sumulordersList);
+        // console.log(sumulordersList);
         res.status(200).json({ IsSuccess : true , Message : "Orders List Found...!!!" , Data : sumulordersList});
     } catch (error) {
         res.status(500).json({ IsSuccess : false , Message : "Order List Not Found...!!!" });
