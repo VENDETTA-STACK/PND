@@ -707,7 +707,14 @@ router.post("/getLiveLocation", async function (req, res, next) {
             }
         }
 
-        res.status(200).json(list_courier);
+        // res.status(200).json(list_courier);
+        //-----15-12-2020----------MONIL
+        if(list_courier.length > 0){
+            res.status(200).json({ IsSuccess: true , Data: list_courier , Message: "Live Location Found"});
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Live Location Not Found"});
+        }
+        
     } catch(err) {
         res.status(500).json({ IsSuccess: false , Message: err.message });
     }
