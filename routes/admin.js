@@ -929,9 +929,9 @@ router.post("/AssignOrder", async function (req, res, next) {
                 reason: "",
                 fcmToken: courierboy[0].fcmToken,
             });
-            await newrequest.save();
+            let a = await newrequest.save();
 
-            await orderSchema.findByIdAndUpdate(orderId, {
+            let problemWith = await orderSchema.findByIdAndUpdate(orderId, {
                 courierId: courierId,
                 status: "Order Assigned",
                 note: "Order Has Been Assigned",
@@ -948,7 +948,7 @@ router.post("/AssignOrder", async function (req, res, next) {
                 long: location.longitude,
                 description: description,
             });
-            await logger.save();
+            let b = await logger.save();
 
             //send Notificaiton Code Here To Customer
             //send sms when directly assign SMS
@@ -966,7 +966,7 @@ router.post("/AssignOrder", async function (req, res, next) {
                 courierData[0].mobileNo +
                 ".He Will Reach To You Shortly.";
             // console.log(courierData[0].mobileNo + createMsg);
-            sendMessages(OrderData[0].pickupPoint.mobileNo, createMsg);
+            sendMessages(OrderData[0].pickupPoint.mobileNo +"", createMsg);
 
             // New Code 03-09-2020
             var payload = {
@@ -978,7 +978,7 @@ router.post("/AssignOrder", async function (req, res, next) {
                     "distance": distanceKM,
                     "click_action": "FLUTTER_NOTIFICATION_CLICK"
                 },
-                "to": courierboy[0].fcmToken
+                "to": courierboy[0].fcmToken + ""
             };
             var options = {
                 'method': 'POST',
@@ -1478,8 +1478,17 @@ router.post("/sendNToPND", async function (req, res, next) {
 //check balance
 //http://websms.mitechsolution.com/api/creditstatus.json?apikey=5f266fc48b29f
 router.post("/balancecheck", async (req, res, next) => {
-    let data = await axios.get("http://websms.mitechsolution.com/api/creditstatus.json?apikey=" + process.env.SMS_API);
-    res.json(data.data.description);
+    try {
+        let data = await axios.get("http://websms.mitechsolution.com/api/creditstatus.json?apikey=" + process.env.SMS_API);
+        if(data){
+            res.status(200).json({ IsSuccess: true , Data: data.data.description , Message: "Got It" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "No Data Found" })
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+    
 })
 //not to show on admin panel
 router.post("/adddeliverytype", async (req, res, next) => {
@@ -1492,18 +1501,22 @@ router.post("/adddeliverytype", async (req, res, next) => {
             cost: cost,
         });
         predata.save();
-        res.status(200).json("Data Saved");
+        res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Data Saved"});
     } catch (err) {
-        res.status(500).json(err.message);
+        res.status(500).json({ IsSuccess: false , Data: 0 , Message: err.message});
     }
 });
 
 router.post("/deliverytype", async (req, res, next) => {
     try {
         let predata = await deliverytypesSchema.find({});
-        res.status(200).json(predata);
+        if(predata){
+            res.status(200).json({ IsSuccess: true , Data: predata , Message: "Data Found"});
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Data Not Found" });
+        }
     } catch (err) {
-        res.status(500).json(err.message);
+        res.status(500).json({ IsSuccess: false , Data: 0 , Message: err.message});
     }
 });
 
@@ -1515,18 +1528,26 @@ router.post("/addpoatype", async (req, res, next) => {
             title: title,
         });
         data.save();
-        res.status(200).json("Data Saved");
+        if(data){
+            res.status(200).json({ IsSuccess: true , Data: data , Message: "Data Saved"});    
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Data Not Saved"});
+        }
     } catch (err) {
-        res.status(500).json(err.message);
+        res.status(500).json({ IsSuccess: false , Message: err.message});
     }
 });
 
 router.post("/poatypes", async (req, res, next) => {
     try {
         let predata = await poatypesSchema.find({});
-        res.status(200).json(predata);
+        if(predata){
+            res.status(200).json({ IsSuccess: true , Data: predata , Message: "Data Found"});
+        }else{
+            res.status(200).json({ IsSuccess: true , Message: "Data Nor Found" })
+        }
     } catch (err) {
-        res.status(500).json(err.message);
+        res.status(500).json({ IsSuccess: false , Message: err.message});
     }
 });
 
