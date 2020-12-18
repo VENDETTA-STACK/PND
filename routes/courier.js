@@ -409,6 +409,16 @@ function convertStringDateToISO(date){
     return dISO;
 }
 
+function convertStringDateToISOPlusOne(date){
+    var dateList = date;
+    // console.log(dateList.split("/"));
+    let list = dateList.split("/");
+    let datee = parseFloat(list[0]) + 1;
+    
+    let dISO = list[2] + "-" + list[1] + "-" + datee + "T" + "00:00:00.00Z";
+    // console.log(dISO);
+    return dISO;
+}
 //Employee Order History------25-11-2020---Monil
 router.post("/getEmployeeOrderDetails", async function(req,res,next){
     const { courierId , startdate , enddate } = req.body;
@@ -427,6 +437,60 @@ router.post("/getEmployeeOrderDetails", async function(req,res,next){
                     dateTime: {
                         $gte : date1,
                         $lte : date2
+                    },
+                    // dateTime: "2020-12-09T08:34:06.969+00:00"
+                    })
+                    .populate(
+                            "courierId",
+                            "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+                    )
+                    .populate("customerId");
+        var totalPrice = 0;
+        var totalDistance = 0;
+        console.log(record);
+        for(var i=0;i<record.length;i++){
+            totalPrice = totalPrice + record[i].finalAmount;
+            totalDistance = totalDistance + record[i].deliveryPoint.distance;
+            // console.log(totalDistance);
+        }
+        console.log(totalPrice);
+        console.log(totalDistance);
+        if(record.length > 0){
+            res.status(200).json({
+                                   IsSuccess: true,
+                                   TotalPriceCollected: totalPrice,
+                                   TotalDistanceTravell: totalDistance,
+                                   TotalOrders: record.length, 
+                                   Data: record, 
+                                   Message: "Orders Found" 
+                                });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Orders Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ Message: error.message, Data: 0, IsSuccess: false });
+    }
+});
+
+//Get Employee Order Details V2 18/12/2020--------------------
+router.post("/getEmployeeOrderDetailsV2", async function(req,res,next){
+    const { courierId , ofDate } = req.body;
+    console.log(req.body);
+
+    let ofDate1 = convertStringDateToISO(ofDate);
+    let ofDate2 = convertStringDateToISOPlusOne(ofDate);
+
+    console.log(ofDate1);
+    console.log(ofDate2);
+
+    try {
+        var record = await orderSchema.find({ 
+                    courierId: courierId,
+                    status: "Order Delivered", 
+                    isActive: false,
+                    dateTime: {
+                        $gte : ofDate1,
+                        $lt : ofDate2
                     },
                     // dateTime: "2020-12-09T08:34:06.969+00:00"
                     })

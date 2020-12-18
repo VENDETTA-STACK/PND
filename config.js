@@ -14,9 +14,10 @@ var docref = firedb.ref("restricted_access/secret_document");
 
 /*Database Connection*/
 mongoose.connect(process.env.HOST, {
+  useNewUrlParser : true,
+  useUnifiedTopology : true,
   useFindAndModify: false,
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  useCreateIndex: true,
 });
 
 mongoose.connection

@@ -1593,50 +1593,85 @@ router.post("/multiNewOrder", async function(req,res,next){
 });
 
 //Optimize Route---------MONIL(03/12/2020)
+function locationFromPickUp(orders,pickLat,pickLong){
+    // console.log(orders);
+    console.log("Order Length: "+orders.length);
+    var distanceFromPickUp = {};
+    var distanceFromPickUpList = [];
+    var temp = [];
+    for(var i=0;i<orders.length;i++){
+        var deliveryPoint = [orders[i].deliveryPoint.lat,orders[i].deliveryPoint.long];
+                
+        let distance = calculatelocation(pickLat,pickLong,deliveryPoint[0],deliveryPoint[1]);
+        distance = distance/1000;
+        distance = parseFloat(distance);
+        distanceFromPickUp[i] = distance;
+        temp.push(distanceFromPickUp);
+        distanceFromPickUpList.push(distance);    
+    }
+    temp = temp[1];
+    return temp; 
+}
+
+function sortObj(yourVar,list){
+            
+    for (var rs in list) {
+        yourVar.push([rs, list[rs]]);
+    }
+
+    yourVar.sort(function(a, b) {
+        return a[1] - b[1];
+    });
+    return yourVar;
+}
+
+function removeElement(array, elem) {
+    var index = array.indexOf(elem);
+    if (index > -1) {
+        array.splice(index, 1);
+    }
+}
+
 router.post("/getOptimizeRoute", async function(req,res,next){
     const { orderMTNum } = req.body;
     // console.log(calculatelocation(21.1411089,72.80367319999999,22.98551,75.36289));
     try {
         var orderIs = await demoOrderSchema.find({ multiOrderNo: orderMTNum });
+        //	"orderMTNum" : "ORDMT-5022110000"
         console.log(orderIs.length);
-        let PickPoint = [orderIs[0].pickupPoint.lat,orderIs[0].pickupPoint.long];
-        // console.log(PickPoint);
-        var distanceFromPickUp = [];
-        function pushToAry(name, val , ary) {
-            var obj = {};
-            obj[name] = val;
-            ary.push(obj);
-         }
-        for(var i=0;i<orderIs.length;i++){
-            var deliveryPoint = [orderIs[i].deliveryPoint.lat,orderIs[i].deliveryPoint.long];
-                
-            let distance = calculatelocation(PickPoint[0],PickPoint[1],deliveryPoint[0],deliveryPoint[1]);
-            distance = distance/1000;
-            // console.log(distance);
-            
-            // distanceFromPickUp.push({ i: distance});
-            pushToAry(distance,i,distanceFromPickUp); 
-        }
-        console.log(distanceFromPickUp);
-        var ObjectSorting = Object.keys(distanceFromPickUp).reduce((accumulator, currentValue) => {
-            accumulator[currentValue] = distanceFromPickUp[currentValue];
-            return accumulator;
-          }, {})
-        console.log(ObjectSorting);
-        console.log(indexOfMinFromArray(distanceFromPickUp));
-        let nextStartNodeIndex = indexOfMinFromArray(distanceFromPickUp);
-        let NextStartNodeLat = orderIs[nextStartNodeIndex].deliveryPoint.lat;
-        let NextStartNodeLong = orderIs[nextStartNodeIndex].deliveryPoint.long;
-        console.log(NextStartNodeLat);
-        console.log(NextStartNodeLong);
-        // var optimizeOrderRoute = [];
-        // // optimizeOrderRoute.push({ deliveryAddNo: indexOfMinFromArray(distanceFromPickUp) });
-        // console.log(optimizeOrderRoute);
-        for(var j=0;j<distanceFromPickUp.length;j++){
+        var optimizeOrder = [];
+        var PickPoint = [orderIs[0].pickupPoint.lat,orderIs[0].pickupPoint.long];
+        
+        for(var ij in orderIs){
+            console.log(locationFromPickUp(orderIs,PickPoint[0],PickPoint[1]));
+            let distancesFromOrigin = locationFromPickUp(orderIs,PickPoint[0],PickPoint[1]);
+            // console.log(distancesFromOrigin);
+            var sortable = [];
+            // console.log(sortObj(sortable,distancesFromOrigin));
+            sortObj(sortable,distancesFromOrigin)
+            console.log("Sort Orders Index: ");
+            console.log(sortable);//[ [ '0', 3.249 ], [ '2', 3.371 ], [ '1', 3.57 ] ]
 
+            let indexOfFirstOrder = sortable[0][0];
+            optimizeOrder.push(orderIs[indexOfFirstOrder]);
+            console.log(orderIs[indexOfFirstOrder].orderNo)
+            // console.log(optimizeOrder);
+
+            let nextPickUpLat = orderIs[indexOfFirstOrder].deliveryPoint.lat;
+            let nextPickUpLong = orderIs[indexOfFirstOrder].deliveryPoint.long;
+            pickupPoint= [nextPickUpLat,nextPickUpLong];
+            sortable.shift();
+            removeElement(orderIs,orderIs[indexOfFirstOrder]);
         }
         
-        res.status(200).json({ IsSuccess: true , Data: orderIs , Message: "Yo Nigga...!!!" })
+        console.log(sortable);
+        let indexOfLastDeliveryPoint = sortable[0][0];
+        optimizeOrder.push(orderIs[indexOfLastDeliveryPoint])
+        // for(var j=0;j<sortable.length;j++){
+            
+        // }
+        // let letNextPick = 
+        res.status(200).json({ IsSuccess: true , Count: optimizeOrder.length ,Data: optimizeOrder , Message: "Orders Optimize" });
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
