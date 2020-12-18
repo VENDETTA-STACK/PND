@@ -499,10 +499,14 @@ router.post("/getEmployeeOrderDetailsV2", async function(req,res,next){
                             "firstName lastName fcmToken mobileNo accStatus transport isVerified"
                     )
                     .populate("customerId");
+        var amount = 0;
+        var thirdPartyCollection = 0;
         var totalPrice = 0;
         var totalDistance = 0;
         console.log(record);
         for(var i=0;i<record.length;i++){
+            amount = amount + record[i].amount;
+            thirdPartyCollection = thirdPartyCollection + record[i].amountCollection;
             totalPrice = totalPrice + record[i].finalAmount;
             totalDistance = totalDistance + record[i].deliveryPoint.distance;
             // console.log(totalDistance);
