@@ -505,10 +505,10 @@ router.post("/getEmployeeOrderDetailsV2", async function(req,res,next){
         var totalDistance = 0;
         console.log(record);
         for(var i=0;i<record.length;i++){
-            amount = amount + record[i].amount;
-            thirdPartyCollection = thirdPartyCollection + record[i].amountCollection;
-            totalPrice = totalPrice + record[i].finalAmount;
-            totalDistance = totalDistance + record[i].deliveryPoint.distance;
+            amount = amount + parseFloat(record[i].amount);
+            thirdPartyCollection = thirdPartyCollection + parseFloat(record[i].amountCollection);
+            totalPrice = totalPrice + parseFloat(record[i].finalAmount);
+            totalDistance = totalDistance + parseFloat(record[i].deliveryPoint.distance);
             // console.log(totalDistance);
         }
         console.log(totalPrice);
@@ -524,6 +524,70 @@ router.post("/getEmployeeOrderDetailsV2", async function(req,res,next){
                                 });
         }else{
             res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Orders Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ Message: error.message, Data: 0, IsSuccess: false });
+    }
+});
+
+router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
+    // const { courierId } = req.body;
+    try {
+        var courierIds = [];
+        var courierOrdersData = [];
+        var courierBoysAre = await courierSchema.find();
+        for(var i=0;i<courierBoysAre.length;i++){
+            // console.log(courierBoysAre[i]._id);
+            courierIds.push(courierBoysAre[i]._id);
+        }
+        // console.log(courierIds);
+        for(var j=0;j<courierIds.length;j++){
+            // console.log(courierIds[j]);
+            var record = await orderSchema.find({ 
+                courierId: courierIds[j],
+                status: "Order Delivered", 
+                isActive: false,
+                })
+                .populate(
+                        "courierId",
+                        "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+                )
+                .populate("customerId");
+            if(record.length > 0){
+                console.log(record[0].courierId[0].firstName);
+                console.log(record.length);
+                // console.log(record[j].courierId);
+                let Amount = 0;
+                let ThirdPartyCollection = 0;
+                let TotalPrice = 0;
+                let TotalDistance = 0;
+            
+                for(let k=0;k<record.length;k++){
+                    Amount = Amount + parseFloat(record[k].amount);
+                    ThirdPartyCollection = ThirdPartyCollection + parseFloat(record[k].amountCollection);
+                    TotalPrice = TotalPrice + parseFloat(record[k].finalAmount);
+                    TotalDistance = TotalDistance + parseFloat(record[k].deliveryPoint.distance);
+                }
+                // console.log(Amount);
+                // console.log(ThirdPartyCollection);
+                // console.log(TotalPrice);
+                // console.log(TotalDistance);
+                var data = {
+                    EmployeeName : record[0].courierId[0].firstName,
+                    AmoutCollect : Amount,
+                    ThirdPartyCollection: ThirdPartyCollection,
+                    TotalPrice: TotalPrice,
+                    TotalDistance: TotalDistance,
+                    TotalDelivery : record.length,
+                }
+                courierOrdersData.push(data); 
+            }
+        }
+        // console.log(courierOrdersData);
+        if(courierOrdersData.length > 0){
+            res.status(200).json({ IsSuccess: true , Data: courierOrdersData , Message: "Data Found" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Data Not Found" });
         }
     } catch (error) {
         res.status(500).json({ Message: error.message, Data: 0, IsSuccess: false });
