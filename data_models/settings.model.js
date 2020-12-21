@@ -26,7 +26,7 @@ const orderSettingsSchema = mongoose.Schema({
   NewUserprice: {
     type: Number,
   },
-  addKm: {
+  addKmCharge: {
     type: Number,
   },
   newpromocode: {
@@ -34,7 +34,10 @@ const orderSettingsSchema = mongoose.Schema({
   },
   handling_charges: {
     type: Number,
-  }
+  },
+  additionalKm:  {
+    type: Number,
+  },
 });
 
 module.exports = mongoose.model("Settings", orderSettingsSchema);

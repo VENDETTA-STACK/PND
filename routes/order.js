@@ -1642,7 +1642,7 @@ router.post("/getOptimizeRoute", async function(req,res,next){
         var optimizeOrder = [];
         var PickPoint = [orderIs[0].pickupPoint.lat,orderIs[0].pickupPoint.long];
         
-        for(var ij in orderIs){
+        for(var ij=0;ij<orderIs.length;ij++){
             console.log(locationFromPickUp(orderIs,PickPoint[0],PickPoint[1]));
             let distancesFromOrigin = locationFromPickUp(orderIs,PickPoint[0],PickPoint[1]);
             // console.log(distancesFromOrigin);

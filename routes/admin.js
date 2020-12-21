@@ -261,23 +261,11 @@ router.post("/updatesetttings", async function (req, res, next) {
         AdminMObile5,
         NewUserUnderKm,
         NewUserprice,
-        addKm,
+        addKmCharge,
         newpromocode,
-        handling_charges
+        handling_charges,
+        additionalKm,
     } = req.body;
-    
-    // var initialTime = moment(FromTime);
-    // var endTime = moment(ToTime);
-
-    // initialTime = initialTime.utc().format('h:mm a');
-    // endTime = endTime.utc().format('h:mm a');
-    // // console.log(initialTime);
-    // console.log(endTime);
-    
-
-    // let FromTimeField = new Date(0,0,0,9,0,0);
-    // console.log(FromTimeField);
-    // console.log(FromTimeField.getHours());
  
     try {
         var existData = await settingsSchema.find({});
@@ -303,9 +291,10 @@ router.post("/updatesetttings", async function (req, res, next) {
                 AdminMObile5: AdminMObile5,
                 NewUserUnderKm: NewUserUnderKm,
                 NewUserprice: NewUserprice,
-                addKm: addKm,
+                addKmCharge: addKmCharge,
                 newpromocode: newpromocode,
-                handling_charges: handling_charges
+                handling_charges: handling_charges,
+                additionalKm : additionalKm,
             };
             
             await settingsSchema.findByIdAndUpdate(id, updatedsettings);
@@ -334,9 +323,10 @@ router.post("/updatesetttings", async function (req, res, next) {
                 AdminMObile5: AdminMObile5,
                 NewUserUnderKm: NewUserUnderKm,
                 NewUserprice: NewUserprice,
-                addKm: addKm,
+                addKmCharge: addKmCharge,
                 newpromocode: newpromocode,
-                handling_charges: handling_charges
+                handling_charges: handling_charges,
+                additionalKm: additionalKm,
             });
             
             await newsettings.save();
@@ -528,6 +518,51 @@ router.post("/completed_orders", async function (req, res, next) {
     }
 });
 
+//Recent 100 Completed Orders---21/12/2020---Hansil
+
+router.post("/currentorder", async function (req, res, next) {
+    try {
+        let newdataset = [];
+        console.log("1");
+        let mysort = { dateTime: -1 };
+        //completed order API
+        let currentorders = await orderSchema
+                .find({ status: "Order Delivered", isActive: false })
+                .populate(
+                    "courierId",
+                    "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+                )
+                .populate("customerId")
+                .sort(mysort)
+                .limit(100);
+        
+        // console.log(currentorders);
+        
+        let orderscomplete = [];
+        for (let i = 0; i < currentorders.length; i++) {
+            let datadate = await ExtatimeSchema.find({
+            orderId: currentorders[i]._id,
+        });
+        orderscomplete.push({
+                starttime: datadate[0].dateTime,
+                endTime: datadate[0].deliverytime != null ? datadate[0].deliverytime : null,
+                currentorders: currentorders[i],
+            });
+        }
+        
+        // currentorders: orderscomplete,
+        // newdataset.push({
+        // currentorders: orderscomplete,
+        // });
+        // console.log(newdataset);
+        res
+        .status(200)
+        .json({ Message: "Order Found!", Count: currentorders.length , Data: orderscomplete, IsSuccess: true });
+        } catch (err) {
+            res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+        }
+    });
+
 //cancel Order
 router.post("/cancelOrder", async function (req, res, next) {
     const id = req.body.id;
@@ -550,6 +585,30 @@ router.post("/cancelOrder", async function (req, res, next) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
+
+//Restore Cancel order to Running/Pending -------21/12/2020--Hansil
+
+router.post("/restoreOrder", async function (req, res, next) {
+    const id = req.body.id;
+    try {
+        let orderupdate = await orderSchema.find({ _id: id, isActive: false });
+        if (orderupdate.length == 1) {
+            await orderSchema.findOneAndUpdate({ _id: id }, { status: "Order Processing", isActive: true });
+            res
+            .status(200)
+            .json({ Message: "Order Restored!", Data: 1, IsSuccess: true });
+            }
+        else{
+            res.status(200).json({
+            Message: "Unable to Restore Order!",
+            Data: 0,
+            IsSuccess: true,
+            });
+         }
+        } catch(err){
+        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+        }
+    });
 
 //list of couriers boys
 router.post("/couriers", async function (req, res, next) {
