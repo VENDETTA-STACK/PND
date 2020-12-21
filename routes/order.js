@@ -1538,7 +1538,7 @@ router.post("/multiNewOrder", async function(req,res,next){
         schedualDateTime,
     } = req.body;
     let num = getOrderNumber();
-    let numMulti = getMultiOrderNumber();
+    // let numMulti = getMultiOrderNumber();
     var MultiOrders = [];
     for(let i=0;i<deliveryAddresses.length;i++){
         let d1 = deliveryAddresses[i];
@@ -1548,7 +1548,7 @@ router.post("/multiNewOrder", async function(req,res,next){
             var newMultiOrder = new demoOrderSchema({
                 _id: new config.mongoose.Types.ObjectId(),
                 orderNo: num,
-                multiOrderNo: numMulti,
+                multiOrderNo: getMultiOrderNumber(),
                 customerId: customerId,
                 deliveryType: deliveryType,
                 schedualDateTime: schedualDateTime,
@@ -1633,10 +1633,10 @@ function removeElement(array, elem) {
 }
 
 router.post("/getOptimizeRoute", async function(req,res,next){
-    const { orderMTNum } = req.body;
+    const { orderNo } = req.body;
     // console.log(calculatelocation(21.1411089,72.80367319999999,22.98551,75.36289));
     try {
-        var orderIs = await demoOrderSchema.find({ multiOrderNo: orderMTNum });
+        var orderIs = await demoOrderSchema.find({ orderNo: orderNo });
         //	"orderMTNum" : "ORDMT-5022110000"
         console.log(orderIs.length);
         var optimizeOrder = [];
@@ -1654,23 +1654,32 @@ router.post("/getOptimizeRoute", async function(req,res,next){
 
             let indexOfFirstOrder = sortable[0][0];
             optimizeOrder.push(orderIs[indexOfFirstOrder]);
-            console.log(orderIs[indexOfFirstOrder].orderNo)
+            console.log(orderIs[indexOfFirstOrder].orderNo);
+            console.log(orderIs[indexOfFirstOrder].multiOrderNo);
             // console.log(optimizeOrder);
 
             let nextPickUpLat = orderIs[indexOfFirstOrder].deliveryPoint.lat;
             let nextPickUpLong = orderIs[indexOfFirstOrder].deliveryPoint.long;
-            pickupPoint= [nextPickUpLat,nextPickUpLong];
+            PickPoint= [nextPickUpLat,nextPickUpLong];
             sortable.shift();
             removeElement(orderIs,orderIs[indexOfFirstOrder]);
         }
         
         console.log(sortable);
         let indexOfLastDeliveryPoint = sortable[0][0];
-        optimizeOrder.push(orderIs[indexOfLastDeliveryPoint])
+        // optimizeOrder.push(orderIs[indexOfLastDeliveryPoint])
+        console.log("---------------LAST-----------------");
+        console.log(indexOfLastDeliveryPoint);
+        // console.log(orderIs[0]);
+        // console.log(orderIs[indexOfLastDeliveryPoint]);
+        // let lastOrder = orderIs[indexOfLastDeliveryPoint];
+        // optimizeOrder.push(orderIs[0]);
+        // console.log(typeof lastOrder);
         // for(var j=0;j<sortable.length;j++){
             
         // }
         // let letNextPick = 
+        // console.log(optimizeOrder);
         res.status(200).json({ IsSuccess: true , Count: optimizeOrder.length ,Data: optimizeOrder , Message: "Orders Optimize" });
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });

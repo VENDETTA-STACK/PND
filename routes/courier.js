@@ -531,7 +531,14 @@ router.post("/getEmployeeOrderDetailsV2", async function(req,res,next){
 });
 
 router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
-    // const { courierId } = req.body;
+    const { ofDate } = req.body;
+    // console.log(req.body);
+
+    let ofDate1 = convertStringDateToISO(ofDate);
+    let ofDate2 = convertStringDateToISOPlusOne(ofDate);
+
+    console.log(ofDate1);
+    console.log(ofDate2);
     try {
         var courierIds = [];
         var courierOrdersData = [];
@@ -540,13 +547,23 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
             // console.log(courierBoysAre[i]._id);
             courierIds.push(courierBoysAre[i]._id);
         }
+        let totalOfAmount = 0;
+        let totalOfThirdPartyCollection = 0;
+        let totalOfTotalPrice = 0;
+        let totalOfTotalDistance = 0;
+        let totalOfTotalDelivery = 0;
         // console.log(courierIds);
         for(var j=0;j<courierIds.length;j++){
             // console.log(courierIds[j]);
+            
             var record = await orderSchema.find({ 
-                courierId: courierIds[j],
-                status: "Order Delivered", 
-                isActive: false,
+                    courierId: courierIds[j],
+                    status: "Order Delivered", 
+                    isActive: false,
+                    dateTime: {
+                        $gte : ofDate1,
+                        $lt : ofDate2
+                    },
                 })
                 .populate(
                         "courierId",
@@ -582,10 +599,34 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
                 }
                 courierOrdersData.push(data); 
             }
+            // console.log("Index :" + j);
+            // console.log(courierOrdersData[j]);
+
         }
         // console.log(courierOrdersData);
+        for(datas in courierOrdersData){
+            // console.log(courierOrdersData[datas]);
+            totalOfAmount = totalOfAmount + courierOrdersData[datas].AmoutCollect;
+            totalOfThirdPartyCollection = totalOfThirdPartyCollection + courierOrdersData[datas].ThirdPartyCollection;
+            totalOfTotalPrice = totalOfTotalPrice + courierOrdersData[datas].TotalPrice;
+            totalOfTotalDistance = totalOfTotalDistance + courierOrdersData[datas].TotalDistance;
+            totalOfTotalDelivery = totalOfTotalDelivery + courierOrdersData[datas].TotalDelivery;
+        }
+        console.log("Total Amount :"+totalOfAmount);
+        console.log("Total ThirdParty :"+totalOfThirdPartyCollection);
+        console.log("Total Price :"+totalOfTotalPrice);
+        console.log("Total Distance :"+totalOfTotalDistance);
+        console.log("Total Delivery :"+totalOfTotalDelivery);
         if(courierOrdersData.length > 0){
-            res.status(200).json({ IsSuccess: true , Data: courierOrdersData , Message: "Data Found" });
+            res.status(200).json({ 
+                IsSuccess: true,
+                TotalAmount : totalOfAmount,
+                TotalThirdParty : totalOfThirdPartyCollection,
+                TotalPrice : totalOfTotalPrice,
+                TotalDistance : totalOfTotalDistance,
+                TotalDelivery : totalOfTotalDelivery, 
+                Data: courierOrdersData, 
+                Message: "Data Found" });
         }else{
             res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Data Not Found" });
         }
