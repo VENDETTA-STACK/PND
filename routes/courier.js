@@ -590,7 +590,8 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
                 // console.log(TotalPrice);
                 // console.log(TotalDistance);
                 var data = {
-                    EmployeeName : record[0].courierId[0].firstName,
+                    EmployeeName : record[0].courierId[0].firstName + " "+ record[0].courierId[0].lastName,
+                    EmployeeMobile : record[0].courierId[0].mobileNo,
                     AmoutCollect : Amount,
                     ThirdPartyCollection: ThirdPartyCollection,
                     TotalPrice: TotalPrice,
@@ -603,9 +604,16 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
             // console.log(courierOrdersData[j]);
 
         }
-        // console.log(courierOrdersData);
+        // let maxBusinessMakeBy = Math.max.apply(Math, courierOrdersData.map(function(o) { return o; }));
+        const maxBusinessMakeBy = courierOrdersData.reduce(function(prev, current) {
+            return (prev.TotalPrice > current.TotalPrice) ? prev : current
+        }) //returns object
+        console.log("maxBusinessMakeBy");
+        console.log(maxBusinessMakeBy);
+        console.log(courierOrdersData);
         for(datas in courierOrdersData){
             // console.log(courierOrdersData[datas]);
+            
             totalOfAmount = totalOfAmount + courierOrdersData[datas].AmoutCollect;
             totalOfThirdPartyCollection = totalOfThirdPartyCollection + courierOrdersData[datas].ThirdPartyCollection;
             totalOfTotalPrice = totalOfTotalPrice + courierOrdersData[datas].TotalPrice;
@@ -625,7 +633,8 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
                 TotalPrice : totalOfTotalPrice,
                 TotalDistance : totalOfTotalDistance,
                 TotalDelivery : totalOfTotalDelivery, 
-                Data: courierOrdersData, 
+                Data: courierOrdersData,
+                MaxPriceCollectedBy : maxBusinessMakeBy, 
                 Message: "Data Found" });
         }else{
             res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Data Not Found" });

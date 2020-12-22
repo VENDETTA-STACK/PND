@@ -1638,11 +1638,12 @@ router.post("/getOptimizeRoute", async function(req,res,next){
     try {
         var orderIs = await demoOrderSchema.find({ orderNo: orderNo });
         //	"orderMTNum" : "ORDMT-5022110000"
+        let loopCount = parseFloat(orderIs.length); 
         console.log(orderIs.length);
         var optimizeOrder = [];
         var PickPoint = [orderIs[0].pickupPoint.lat,orderIs[0].pickupPoint.long];
         
-        for(var ij=0;ij<orderIs.length;ij++){
+        for(var ij=0;ij<(loopCount - 1);ij++){
             console.log(locationFromPickUp(orderIs,PickPoint[0],PickPoint[1]));
             let distancesFromOrigin = locationFromPickUp(orderIs,PickPoint[0],PickPoint[1]);
             // console.log(distancesFromOrigin);
@@ -1663,8 +1664,10 @@ router.post("/getOptimizeRoute", async function(req,res,next){
             PickPoint= [nextPickUpLat,nextPickUpLong];
             sortable.shift();
             removeElement(orderIs,orderIs[indexOfFirstOrder]);
+            console.log("index ij: "+ij);
+            // console.log("Order length: "+orderIs.length);
         }
-        
+        console.log("--------------------Sortable Out of Loop-----------------------------");
         console.log(sortable);
         let indexOfLastDeliveryPoint = sortable[0][0];
         // optimizeOrder.push(orderIs[indexOfLastDeliveryPoint])
@@ -1673,7 +1676,7 @@ router.post("/getOptimizeRoute", async function(req,res,next){
         // console.log(orderIs[0]);
         // console.log(orderIs[indexOfLastDeliveryPoint]);
         // let lastOrder = orderIs[indexOfLastDeliveryPoint];
-        // optimizeOrder.push(orderIs[0]);
+        optimizeOrder.push(orderIs[0]);
         // console.log(typeof lastOrder);
         // for(var j=0;j<sortable.length;j++){
             
