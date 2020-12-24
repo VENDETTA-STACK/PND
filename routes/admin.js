@@ -177,6 +177,7 @@ router.post("/dashcounters", async function (req, res, next) {
         let couriers = await courierSchema.countDocuments();
         let totalOrders = await orderSchema.countDocuments();
         let customers = await customerSchema.countDocuments();
+        // let completedOrders = await orderSchema.find({ status: "Order Delivered", isActive: false }).countDocuments();
         let disapporved = await courierSchema
             .find({ "accStatus.flag": false })
             .countDocuments();
