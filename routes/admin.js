@@ -196,6 +196,8 @@ router.post("/dashcounters", async function (req, res, next) {
             pendingOrders: pendingOrders,
             disapporved: disapporved,
         });
+        const used = process.memoryUsage().heapUsed / 1024 / 1024;
+        console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
         res
             .status(200)
             .json({ Message: "Counters Found!", Data: datalist, IsSuccess: true });
@@ -433,16 +435,19 @@ router.post("/orders", async function (req, res, next) {
         // }
 
         //completeOrders: orderscomplete,
+        
         newdataset.push({
             runningOrders: runningOrders,
             cancelledOrders: cancelledOrders,
             pendingOrders: pendingOrders,
         });
-
+        
         res.status(200).json({ Message: "Order Found!", Data: newdataset, IsSuccess: true });
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
+    // const used = process.memoryUsage().heapUsed / 1024 / 1024;
+    // console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
 });
 
 //After order Changed Delivery Boy
@@ -471,6 +476,8 @@ router.post("/orders", async function (req, res, next) {
 
 //orders completed
 router.post("/completed_orders", async function (req, res, next) {
+    // const used = process.memoryUsage().heapUsed / 1024 / 1024;
+    // console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
     try {
         let newdataset = [];
 
@@ -511,6 +518,7 @@ router.post("/completed_orders", async function (req, res, next) {
         //    }
         //  ])
         // console.log(newdataset);
+        
         res
             .status(200)
             .json({ Message: "Order Found!", Data: newdataset, IsSuccess: true });
@@ -562,6 +570,8 @@ router.post("/currentorder", async function (req, res, next) {
         } catch (err) {
             res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
         }
+        // const used = process.memoryUsage().heapUsed / 1024 / 1024;
+        // console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
     });
 
 //cancel Order
@@ -778,7 +788,8 @@ router.post("/getLiveLocation", async function (req, res, next) {
     } catch(err) {
         res.status(500).json({ IsSuccess: false , Message: err.message });
     }
-    
+    // const used = process.memoryUsage().heapUsed / 1024 / 1024;
+    // console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
 });
 
 //get todays extra kilometers done by courier boys during orders
@@ -1069,6 +1080,8 @@ router.post("/AssignOrder", async function (req, res, next) {
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
+    const used = process.memoryUsage().heapUsed / 1024 / 1024;
+    console.log(`The script uses approximately ${used} MB`);
 });
 // send sms
 async function sendMessages(mobileNo, message) {

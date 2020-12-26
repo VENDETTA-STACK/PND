@@ -598,16 +598,20 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
                     TotalDistance: TotalDistance,
                     TotalDelivery : record.length,
                 }
+                console.log(data);
                 courierOrdersData.push(data); 
             }
             // console.log("Index :" + j);
-            // console.log(courierOrdersData[j]);
+            console.log(courierOrdersData);
 
         }
+        let maxBusinessMakeBy = 0
         // let maxBusinessMakeBy = Math.max.apply(Math, courierOrdersData.map(function(o) { return o; }));
-        const maxBusinessMakeBy = courierOrdersData.reduce(function(prev, current) {
-            return (prev.TotalPrice > current.TotalPrice) ? prev : current
-        }) //returns object
+        if(courierOrdersData.length > 0){
+            maxBusinessMakeBy = courierOrdersData.reduce(function(prev, current) {
+                return (prev.TotalPrice > current.TotalPrice) ? prev : current
+            }) //returns object
+        }
         console.log("maxBusinessMakeBy");
         console.log(maxBusinessMakeBy);
         console.log(courierOrdersData);
