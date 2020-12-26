@@ -530,6 +530,7 @@ router.post("/ordercalcV3", async (req, res, next) => {
     let promoused = 0;
     let amount = 0;
     let totalamt = 0;
+    let aboveKmCharge = 0;
 
     var newUserpromocode = await promoCodeSchema.find({ isForNewUser: true });
 
@@ -549,6 +550,34 @@ router.post("/ordercalcV3", async (req, res, next) => {
                     basicamt = settings[0].PerUnder5KM;
                     extrakm = 0;
                     extraamt = 0;
+                    extadeliverycharges = delivery[i].cost;
+                    amount = basicamt + extraamt + extadeliverycharges;
+                    totalamt = amount;
+                }
+            }
+        }
+    }else if(totaldistance >= settings[0].additionalKm){
+        console.log("Hello----IN 10KM CHARGE ABOVE KM------------");
+        console.log(settings[0].addKmCharge);
+        if (deliverytype == "Normal Delivery") {
+            let remdis = totaldistance - 5;
+            basickm = 5;
+            basicamt = settings[0].PerUnder5KM;
+            aboveKmCharge = settings[0].addKmCharge;
+            extrakm = remdis;
+            extraamt = (remdis * settings[0].PerKM) + aboveKmCharge;
+            extadeliverycharges = delivery[0].cost;
+            amount = basicamt + extraamt + extadeliverycharges;
+            totalamt = amount;
+        } else {
+            for (let i = 1; i < delivery.length; i++) {
+                if (deliverytype == delivery[i].title) {
+                    let remdis = totaldistance - 5;
+                    basickm = 5;
+                    basicamt = settings[0].PerUnder5KM;
+                    aboveKmCharge = settings[0].addKmCharge;
+                    extrakm = remdis;
+                    extraamt = (remdis * settings[0].PerKM) + aboveKmCharge;
                     extadeliverycharges = delivery[i].cost;
                     amount = basicamt + extraamt + extadeliverycharges;
                     totalamt = amount;
@@ -820,6 +849,44 @@ router.post("/ordercalcV3", async (req, res, next) => {
     }
 });
 
+//---------------------------Checking-------------------------(26-12-2020)
+
+router.post("/testingM", async function(req,res,next){
+    const {
+        // customerId,
+        picklat,
+        picklong,
+        deliveryPoints,
+        // deliverytype,
+        // promocode,
+        // parcelcontents,
+        // amountCollected,
+    } = req.body;
+    try {
+        let tempDistanceForALL = 0;
+        let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
+        
+
+        for(let i=0;i<deliveryPoints.length;i++){
+            let lat3 = parseFloat(deliveryPoints[i].lat);
+            let long3 = parseFloat(deliveryPoints[i].long);
+            let tolocation = { latitude: Number(lat3), longitude: Number(long3) };
+            console.log(fromlocation);
+            console.log(tolocation);
+            let totaldistance = await GoogleMatrix(fromlocation, tolocation);
+            // console.log(totaldistance);
+            tempDistanceForALL = tempDistanceForALL + totaldistance;
+        }
+        console.log("dis :"+tempDistanceForALL);
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+    
+    // console.log(deliveryPoints);
+    // let a = deliveryPoints[0].lat;
+    // console.log(a);
+});
+
 //----------------------------OrderCalcV4(Addtional charges for above 10KM)--------------------
 
 router.post("/ordercalcV4", async (req, res, next) => {
@@ -827,23 +894,33 @@ router.post("/ordercalcV4", async (req, res, next) => {
         customerId,
         picklat,
         picklong,
-        droplat,
-        droplong,
+        deliveryPoints,
         deliverytype,
         promocode,
         parcelcontents,
         amountCollected,
     } = req.body;
 
-    // console.log("OrderCalcV2 Request Body.................!!!!");
-    // console.log(req.body);
+    let tempDistanceForALL = 0;
 
     let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
-    let tolocation = { latitude: Number(droplat), longitude: Number(droplong) };
+    
+    for(let i=0;i<deliveryPoints.length;i++){
+        let lat3 = parseFloat(deliveryPoints[i].lat);
+        let long3 = parseFloat(deliveryPoints[i].long);
+        let tolocation = { latitude: Number(lat3), longitude: Number(long3) };
+        
+        let totaldistance = await GoogleMatrix(fromlocation, tolocation);
+        
+        tempDistanceForALL = tempDistanceForALL + totaldistance;
+    }
+    console.log(tempDistanceForALL);
+
     let prmcodes = await promoCodeSchema.find({ code: promocode });
     let settings = await settingsSchema.find({});
     let delivery = await deliverytypesSchema.find({});
-    let totaldistance = await GoogleMatrix(fromlocation, tolocation);
+    // let totaldistance = await GoogleMatrix(fromlocation, tolocation);
+    let totaldistance = tempDistanceForALL;
 
     let basickm = 0;
     let basicamt = 0;
@@ -853,8 +930,12 @@ router.post("/ordercalcV4", async (req, res, next) => {
     let promoused = 0;
     let amount = 0;
     let totalamt = 0;
+    let aboveKmCharge = 0;
 
     var newUserpromocode = await promoCodeSchema.find({ isForNewUser: true });
+
+    console.log("additionalKm :" + settings[0].additionalKm)
+    console.log("addKmCharge : " + settings[0].addKmCharge)
 
     if (totaldistance <= 5) {
         if (deliverytype == "Normal Delivery") {
@@ -872,6 +953,34 @@ router.post("/ordercalcV4", async (req, res, next) => {
                     basicamt = settings[0].PerUnder5KM;
                     extrakm = 0;
                     extraamt = 0;
+                    extadeliverycharges = delivery[i].cost;
+                    amount = basicamt + extraamt + extadeliverycharges;
+                    totalamt = amount;
+                }
+            }
+        }
+    }else if(totaldistance >= settings[0].additionalKm){
+        console.log("Hello----IN 10KM CHARGE ABOVE KM------------");
+        console.log(settings[0].addKmCharge);
+        if (deliverytype == "Normal Delivery") {
+            let remdis = totaldistance - 5;
+            basickm = 5;
+            basicamt = settings[0].PerUnder5KM;
+            aboveKmCharge = settings[0].addKmCharge;
+            extrakm = remdis;
+            extraamt = (remdis * settings[0].PerKM) + aboveKmCharge;
+            extadeliverycharges = delivery[0].cost;
+            amount = basicamt + extraamt + extadeliverycharges;
+            totalamt = amount;
+        } else {
+            for (let i = 1; i < delivery.length; i++) {
+                if (deliverytype == delivery[i].title) {
+                    let remdis = totaldistance - 5;
+                    basickm = 5;
+                    basicamt = settings[0].PerUnder5KM;
+                    aboveKmCharge = settings[0].addKmCharge;
+                    extrakm = remdis;
+                    extraamt = (remdis * settings[0].PerKM) + aboveKmCharge;
                     extadeliverycharges = delivery[i].cost;
                     amount = basicamt + extraamt + extadeliverycharges;
                     totalamt = amount;
@@ -908,12 +1017,13 @@ router.post("/ordercalcV4", async (req, res, next) => {
         customerId : mongoose.Types.ObjectId(customerId),
     });
 
-    if(userPastOrders.length == 0){
-        console.log(totaldistance);
+    if(userPastOrders.length == 0 && totaldistance < settings[0].NewUserUnderKm){
+        console.log("New User DisAmt Calc :"+totaldistance);
         let newUserBasicPrice = parseFloat(settings[0].NewUserprice);
         var distamt = Number(newUserBasicPrice.toFixed(2)) + Number(extraamt.toFixed(2));
         distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
     }else{
+        console.log("Checking distamt");
         distamt = Number(basicamt.toFixed(2)) + Number(extraamt.toFixed(2));
         distamt = (Math.round(distamt) % 10) > 5 ? round(distamt, 10) : round(distamt, 5);
     }
@@ -965,7 +1075,7 @@ router.post("/ordercalcV4", async (req, res, next) => {
     console.log(totalamt);
 
     if(userPastOrders.length == 0 && totaldistance < newUserPromocodeLimit[0].NewUserUnderKm && newUserpromocode.length == 1){
-        // console.log("-------------in-------------------");
+        console.log("-------------in-------------------");
         if (totaldistance <= 5) {
             if (deliverytype == "Normal Delivery") {
                 basickm = totaldistance;
@@ -1097,9 +1207,9 @@ router.post("/ordercalcV4", async (req, res, next) => {
             },];
         }else{
             console.log("--------------------Out-----------------------");
-            console.log(distamt);
-            console.log(amt);
-            console.log(totalamt);
+            console.log("Out DistAMT :"+distamt);
+            console.log("Out AMT :"+amt);
+            console.log("Out TotalAMT :"+totalamt);
             dataset = [{
                 note: note,
                 totaldistance: Math.round(totaldistance.toFixed(2)),
