@@ -614,7 +614,7 @@ router.post("/ordercalcV3", async (req, res, next) => {
         customerId : mongoose.Types.ObjectId(customerId),
     });
 
-    if(userPastOrders.length == 0){
+    if(userPastOrders.length == 0 && totaldistance < settings[0].NewUserUnderKm){
         console.log(totaldistance);
         let newUserBasicPrice = parseFloat(settings[0].NewUserprice);
         var distamt = Number(newUserBasicPrice.toFixed(2)) + Number(extraamt.toFixed(2));
@@ -919,6 +919,7 @@ router.post("/ordercalcV4", async (req, res, next) => {
     let prmcodes = await promoCodeSchema.find({ code: promocode });
     let settings = await settingsSchema.find({});
     let delivery = await deliverytypesSchema.find({});
+    console.log("Delivery Check :"+ delivery.length);
     // let totaldistance = await GoogleMatrix(fromlocation, tolocation);
     let totaldistance = tempDistanceForALL;
 
@@ -1031,6 +1032,7 @@ router.post("/ordercalcV4", async (req, res, next) => {
     let note;
     //Find Parcel Content From Database
     let parcelContentsList = [];
+    // parcelcontents == undefined ? 0 : parcelcontents;
     for (let e = 0; e < parcelcontents.length; e++) {
         let data = await categorySchema.findOne({ title: parcelcontents[e] });
         if (e == 0) {
@@ -1049,15 +1051,6 @@ router.post("/ordercalcV4", async (req, res, next) => {
     let amt = Number(distamt) + extracharges + Math.ceil(extadeliverycharges.toFixed(2));
     promoused = prmcodes.length != 0 ? (amt * prmcodes[0].discount) / 100 : 0;
     let netamount = amt - Math.ceil(promoused.toFixed(2));
-
-    //TESTING FCMTOKEN
-    let AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
-    console.log("Admin numbers-------------------------------------------------");
-    let AdminNumber1 = AdminMobile[0].AdminMObile1; 
-    let AdminNumber2 = AdminMobile[0].AdminMObile2; 
-    let AdminNumber3 = AdminMobile[0].AdminMObile3; 
-    let AdminNumber4 = AdminMobile[0].AdminMObile4; 
-    let AdminNumber5 = AdminMobile[0].AdminMObile5;
 
     var newUserPromocodeLimit = await settingsSchema.find().select("NewUserUnderKm");
     

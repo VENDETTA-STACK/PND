@@ -38,7 +38,7 @@ router.post("/vendor_register", async function(req , res , next){
         registerVendor = vendor.save();
         console.log(vendor);
 
-        res.status(200).json({ Message: "Vendor Register Successfull...!!!", Data: vendor, IsSuccess: true });
+        res.status(200).json({ Message: "Vendor Register Successfull...!!!", Data: [vendor], IsSuccess: true });
     } catch (error) {
         res.status(400).json({ Message: "Register Unsuccessfull...!!!", IsSuccess: false });
     }
