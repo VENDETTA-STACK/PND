@@ -32,6 +32,9 @@ const vendorSchema = mongoose.Schema({
         required: true,
     },
   },
+  address: {
+    type: String,
+  },
   gstNo:{
       type: String,
   },

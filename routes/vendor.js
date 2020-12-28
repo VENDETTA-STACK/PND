@@ -11,7 +11,7 @@ var Bcrypt = require("bcryptjs");
 var vendorModelSchema = require("../data_models/vendor.model");
 
 router.post("/vendor_register", async function(req , res , next){
-    const { name, mobileNo , company , email , gstNo , panNumber , lat , 
+    const { name, mobileNo , company , email , gstNo , panNumber , lat , address ,
         long , password , FixKm , UnderFixKmCharge , perKmCharge } = req.body;
    
     let encryptPassword = Bcrypt.hashSync(req.body.password, 10);   
@@ -29,10 +29,11 @@ router.post("/vendor_register", async function(req , res , next){
                 lat: lat,
                 long: long,
             },
+            address: address,
             password: encryptPassword,
             FixKm: FixKm,
             UnderFixKmCharge: UnderFixKmCharge,
-            perKmCharge: perKmCharge
+            perKmCharge: perKmCharge,
         });
 
         registerVendor = vendor.save();
