@@ -1561,7 +1561,8 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
         schedualDateTime,
         amountCollection,
         eOrderDeliveryType,
-        handlingCharge
+        handlingCharge,
+        TransactionId,
     } = req.body;
     console.log("-------------New Order--------------------------");
     // console.log(req.body.amount);
@@ -1574,87 +1575,7 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
     const file = req.file;
     let num = getOrderNumber();
     try {
-        // if(req.body.type == "eorder"){
-        //     console.log("---------EOrder------------");
-        //     var newOrder = new orderSchema({
-        //         _id: new config.mongoose.Types.ObjectId(),
-        //         orderNo: num,
-        //         customerId: customerId,
-        //         deliveryType: deliveryType,
-        //         // schedualDateTime: schedualDateTime,
-        //         weightLimit: weightLimit,
-        //         orderImg: file == undefined ? "" : file.path,
-        //         pickupPoint: {
-        //             name: pkName,
-        //             mobileNo: pkMobileNo,
-        //             address: pkAddress,
-        //             lat: pkLat,
-        //             long: pkLong,
-        //             completeAddress: pkCompleteAddress,
-        //             contents: pkContent,
-        //             arriveType: pkArriveType,
-        //             arriveTime: pkArriveTime,
-        //         },
-        //         deliveryPoint: {
-        //             name: dpName,
-        //             mobileNo: dpMobileNo,
-        //             address: dpAddress,
-        //             lat: dpLat,
-        //             long: dpLong,
-        //             completeAddress: dpCompleteAddress,
-        //             distance: dpDistance,
-        //         },
-        //         collectCash: collectCash,
-        //         amountCollection: amountCollection,
-        //         handlingCharge: handlingChargeIs,
-        //         // eOrderDeliveryType: eOrderDeliveryType,
-        //         promoCode: promoCode,
-        //         amount: amount,
-        //         discount: discount,
-        //         additionalAmount: additionalAmount,
-        //         finalAmount: finalAmount,
-        //         status: "Order Processing",
-        //         note: "Your order is processing!",
-        //     }); 
-        // }else{
-        //     newOrder = new orderSchema({
-        //         _id: new config.mongoose.Types.ObjectId(),
-        //         orderNo: num,
-        //         customerId: customerId,
-        //         deliveryType: deliveryType,
-        //         schedualDateTime: schedualDateTime,
-        //         weightLimit: weightLimit,
-        //         orderImg: file == undefined ? "" : file.path,
-        //         pickupPoint: {
-        //             name: pkName,
-        //             mobileNo: pkMobileNo,
-        //             address: pkAddress,
-        //             lat: pkLat,
-        //             long: pkLong,
-        //             completeAddress: pkCompleteAddress,
-        //             contents: pkContent,
-        //             arriveType: pkArriveType,
-        //             arriveTime: pkArriveTime,
-        //         },
-        //         deliveryPoint: {
-        //             name: dpName,
-        //             mobileNo: dpMobileNo,
-        //             address: dpAddress,
-        //             lat: dpLat,
-        //             long: dpLong,
-        //             completeAddress: dpCompleteAddress,
-        //             distance: dpDistance,
-        //         },
-        //         collectCash: collectCash,
-        //         promoCode: promoCode,
-        //         amount: amount,
-        //         discount: discount,
-        //         additionalAmount: additionalAmount,
-        //         finalAmount: finalAmount,
-        //         status: "Order Processing",
-        //         note: "Your order is processing!",
-        //     });
-        // }
+        
         console.log("-------------Schedule Time-------------------");
         console.log(req.body.schedualDateTime);
         var newOrder = new orderSchema({
@@ -1694,6 +1615,7 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
             discount: discount,
             additionalAmount: additionalAmount,
             finalAmount: finalAmount,
+            // TransactionId: TransactionId,
             status: "Order Processing",
             note: "Your order is processing!",
         });
@@ -2806,13 +2728,15 @@ router.post("/scheduleOrderNotification", async function(req,res,next){
     try {
         let scheduledOrder = await orderSchema.find();
         let currentDateTime = new Date();
-        console.log("Current Time :"+currentDateTime);
+        // console.log("Current Time :"+currentDateTime);
         let noticeTime = currentDateTime.setMinutes(currentDateTime.getMinutes() - 30);
-        console.log("Notice Time :"+currentDateTime);
+        // console.log("Notice Time :"+currentDateTime);
         for(let i=0;i<scheduledOrder.length;i++){
             let scheduleTime = scheduledOrder[i].schedualDateTime;
             if(scheduleTime != undefined){
-                console.log(scheduleTime);
+                console.log("Schedule Time"+scheduleTime);
+                let notificationTime = scheduleTime.setMinutes(scheduleTime.getMinutes() - 30);
+                console.log("Notice Time:" + scheduleTime);
                 // let tempSchedule = new Date(scheduleTime);
                 // console.log(scheduleTime.getMinutes());
                 if(scheduleTime == currentDateTime){

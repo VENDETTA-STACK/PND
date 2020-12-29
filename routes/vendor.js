@@ -17,35 +17,56 @@ router.post("/vendor_register", async function(req , res , next){
     let encryptPassword = Bcrypt.hashSync(req.body.password, 10);   
     console.log(encryptPassword);
     try {
-        var vendor = new vendorModelSchema({
-            _id: new config.mongoose.Types.ObjectId(),
-            name: name,
-            mobileNo: mobileNo,
-            company: company,
-            email: email,
-            gstNo: gstNo,
-            panNumber: panNumber,
-            gpsLocation:{
-                lat: lat,
-                long: long,
-            },
-            address: address,
-            password: encryptPassword,
-            FixKm: FixKm,
-            UnderFixKmCharge: UnderFixKmCharge,
-            perKmCharge: perKmCharge,
-        });
-
-        registerVendor = vendor.save();
-        console.log(vendor);
-
-        res.status(200).json({ Message: "Vendor Register Successfull...!!!", Data: [vendor], IsSuccess: true });
+        let existUser = await vendorModelSchema.find({ mobileNo: mobileNo });
+        if(existUser.length == 1){
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "User Already Exist" });
+        }else{
+            var vendor = await new vendorModelSchema({
+                _id: new config.mongoose.Types.ObjectId(),
+                name: name,
+                mobileNo: mobileNo,
+                company: company,
+                email: email,
+                gstNo: gstNo,
+                panNumber: panNumber,
+                gpsLocation:{
+                    lat: lat,
+                    long: long,
+                },
+                address: address,
+                password: encryptPassword,
+                FixKm: FixKm,
+                UnderFixKmCharge: UnderFixKmCharge,
+                perKmCharge: perKmCharge,
+            });
+    
+            registerVendor = vendor.save();
+            console.log(vendor);
+    
+            res.status(200).json({ Message: "Vendor Register Successfull...!!!", Data: [vendor], IsSuccess: true });
+        }
     } catch (error) {
         res.status(400).json({ Message: "Register Unsuccessfull...!!!", IsSuccess: false });
     }
 
 });
 
+//Vendor Login ------ Mobile APP(29-12-2020)
+router.post("/VendorLogin", async function(req,res,next){
+    const { mobileNo } = req.body;
+    try {
+        let record = await vendorModelSchema.find({ mobileNo: mobileNo });
+        if(record.length > 0){
+            res.status(200).json({ IsSuccess: true , Data: record , Message: "User LoggedIn" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "User Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
+//For WebApplication
 router.post("/vendor_login" , async function(req , res, next){
     const { email, password } = req.body;
     
