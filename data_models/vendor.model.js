@@ -25,11 +25,11 @@ const vendorSchema = mongoose.Schema({
   gpsLocation: {
     lat: {
         type: String,
-        required: true,
+        // required: true,
     },
     long: {
         type: String,
-        required: true,
+        // required: true,
     },
   },
   address: {
