@@ -19,7 +19,7 @@ router.post("/vendor_register", async function(req , res , next){
     try {
         let existUser = await vendorModelSchema.find({ mobileNo: mobileNo });
         if(existUser.length == 1){
-            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "User Already Exist" });
+            res.status(200).json({ IsSuccess: true , Data: [] , Message: "User Already Exist" });
         }else{
             var vendor = await new vendorModelSchema({
                 _id: new config.mongoose.Types.ObjectId(),
