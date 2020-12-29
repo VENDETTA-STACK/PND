@@ -1,8 +1,8 @@
 const _ = require("lodash");
 const scheduleLib = require("node-schedule");
 const firebaseAdmin = require("./firebaseAdmin");
-const User = require("../data_models/order.model");
-const ScheduledNotification = require("../models/ScheduledNotification");
+const orderSchema = require("../data_models/order.model");
+const ScheduledNotification = require("../data_models/ScheduledNotification");
 const schedule = {};
 schedule.createSchedule = async function (data) {
     try {
@@ -21,9 +21,9 @@ schedule.createSchedule = async function (data) {
     const minutes = timeToSent[1];
     const scheduleId = scheduledNotification._id.toString();
     const scheduleTimeout = `${minutes} ${hours} * * ${dayOfWeek}`;
-    scheduleLib.scheduleJob(scheduleId, scheduleTimeout, async () =
+    scheduleLib.scheduleJob(scheduleId, scheduleTimeout, async () =>
     {
-    const users = await User.find({});
+    const users = await orderSchema.find({});
     const chunks = _.chunk(users, 500);
     const promises = chunks.map((u) => {
     const tokens = [];

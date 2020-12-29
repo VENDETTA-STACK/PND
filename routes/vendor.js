@@ -59,7 +59,7 @@ router.post("/VendorLogin", async function(req,res,next){
         if(record.length > 0){
             res.status(200).json({ IsSuccess: true , Data: record , Message: "User LoggedIn" });
         }else{
-            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "User Not Found" });
+            res.status(200).json({ IsSuccess: true , Data: [] , Message: "User Not Found" });
         }
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });

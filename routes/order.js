@@ -1226,6 +1226,27 @@ router.post("/ordercalcV4", async (req, res, next) => {
 });
 
 //------------------OrderCalcV4 END---------------------------------------------------
+let scheduleSchema = require("../data_models/ScheduledNotification");
+//Schedule Job
+router.post("/notification", async function (req, res) {
+    try {
+        const payload = await new scheduleSchema({
+            time: req.body.time,
+            days: req.body.days,
+            title: req.body.title,
+            body: req.body.body,
+        });
+        payload.save();
+        // await schedule.createSchedule(payload);
+        res.json({
+            data: {},
+            message: "Success",
+            success: true,
+        });
+    } catch (e) {
+        res.status(400).json({ message: e.message, success: false});
+    }
+});
 
 var round = function (num, precision) {
     num = parseFloat(num);
