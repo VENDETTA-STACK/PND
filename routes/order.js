@@ -1875,7 +1875,7 @@ router.post("/multiNewOrder", async function(req,res,next){
         // console.log("---------------------")
         // console.log(d1);
         try {
-            var newMultiOrder = new demoOrderSchema({
+            var newMultiOrder = new orderSchema({
                 _id: new config.mongoose.Types.ObjectId(),
                 orderNo: num,
                 multiOrderNo: getMultiOrderNumber(),
@@ -1966,7 +1966,7 @@ router.post("/getOptimizeRoute", async function(req,res,next){
     const { orderNo } = req.body;
     // console.log(calculatelocation(21.1411089,72.80367319999999,22.98551,75.36289));
     try {
-        var orderIs = await demoOrderSchema.find({ orderNo: orderNo });
+        var orderIs = await orderSchema.find({ orderNo: orderNo });
         //	"orderMTNum" : "ORDMT-5022110000"
         let loopCount = parseFloat(orderIs.length); 
         console.log(orderIs.length);
