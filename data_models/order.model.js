@@ -143,6 +143,14 @@ const orderSchema = mongoose.Schema({
     },
     handlingCharge: {
         type: Number,
+    },
+    chargeOfPND: {
+        type: Number,
+        default: 0,
+    },
+    orderType: {
+        type: String,
+        default: "customer"
     }
 });
 

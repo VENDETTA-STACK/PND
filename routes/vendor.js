@@ -86,4 +86,39 @@ router.post("/vendor_login" , async function(req , res, next){
     }
 });
 
+function getVendorOrderNumber() {
+    let orderNo = "ORD-VND-" + Math.floor(Math.random() * 90000) + 10000;
+    return orderNo;
+}
+
+router.post("/vendorOrder", async function(req,res,next){
+    var {
+        customerId,
+        deliveryType,
+        weightLimit,
+        pkName,
+        pkMobileNo,
+        pkAddress,
+        pkLat,
+        pkLong,
+        pkCompleteAddress,
+        pkContent,
+        pkArriveType,
+        pkArriveTime,
+        deliveryAddresses,
+        collectCash,
+        promoCode,
+        amount,
+        discount,
+        additionalAmount,
+        finalAmount,
+        schedualDateTime,
+    } = req.body;
+    try {
+        
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
 module.exports = router;

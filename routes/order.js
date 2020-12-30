@@ -2045,6 +2045,11 @@ router.post("/activeOrders", async function (req, res, next) {
     }
 });
 
+//Find Unique values from List
+function onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+}
+
 //Active Orders (Include Multi delivery Points)--30-12-2020
 router.post("/activeOrdersV2", async function (req, res, next) {
     const { customerId } = req.body;
@@ -2055,13 +2060,24 @@ router.post("/activeOrdersV2", async function (req, res, next) {
                 "courierId",
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified profileImg"
             );
+
+        let aciveOrderIs = [];
         for(let i=0;i<record.length;i++){
-            console.log(record[i].orderNo);
+            aciveOrderIs.push(record[i].orderNo);
         }
-        if (record.length != 0) {
+        console.log("Orders No: "+aciveOrderIs);
+        var unique = aciveOrderIs.filter(onlyUnique);
+        console.log(unique);
+        let result = [];
+        for(let j=0;j<unique.length;j++){
+            console.log(unique[j]);
+            let orderData = await orderSchema.find({ orderNo: unique[j] });
+            result.push(orderData);
+        }
+        if (result.length != 0) {
             res
                 .status(200)
-                .json({ Message: "Order Found!", Count: record.length , Data: record, IsSuccess: true });
+                .json({ Message: "Order Found!", Count: result.length , Data: result, IsSuccess: true });
         } else {
             res
                 .status(200)
