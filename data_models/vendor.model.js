@@ -34,24 +34,31 @@ const vendorSchema = mongoose.Schema({
   },
   address: {
     type: String,
+    default: "",
   },
   gstNo:{
       type: String,
+      default: "",
   },
   panNumber:{
       type: String,
+      default: "",
   },
   password:{
-      type:String
+      type:String,
+      default: "",
   },
   FixKm: {
     type: Number,
+    default: 0,
   },
   UnderFixKmCharge: {
       type: Number,
+      default: 0,
   },
   perKmCharge:{
       type: Number,
+      default: 0,
   }
 });
 

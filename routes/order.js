@@ -194,7 +194,7 @@ function getOrderNumber() {
     return orderNo;
 }
 // send sms
-async function sendMessages(mobileNo, message) {
+function sendMessages(mobileNo, message) {
     // let msgportal =
     //     "http://promosms.itfuturz.com/vendorsms/pushsms.aspx?user=" +
     //     process.env.SMS_USER +
@@ -212,15 +212,15 @@ async function sendMessages(mobileNo, message) {
     console.log("--------------------SEND TEXT---------------------------");
     console.log(msgportal);
     axios.get(msgportal);
-    var data = await axios.get(msgportal);
+    var data = axios.get(msgportal);
     return data;
 }
 
 router.post("/sendText", async function(req,res,next){
     try {
         var aa = await sendMessages(8200682175,"hello");
-        // console.log(aa);
-        // res.status(200).json({ IsSuccess: true , Message: "Send...!!!" });    
+        console.log(aa);
+        res.status(200).json({ IsSuccess: true , Message: "Send...!!!" });    
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
@@ -1454,7 +1454,7 @@ router.post("/newoder", orderimg.single("orderimg"), async function (
             request(options2, function (error, response , body) {
                 console.log("--------------------Sender--------------------");
                 let myJsonBody = JSON.stringify(body);
-                //console.log(myJsonBody);
+                console.log(myJsonBody);
                 //myJsonBody[51] USED TO ACCESS RESPONSE DATA SUCCESS FIELD
                 console.log(myJsonBody[51]);
                 if(myJsonBody[51]==0){
@@ -2033,13 +2033,40 @@ router.post("/activeOrders", async function (req, res, next) {
                 if (docs.length != 0) {
                     res
                         .status(200)
-                        .json({ Message: "Order Found!", Data: docs, IsSuccess: true });
+                        .json({ Message: "Order Found!", Count: docs.length , Data: docs, IsSuccess: true });
                 } else {
                     res
                         .status(200)
                         .json({ Message: "No Order Found!", Data: docs, IsSuccess: true });
                 }
             });
+    } catch (err) {
+        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
+
+//Active Orders (Include Multi delivery Points)--30-12-2020
+router.post("/activeOrdersV2", async function (req, res, next) {
+    const { customerId } = req.body;
+    try {
+        let record = await orderSchema
+            .find({ customerId: customerId, isActive: true })
+            .populate(
+                "courierId",
+                "firstName lastName fcmToken mobileNo accStatus transport isVerified profileImg"
+            );
+        for(let i=0;i<record.length;i++){
+            console.log(record[i].orderNo);
+        }
+        if (record.length != 0) {
+            res
+                .status(200)
+                .json({ Message: "Order Found!", Count: record.length , Data: record, IsSuccess: true });
+        } else {
+            res
+                .status(200)
+                .json({ Message: "No Order Found!", Data: 0, IsSuccess: true });
+        }    
     } catch (err) {
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const orderSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     orderNo: { type: String, required: true },
+    multiOrderNo: { type: String },
     customerId: { type: mongoose.Types.ObjectId, ref: "Customers" },
     deliveryType: {
         type: String,
