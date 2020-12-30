@@ -133,6 +133,14 @@ const demoOrderSchema = mongoose.Schema({
     },
     orderType: {
         type: String
+    },
+    chargeOfPND: {
+        type: Number,
+        default: 0,
+    },
+    orderType: {
+        type: String,
+        default: "customer"
     }
 });
 

@@ -9,6 +9,7 @@ var { encryptPWD, comparePWD } = require('../crypto');
 var Bcrypt = require("bcryptjs");
 
 var vendorModelSchema = require("../data_models/vendor.model");
+var demoOrderSchema = require("../data_models/demoMultiModel");
 
 router.post("/vendor_register", async function(req , res , next){
     const { name, mobileNo , company , email , gstNo , panNumber , lat , address ,
@@ -91,6 +92,11 @@ function getVendorOrderNumber() {
     return orderNo;
 }
 
+function getVendorMultiOrderNumber() {
+    let orderNo = "ORDMT-VND-" + Math.floor(Math.random() * 90000) + 10000;
+    return orderNo;
+}
+
 router.post("/vendorOrder", async function(req,res,next){
     var {
         customerId,
@@ -114,8 +120,57 @@ router.post("/vendorOrder", async function(req,res,next){
         finalAmount,
         schedualDateTime,
     } = req.body;
+    let num = getVendorOrderNumber();
+    let vendorOrders = [];
     try {
-        
+        for(let i=0;i<deliveryAddresses.length;i++){
+            var newVendorMultiOrder = new demoOrderSchema({
+                _id: new config.mongoose.Types.ObjectId(),
+                orderType: "vendor",
+                orderNo: num,
+                multiOrderNo: getVendorMultiOrderNumber(),
+                customerId: customerId,
+                deliveryType: deliveryType,
+                schedualDateTime: schedualDateTime,
+                weightLimit: weightLimit,
+               // orderImg: file == undefined ? "" : file.path,
+                pickupPoint: {
+                    name: pkName,
+                    mobileNo: pkMobileNo,
+                    address: pkAddress,
+                    lat: pkLat,
+                    long: pkLong,
+                    completeAddress: pkCompleteAddress,
+                    contents: pkContent,
+                    arriveType: pkArriveType,
+                    arriveTime: pkArriveTime,
+                },
+                deliveryPoint:{
+                    name: deliveryAddresses[i].dpName,
+                    mobileNo: deliveryAddresses[i].dpMobileNo,
+                    address: deliveryAddresses[i].dpAddress,
+                    lat: deliveryAddresses[i].dpLat,
+                    long: deliveryAddresses[i].dpLong,
+                    completeAddress: deliveryAddresses[i].dpCompleteAddress,
+                    distance: deliveryAddresses[i].dpDistance,
+                },
+                collectCash: collectCash,
+                promoCode: promoCode,
+                amount: amount,
+                discount: discount,
+                additionalAmount: additionalAmount,
+                finalAmount: finalAmount,
+                status: "Order Processing",
+                note: "Your order is processing!",
+            });
+            var placeMultiOrder = await newVendorMultiOrder.save();
+            vendorOrders.push(placeMultiOrder);   
+        }
+        if(vendorOrders.length > 0){
+            res.status(200).json({ IsSuccess: true , Count: vendorOrders.length ,Data: vendorOrders , Message: "Order Placed" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: [] , Message: "Order Not Placed" });
+        }        
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
