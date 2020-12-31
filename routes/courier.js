@@ -419,6 +419,52 @@ function convertStringDateToISOPlusOne(date){
     // console.log(dISO);
     return dISO;
 }
+
+//Get Employee All Orders -------31-12-2020----MONIL
+router.post("/getEmpAllOrders", async function(req,res,next){
+    const { courierId } = req.body;
+    try {
+        var record = await orderSchema.find({ 
+                    courierId: courierId,
+                    status: "Order Delivered", 
+                    isActive: false,
+                    // dateTime: {
+                    //     $gte : date1,
+                    //     $lte : date2
+                    // },
+                    })
+                    .populate(
+                            "courierId",
+                            "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+                    )
+                    .populate("customerId");
+        var totalPrice = 0;
+        var totalDistance = 0;
+        console.log(record);
+        for(var i=0;i<record.length;i++){
+            totalPrice = totalPrice + record[i].finalAmount;
+            totalDistance = totalDistance + record[i].deliveryPoint.distance;
+            // console.log(totalDistance);
+        }
+        console.log(totalPrice);
+        console.log(totalDistance);
+        if(record.length > 0){
+            res.status(200).json({
+                                   IsSuccess: true,
+                                   TotalPriceCollected: totalPrice,
+                                   TotalDistanceTravell: totalDistance,
+                                   TotalDelivery: record.length, 
+                                   Data: record, 
+                                   Message: "Orders Found" 
+                                });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Orders Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ Message: error.message, Data: 0, IsSuccess: false });
+    }
+}); 
+
 //Employee Order History------25-11-2020---Monil
 router.post("/getEmployeeOrderDetails", async function(req,res,next){
     const { courierId , startdate , enddate } = req.body;
@@ -648,16 +694,8 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
     }
 });
 
-//Till Now All Employee Order History
+//Till Now All Employee Order History------------31-12-2020---MONIL
 router.post("/getAllEmployeeOrders", async function(req,res,next){
-    // const { ofDate } = req.body;
-    // console.log(req.body);
-
-    // let ofDate1 = convertStringDateToISO(ofDate);
-    // let ofDate2 = convertStringDateToISOPlusOne(ofDate);
-
-    // console.log(ofDate1);
-    // console.log(ofDate2);
     try {
         var courierIds = [];
         var courierOrdersData = [];
@@ -709,6 +747,7 @@ router.post("/getAllEmployeeOrders", async function(req,res,next){
                 // console.log(TotalPrice);
                 // console.log(TotalDistance);
                 var data = {
+                    EmployeeId : record[0].courierId[0]._id,
                     EmployeeName : record[0].courierId[0].firstName + " "+ record[0].courierId[0].lastName,
                     EmployeeMobile : record[0].courierId[0].mobileNo,
                     AmoutCollect : Amount,
