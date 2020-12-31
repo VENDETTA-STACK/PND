@@ -10,6 +10,27 @@ var Bcrypt = require("bcryptjs");
 
 var vendorModelSchema = require("../data_models/vendor.model");
 var demoOrderSchema = require("../data_models/demoMultiModel");
+let promoCodeSchema = require("../data_models/promocode.model");
+let settingsSchema = require("../data_models/settings.model");
+let deliverytypesSchema = require("../data_models/deliverytype.model");
+
+async function GoogleMatrix(fromlocation, tolocation) {
+    let link =
+        "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&mode=driving&origins=" +
+        fromlocation.latitude +
+        "," +
+        fromlocation.longitude +
+        "&destinations=" +
+        tolocation.latitude +
+        "," +
+        tolocation.longitude +
+        "&key=" +
+        process.env.GOOGLE_API;
+    let results = await axios.get(link);
+    let distancebe = results.data.rows[0].elements[0].distance.value;
+    console.log("Distance : "+distancebe + " Meter");
+    return distancebe / 1000;
+}
 
 router.post("/vendor_register", async function(req , res , next){
     const { name, mobileNo , company , email , gstNo , panNumber , lat , address ,
@@ -36,9 +57,9 @@ router.post("/vendor_register", async function(req , res , next){
                 },
                 address: address,
                 password: encryptPassword,
-                FixKm: FixKm,
-                UnderFixKmCharge: UnderFixKmCharge,
-                perKmCharge: perKmCharge,
+                FixKm: FixKm == undefined ? "" : FixKm,
+                UnderFixKmCharge: UnderFixKmCharge == undefined ? " " : UnderFixKmCharge,
+                perKmCharge: perKmCharge == undefined ? " " : perKmCharge,
             });
     
             registerVendor = vendor.save();
@@ -49,7 +70,27 @@ router.post("/vendor_register", async function(req , res , next){
     } catch (error) {
         res.status(400).json({ Message: "Register Unsuccessfull...!!!", IsSuccess: false });
     }
+});
 
+//Update Customer Charges-----31-12-2020---MONIL
+router.post("/updateVendorCharge" , async function(req,res,next){
+    const { vendorId , FixKm , UnderFixKmCharge , perKmCharge } = req.body;
+    try {
+        let existVendor = await vendorModelSchema.find({ _id: vendorId });
+        if(existVendor.length == 1){
+            let updateIs = {
+                FixKm: FixKm,
+                UnderFixKmCharge: UnderFixKmCharge,
+                perKmCharge: perKmCharge,
+            }
+            let updateRecord = await vendorModelSchema.findByIdAndUpdate(existVendor[0]._id,updateIs);
+            res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Data Updated" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Vendor Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
 });
 
 //Vendor Login ------ Mobile APP(29-12-2020)
@@ -96,6 +137,91 @@ function getVendorMultiOrderNumber() {
     let orderNo = "ORDMT-VND-" + Math.floor(Math.random() * 90000) + 10000;
     return orderNo;
 }
+
+router.post("/vendorOrderCalc",async function(req,res,next){
+    const { 
+        vendorId,
+        picklat,
+        picklong,
+        deliveryPoints,
+        deliverytype,
+        promocode,
+        parcelcontents,
+        amountCollected,  
+    } = req.body;
+    try {
+        let tempDistanceForALL = 0;
+
+        let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
+        
+        for(let i=0;i<deliveryPoints.length;i++){
+            let lat3 = parseFloat(deliveryPoints[i].lat);
+            let long3 = parseFloat(deliveryPoints[i].long);
+            let tolocation = { latitude: Number(lat3), longitude: Number(long3) };
+            
+            let totaldistance = await GoogleMatrix(fromlocation, tolocation);
+            
+            tempDistanceForALL = tempDistanceForALL + totaldistance;
+        }
+        console.log("Total Distance :"+tempDistanceForALL);
+
+        let prmcodes = await promoCodeSchema.find({ code: promocode });
+        let settings = await settingsSchema.find({});
+        let delivery = await deliverytypesSchema.find({});
+        // console.log("Delivery Check :"+ delivery.length);
+        // let totaldistance = await GoogleMatrix(fromlocation, tolocation);
+        let totaldistance = tempDistanceForALL;
+
+        let vendorData = await vendorModelSchema.find({ _id: vendorId })
+
+        // let promoused = 0;
+       
+        // let aboveKmCharge = 0;
+
+        let FixKm = parseFloat(vendorData[0].FixKm);
+        let UnderFixKmCharge = parseFloat(vendorData[0].UnderFixKmCharge);
+        let perKmCharge = parseFloat(vendorData[0].perKmCharge);
+
+        // console.log(FixKm);
+        // console.log(UnderFixKmCharge);
+        // console.log(perKmCharge);
+        //HERE
+        let basickm = 0;
+        let basicamt = 0;
+        let extrakm = 0;
+        let extraamt = 0;
+        let extradeliverycharges = 0;
+        let amount = 0;
+        let totalamt = 0;
+
+        if(totaldistance < FixKm){
+            basickm = totaldistance,
+            basicamt = UnderFixKmCharge,
+            extrakm = 0,
+            extraamt = 0,
+            extradeliverycharges = 0,
+            amount = basicamt + extraamt + extradeliverycharges,
+            totalamt = amount
+        }else{
+            console.log("Here...!!!")
+            let remdis = totaldistance - FixKm,
+            basicamt = UnderFixKmCharge,
+            extrakm = remdis,
+            extraamt = remdis * perKmCharge,
+            extradeliverycharges = 0,
+            amount = basicamt + extraamt + extradeliverycharges,
+            totalamt = amount
+        }
+        console.log(totalamt);
+        console.log("Basic AMT :"+basicamt);
+        console.log("Extraa KM :"+extrakm);
+        console.log("Exraa AMT :"+extraamt);
+        console.log("AMT :"+amount);
+
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
 
 router.post("/vendorOrder", async function(req,res,next){
     var {

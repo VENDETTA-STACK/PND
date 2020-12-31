@@ -648,6 +648,125 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
     }
 });
 
+//Till Now All Employee Order History
+router.post("/getAllEmployeeOrders", async function(req,res,next){
+    // const { ofDate } = req.body;
+    // console.log(req.body);
+
+    // let ofDate1 = convertStringDateToISO(ofDate);
+    // let ofDate2 = convertStringDateToISOPlusOne(ofDate);
+
+    // console.log(ofDate1);
+    // console.log(ofDate2);
+    try {
+        var courierIds = [];
+        var courierOrdersData = [];
+        var courierBoysAre = await courierSchema.find();
+        for(var i=0;i<courierBoysAre.length;i++){
+            // console.log(courierBoysAre[i]._id);
+            courierIds.push(courierBoysAre[i]._id);
+        }
+        let totalOfAmount = 0;
+        let totalOfThirdPartyCollection = 0;
+        let totalOfTotalPrice = 0;
+        let totalOfTotalDistance = 0;
+        let totalOfTotalDelivery = 0;
+        // console.log(courierIds);
+        for(var j=0;j<courierIds.length;j++){
+            // console.log(courierIds[j]);
+            
+            var record = await orderSchema.find({ 
+                    courierId: courierIds[j],
+                    status: "Order Delivered", 
+                    isActive: false,
+                    // dateTime: {
+                    //     $gte : ofDate1,
+                    //     $lt : ofDate2
+                    // },
+                })
+                .populate(
+                        "courierId",
+                        "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+                )
+                .populate("customerId");
+            if(record.length > 0){
+                console.log(record[0].courierId[0].firstName);
+                console.log(record.length);
+                // console.log(record[j].courierId);
+                let Amount = 0;
+                let ThirdPartyCollection = 0;
+                let TotalPrice = 0;
+                let TotalDistance = 0;
+            
+                for(let k=0;k<record.length;k++){
+                    Amount = Amount + parseFloat(record[k].amount);
+                    ThirdPartyCollection = ThirdPartyCollection + parseFloat(record[k].amountCollection);
+                    TotalPrice = TotalPrice + parseFloat(record[k].finalAmount);
+                    TotalDistance = TotalDistance + parseFloat(record[k].deliveryPoint.distance);
+                }
+                // console.log(Amount);
+                // console.log(ThirdPartyCollection);
+                // console.log(TotalPrice);
+                // console.log(TotalDistance);
+                var data = {
+                    EmployeeName : record[0].courierId[0].firstName + " "+ record[0].courierId[0].lastName,
+                    EmployeeMobile : record[0].courierId[0].mobileNo,
+                    AmoutCollect : Amount,
+                    ThirdPartyCollection: ThirdPartyCollection,
+                    TotalPrice: TotalPrice,
+                    TotalDistance: TotalDistance,
+                    TotalDelivery : record.length,
+                }
+                console.log(data);
+                courierOrdersData.push(data); 
+            }
+            // console.log("Index :" + j);
+            console.log(courierOrdersData);
+
+        }
+        let maxBusinessMakeBy = 0
+        // let maxBusinessMakeBy = Math.max.apply(Math, courierOrdersData.map(function(o) { return o; }));
+        if(courierOrdersData.length > 0){
+            maxBusinessMakeBy = courierOrdersData.reduce(function(prev, current) {
+                return (prev.TotalPrice > current.TotalPrice) ? prev : current
+            }) //returns object
+        }
+        console.log("maxBusinessMakeBy");
+        console.log(maxBusinessMakeBy);
+        console.log(courierOrdersData);
+        for(datas in courierOrdersData){
+            // console.log(courierOrdersData[datas]);
+            
+            totalOfAmount = totalOfAmount + courierOrdersData[datas].AmoutCollect;
+            totalOfThirdPartyCollection = totalOfThirdPartyCollection + courierOrdersData[datas].ThirdPartyCollection;
+            totalOfTotalPrice = totalOfTotalPrice + courierOrdersData[datas].TotalPrice;
+            totalOfTotalDistance = totalOfTotalDistance + courierOrdersData[datas].TotalDistance;
+            totalOfTotalDelivery = totalOfTotalDelivery + courierOrdersData[datas].TotalDelivery;
+        }
+        console.log("Total Amount :"+totalOfAmount);
+        console.log("Total ThirdParty :"+totalOfThirdPartyCollection);
+        console.log("Total Price :"+totalOfTotalPrice);
+        console.log("Total Distance :"+totalOfTotalDistance);
+        console.log("Total Delivery :"+totalOfTotalDelivery);
+        if(courierOrdersData.length > 0){
+            res.status(200).json({ 
+                IsSuccess: true,
+                TotalAmount : totalOfAmount,
+                TotalThirdParty : totalOfThirdPartyCollection,
+                TotalPrice : totalOfTotalPrice,
+                TotalDistance : totalOfTotalDistance,
+                TotalDelivery : totalOfTotalDelivery, 
+                Data: courierOrdersData,
+                MaxPriceCollectedBy : maxBusinessMakeBy, 
+                Message: "Data Found" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Data Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ Message: error.message, Data: 0, IsSuccess: false });
+    }
+});
+
 //Not Completed Yet----Not Any update for changes
 router.post('/updateCustomerLocation' , async function(req , res , next){
     // const { orderId , name , mobileNo , address , lat , long, completeAddress, distance } = req.body;
