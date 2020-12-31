@@ -141,6 +141,10 @@ const demoOrderSchema = mongoose.Schema({
     orderType: {
         type: String,
         default: "customer"
+    },
+    courierChargeCollectFromCustomer: {
+        type: Boolean,
+        default: false,
     }
 });
 

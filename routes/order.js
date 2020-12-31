@@ -1619,7 +1619,7 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
             status: "Order Processing",
             note: "Your order is processing!",
         });
-        console.log("---------------amount Collected-----------");
+        // console.log("---------------amount Collected-----------");
         var placedorder = await newOrder.save();
             var avlcourier = await PNDfinder(
                 pkLat,
@@ -1666,12 +1666,6 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
     var findAdminFcmToken3 = await customerSchema.find({ mobileNo: AdminNumber3 }).select('fcmToken -_id');
     var findAdminFcmToken4 = await customerSchema.find({ mobileNo: AdminNumber4 }).select('fcmToken -_id');
     var findAdminFcmToken5 = await customerSchema.find({ mobileNo: AdminNumber5 }).select('fcmToken -_id');
-    
-    // console.log(findAdminFcmToken);
-    // console.log(findAdminFcmToken2);
-    // console.log(findAdminFcmToken3);
-    // console.log(findAdminFcmToken4);
-    // console.log(findAdminFcmToken5);
 
     var AdminFcmToken = [findAdminFcmToken[0].fcmToken,findAdminFcmToken2[0].fcmToken,findAdminFcmToken3[0].fcmToken,findAdminFcmToken4[0].fcmToken,findAdminFcmToken5[0].fcmToken];
     console.log("-------------------------ADMINS TOKENS-----------------------------");
@@ -1870,12 +1864,13 @@ router.post("/multiNewOrder", async function(req,res,next){
     let num = getOrderNumber();
     // let numMulti = getMultiOrderNumber();
     var MultiOrders = [];
-    for(let i=0;i<deliveryAddresses.length;i++){
-        let d1 = deliveryAddresses[i];
-        // console.log("---------------------")
-        // console.log(d1);
-        try {
-            var newMultiOrder = new orderSchema({
+    try {
+        for(let i=0;i<deliveryAddresses.length;i++){
+            let d1 = deliveryAddresses[i];
+            // console.log("---------------------")
+            // console.log(d1);
+            
+            var newMultiOrder = new demoOrderSchema({
                 _id: new config.mongoose.Types.ObjectId(),
                 orderNo: num,
                 multiOrderNo: getMultiOrderNumber(),
@@ -1883,7 +1878,7 @@ router.post("/multiNewOrder", async function(req,res,next){
                 deliveryType: deliveryType,
                 schedualDateTime: schedualDateTime,
                 weightLimit: weightLimit,
-               // orderImg: file == undefined ? "" : file.path,
+                // orderImg: file == undefined ? "" : file.path,
                 pickupPoint: {
                     name: pkName,
                     mobileNo: pkMobileNo,
@@ -1915,11 +1910,89 @@ router.post("/multiNewOrder", async function(req,res,next){
             });
             var placeMultiOrder = await newMultiOrder.save();
             MultiOrders.push(placeMultiOrder);
-        }catch(err) {
-            res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
         }
-    } 
+        // var avlcourier = await PNDfinder(
+        //     pkLat,
+        //     pkLong,
+        //     placeMultiOrder.id,
+        //     placeMultiOrder.deliveryType
+        // );
+        // console.log("===============================================================");
+    
+        // if (promoCode != "0") {
+        //     let usedpromo = new usedpromoSchema({
+        //         _id: new config.mongoose.Types.ObjectId(),
+        //         customer: customerId,
+        //         code: promoCode,
+        //     });
+        //     usedpromo.save();
+        // }
+        // if (placeMultiOrder != null && avlcourier.length != 0) {
+        //     console.log("Total Found:" + avlcourier.length);
+        //     let courierfound = arraySort(avlcourier, "distance");
+        //     var newrequest = new requestSchema({
+        //         _id: new config.mongoose.Types.ObjectId(),
+        //         courierId: courierfound[0].courierId,
+        //         orderId: courierfound[0].orderId,
+        //         distance: courierfound[0].distance,
+        //         status: courierfound[0].status,
+        //         reason: courierfound[0].reason,
+        //         fcmToken: courierfound[0].fcmToken,
+        //     });
+        //     await newrequest.save();
+        //     var AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
+        //     console.log("Admin numbers-------------------------------------------------");
+        //     console.log(AdminMobile);
+        //     var AdminNumber1 = AdminMobile[0].AdminMObile1; 
+        //     var AdminNumber2 = AdminMobile[0].AdminMObile2; 
+        //     var AdminNumber3 = AdminMobile[0].AdminMObile3; 
+        //     var AdminNumber4 = AdminMobile[0].AdminMObile4; 
+        //     var AdminNumber5 = AdminMobile[0].AdminMObile5;
+    
+        //     // console.log(AdminNumber1);
+
+        //     var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber1 }).select('fcmToken -_id');
+        //     var findAdminFcmToken2 = await customerSchema.find({ mobileNo: AdminNumber2 }).select('fcmToken -_id');
+        //     var findAdminFcmToken3 = await customerSchema.find({ mobileNo: AdminNumber3 }).select('fcmToken -_id');
+        //     var findAdminFcmToken4 = await customerSchema.find({ mobileNo: AdminNumber4 }).select('fcmToken -_id');
+        //     var findAdminFcmToken5 = await customerSchema.find({ mobileNo: AdminNumber5 }).select('fcmToken -_id');
+            
+        //     findAdminFcmToken == undefined ? " " : findAdminFcmToken[0].fcmToken;
+        //     findAdminFcmToken2 == undefined ? " " : findAdminFcmToken2[0].fcmToken;
+        //     findAdminFcmToken3 == undefined ? " " : findAdminFcmToken3[0].fcmToken;
+        //     findAdminFcmToken4 == undefined ? " " : findAdminFcmToken4[0].fcmToken;
+        //     findAdminFcmToken5 == undefined ? " " : findAdminFcmToken5[0].fcmToken;
+            
+        //     console.log(findAdminFcmToken);
+        //     console.log(findAdminFcmToken2);
+        //     console.log(findAdminFcmToken3);
+        //     console.log(findAdminFcmToken4);
+        //     console.log(findAdminFcmToken5);
+
+        //     var AdminFcmToken = [findAdminFcmToken,findAdminFcmToken2,findAdminFcmToken3,findAdminFcmToken4,findAdminFcmToken5];
+        //     console.log("-------------------------ADMINS TOKENS-----------------------------");
+        //     console.log(AdminFcmToken);
+
+        // let newOrderData = newMultiOrder.orderNo;
+        // let newOrderPickUp = newMultiOrder.pickupPoint.address;
+        // let newOrderDelivery = newMultiOrder.deliveryPoint.address;
+        // let newOrderCustomerId = newMultiOrder.customerId;
+        // console.log(newOrderCustomerId);
+        // let newOrderCustomer = await customerSchema.find({ _id: newOrderCustomerId }).select('name mobileNo -_id');
+        
+        // let newOrderNotification = `New Order Received 
+        // OrderID: ${newOrderData}
+        // Customer: ${newOrderCustomer[0].name}
+        // Mobile: ${newOrderCustomer[0].mobileNo}  
+        // PickUp: ${newOrderPickUp}`;
+        // console.log(newOrderNotification);
+
+        // var AdminPhoneNumbers = [AdminNumber1,AdminNumber2,AdminNumber3,AdminNumber4,AdminNumber5];
+    // }
     res.status(200).json({ IsSuccess:true , Data: MultiOrders , Message: "Multiorder Added" });
+    }catch(error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
 });
 
 //Optimize Route---------MONIL(03/12/2020)

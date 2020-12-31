@@ -102,11 +102,11 @@ router.post("/vendorOrder", async function(req,res,next){
         customerId,
         deliveryType,
         weightLimit,
-        pkName,
-        pkMobileNo,
-        pkAddress,
-        pkLat,
-        pkLong,
+        // pkName,
+        // pkMobileNo,
+        // pkAddress,
+        // pkLat,
+        // pkLong,
         pkCompleteAddress,
         pkContent,
         pkArriveType,
@@ -119,10 +119,12 @@ router.post("/vendorOrder", async function(req,res,next){
         additionalAmount,
         finalAmount,
         schedualDateTime,
+        courierChargeCollectFromCustomer,
     } = req.body;
     let num = getVendorOrderNumber();
     let vendorOrders = [];
     try {
+        let pickData = await vendorModelSchema.find({ _id: customerId });
         for(let i=0;i<deliveryAddresses.length;i++){
             var newVendorMultiOrder = new demoOrderSchema({
                 _id: new config.mongoose.Types.ObjectId(),
@@ -135,11 +137,11 @@ router.post("/vendorOrder", async function(req,res,next){
                 weightLimit: weightLimit,
                // orderImg: file == undefined ? "" : file.path,
                 pickupPoint: {
-                    name: pkName,
-                    mobileNo: pkMobileNo,
-                    address: pkAddress,
-                    lat: pkLat,
-                    long: pkLong,
+                    name: pickData[0].name,
+                    mobileNo: pickData[0].mobileNo,
+                    address: pickData[0].address,
+                    lat: pickData[0].gpsLocation.lat,
+                    long: pickData[0].gpsLocation.long,
                     completeAddress: pkCompleteAddress,
                     contents: pkContent,
                     arriveType: pkArriveType,
@@ -156,6 +158,7 @@ router.post("/vendorOrder", async function(req,res,next){
                 },
                 collectCash: collectCash,
                 promoCode: promoCode,
+                courierChargeCollectFromCustomer: courierChargeCollectFromCustomer,
                 amount: amount,
                 discount: discount,
                 additionalAmount: additionalAmount,
