@@ -195,7 +195,7 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         let totalAmt = 0;
 
         if(totaldistance < FixKm){
-            basickm = totaldistance,
+            basicKm = totaldistance,
             basicamt = UnderFixKmCharge,
             extrakm = 0,
             extraamt = 0,
@@ -230,7 +230,7 @@ router.post("/vendorOrderCalc",async function(req,res,next){
 
 router.post("/vendorOrder", async function(req,res,next){
     var {
-        customerId,
+        vendorId,
         deliveryType,
         weightLimit,
         // pkName,
@@ -250,19 +250,18 @@ router.post("/vendorOrder", async function(req,res,next){
         additionalAmount,
         finalAmount,
         schedualDateTime,
-        courierChargeCollectFromCustomer,
     } = req.body;
     let num = getVendorOrderNumber();
     let vendorOrders = [];
     try {
-        let pickData = await vendorModelSchema.find({ _id: customerId });
+        let pickData = await vendorModelSchema.find({ _id: vendorId });
         for(let i=0;i<deliveryAddresses.length;i++){
             var newVendorMultiOrder = new demoOrderSchema({
                 _id: new config.mongoose.Types.ObjectId(),
-                orderType: "vendor",
+                orderBy: "vendor",
                 orderNo: num,
                 multiOrderNo: getVendorMultiOrderNumber(),
-                customerId: customerId,
+                vendorId: vendorId,
                 deliveryType: deliveryType,
                 schedualDateTime: schedualDateTime,
                 weightLimit: weightLimit,
@@ -286,10 +285,10 @@ router.post("/vendorOrder", async function(req,res,next){
                     long: deliveryAddresses[i].dpLong,
                     completeAddress: deliveryAddresses[i].dpCompleteAddress,
                     distance: deliveryAddresses[i].dpDistance,
+                    courierChargeCollectFromCustomer: deliveryAddresses[i].courierChargeCollectFromCustomer,
                 },
                 collectCash: collectCash,
                 promoCode: promoCode,
-                courierChargeCollectFromCustomer: courierChargeCollectFromCustomer,
                 amount: amount,
                 discount: discount,
                 additionalAmount: additionalAmount,

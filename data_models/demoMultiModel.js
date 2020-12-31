@@ -5,6 +5,7 @@ const demoOrderSchema = mongoose.Schema({
     orderNo: { type: String, required: true },
     multiOrderNo: { type: String },
     customerId: { type: mongoose.Types.ObjectId, ref: "Customers" },
+    vendorId: { type: mongoose.Types.ObjectId, ref: "Vendor" },
     deliveryType: {
         type: String,
         required: true,
@@ -22,31 +23,31 @@ const demoOrderSchema = mongoose.Schema({
     pickupPoint: {
         name: {
             type: String,
-            required: true,
+            // required: true,
         },
         mobileNo: {
             type: String,
-            required: true,
+            // required: true,
         },
         address: {
             type: String,
-            required: true,
+            // required: true,
         },
         lat: {
             type: String,
-            required: true,
+            // required: true,
         },
         long: {
             type: String,
-            required: true,
+            // required: true,
         },
         completeAddress: {
             type: String,
-            required: true,
+            // required: true,
         },
         contents: {
             type: String,
-            required: true,
+            // required: true,
         },
         arriveType: {
             type: String,
@@ -84,6 +85,9 @@ const demoOrderSchema = mongoose.Schema({
             type: Number,
             //required: true,
         },
+        courierChargeCollectFromCustomer: {
+            type: Boolean
+        }
     },
     collectCash: {
         type: String,
@@ -131,21 +135,14 @@ const demoOrderSchema = mongoose.Schema({
     schedualDateTime: {
         type: Date
     },
-    orderType: {
-        type: String
-    },
     chargeOfPND: {
         type: Number,
         default: 0,
     },
-    orderType: {
+    orderBy: {
         type: String,
         default: "customer"
     },
-    courierChargeCollectFromCustomer: {
-        type: Boolean,
-        default: false,
-    }
 });
 
 module.exports = mongoose.model("DemoOrders", demoOrderSchema);
