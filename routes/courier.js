@@ -439,10 +439,12 @@ router.post("/getEmpAllOrders", async function(req,res,next){
                     )
                     .populate("customerId");
         var totalPrice = 0;
+        var totalThirdPartCollect = 0;
         var totalDistance = 0;
         console.log(record);
         for(var i=0;i<record.length;i++){
             totalPrice = totalPrice + record[i].finalAmount;
+            totalThirdPartCollect = totalThirdPartCollect + parseFloat(record[i].amountCollection);
             totalDistance = totalDistance + record[i].deliveryPoint.distance;
             // console.log(totalDistance);
         }
@@ -452,6 +454,7 @@ router.post("/getEmpAllOrders", async function(req,res,next){
             res.status(200).json({
                                    IsSuccess: true,
                                    TotalPriceCollected: totalPrice,
+                                   TotalThirdPartyCollection : totalThirdPartCollect,
                                    TotalDistanceTravell: totalDistance,
                                    TotalDelivery: record.length, 
                                    Data: record, 

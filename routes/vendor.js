@@ -186,13 +186,13 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         // console.log(UnderFixKmCharge);
         // console.log(perKmCharge);
         //HERE
-        let basickm = 0;
-        let basicamt = 0;
-        let extrakm = 0;
-        let extraamt = 0;
-        let extradeliverycharges = 0;
-        let amount = 0;
-        let totalamt = 0;
+        let basicKm = 0;
+        let basicAmt = 0;
+        let extraKm = 0;
+        let extraAmt = 0;
+        let extraDeliverycharges = 0;
+        let Amount = 0;
+        let totalAmt = 0;
 
         if(totaldistance < FixKm){
             basickm = totaldistance,
@@ -212,10 +212,10 @@ router.post("/vendorOrderCalc",async function(req,res,next){
             amount = basicamt + extraamt + extradeliverycharges,
             totalamt = amount
             console.log(totalamt);
-        console.log("Basic AMT :"+basicamt);
-        console.log("Extraa KM :"+extrakm);
-        console.log("Exraa AMT :"+extraamt);
-        console.log("AMT :"+amount);
+            console.log("Basic AMT :"+basicamt);
+            console.log("Extraa KM :"+extrakm);
+            console.log("Exraa AMT :"+extraamt);
+            console.log("AMT :"+amount);
         }
         // console.log(totalamt);
         // console.log("Basic AMT :"+basicamt);

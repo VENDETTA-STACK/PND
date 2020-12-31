@@ -1013,6 +1013,7 @@ router.post("/ordercalcV4", async (req, res, next) => {
             }
         }
     }
+    console.log("MAin Checkkkkkkkkkkkk....!!!!!!1 :"+ basicamt);
 
     var userPastOrders = await orderSchema.find({
         customerId : mongoose.Types.ObjectId(customerId),
