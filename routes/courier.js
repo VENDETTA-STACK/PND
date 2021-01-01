@@ -646,7 +646,7 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
                 // console.log(TotalDistance);
                 var data = {
                     EmployeeName : record[0].courierId[0].firstName + " "+ record[0].courierId[0].lastName,
-                    EmployeeId : record[0]._id,
+                    EmployeeId : record[0].courierId[0]._id,
                     EmployeeMobile : record[0].courierId[0].mobileNo,
                     AmoutCollect : Amount,
                     ThirdPartyCollection: ThirdPartyCollection,
