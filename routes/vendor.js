@@ -14,6 +14,19 @@ let promoCodeSchema = require("../data_models/promocode.model");
 let settingsSchema = require("../data_models/settings.model");
 let deliverytypesSchema = require("../data_models/deliverytype.model");
 
+var imguploader = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "uploads/orderimg");
+    },
+    filename: function (req, file, cb) {
+        cb(
+            null,
+            file.fieldname + "_" + Date.now() + path.extname(file.originalname)
+        );
+    },
+});
+var orderimg = multer({ storage: imguploader });
+
 async function GoogleMatrix(fromlocation, tolocation) {
     let link =
         "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&mode=driving&origins=" +
@@ -228,7 +241,7 @@ router.post("/vendorOrderCalc",async function(req,res,next){
     }
 });
 
-router.post("/vendorOrder", async function(req,res,next){
+router.post("/vendorOrder", orderimg.single("orderimg"), async function(req,res,next){
     var {
         vendorId,
         deliveryType,
@@ -245,10 +258,10 @@ router.post("/vendorOrder", async function(req,res,next){
         deliveryAddresses,
         collectCash,
         promoCode,
-        amount,
-        discount,
-        additionalAmount,
-        finalAmount,
+        // amount,
+        // discount,
+        // additionalAmount,
+        // finalAmount,
         schedualDateTime,
     } = req.body;
     let num = getVendorOrderNumber();
@@ -265,7 +278,7 @@ router.post("/vendorOrder", async function(req,res,next){
                 deliveryType: deliveryType,
                 schedualDateTime: schedualDateTime,
                 weightLimit: weightLimit,
-               // orderImg: file == undefined ? "" : file.path,
+                // orderImg: file == undefined ? "" : file.path,
                 pickupPoint: {
                     name: pickData[0].name,
                     mobileNo: pickData[0].mobileNo,
@@ -285,14 +298,18 @@ router.post("/vendorOrder", async function(req,res,next){
                     long: deliveryAddresses[i].dpLong,
                     completeAddress: deliveryAddresses[i].dpCompleteAddress,
                     distance: deliveryAddresses[i].dpDistance,
+                    amount : deliveryAddresses[i].amount,
+                    additionalAmount : deliveryAddresses[i].additionalAmount,
+                    finalAmount : deliveryAddresses[i].finalAmount,
+                    isAmountCollect : deliveryAddresses[i].isAmountCollect,
                     courierChargeCollectFromCustomer: deliveryAddresses[i].courierChargeCollectFromCustomer,
                 },
                 collectCash: collectCash,
                 promoCode: promoCode,
-                amount: amount,
-                discount: discount,
-                additionalAmount: additionalAmount,
-                finalAmount: finalAmount,
+                // amount: "",
+                // discount: "",
+                // additionalAmount: "",
+                // finalAmount: "",
                 status: "Order Processing",
                 note: "Your order is processing!",
             });
@@ -304,6 +321,22 @@ router.post("/vendorOrder", async function(req,res,next){
         }else{
             res.status(200).json({ IsSuccess: true , Data: [] , Message: "Order Not Placed" });
         }        
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
+router.post("/vendorOrdersList" , async function(req,res,next){
+    const { vendorId } = req.body;
+    try {
+        let orderData = await demoOrderSchema.aggregate([
+            { $match : {
+                        vendorId: vendorId 
+                        }
+        }
+        ]);
+        // let orderData = await demoOrderSchema.find({ vendorId: vendorId });
+        console.log(orderData);
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }

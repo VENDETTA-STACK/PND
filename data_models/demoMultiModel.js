@@ -99,19 +99,19 @@ const demoOrderSchema = mongoose.Schema({
     },
     amount: {
         type: Number,
-        required: true,
+        // required: true,
     },
     discount: {
         type: Number,
-        required: true,
+        // required: true,
     },
     additionalAmount: {
         type: Number,
-        required: true,
+        // required: true,
     },
     finalAmount: {
         type: Number,
-        required: true,
+        // required: true,
     },
     status: {
         type: String,
@@ -142,6 +142,9 @@ const demoOrderSchema = mongoose.Schema({
     orderBy: {
         type: String,
         default: "customer"
+    },
+    isAmountCollect: {
+        type: Boolean,
     },
 });
 

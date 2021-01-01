@@ -415,6 +415,12 @@ function convertStringDateToISOPlusOne(date){
     let list = dateList.split("/");
     let datee = parseFloat(list[0]) + 1;
     
+    // console.log(datee);
+    if(datee < 10){
+        datee = "0" + String(datee); 
+    }
+    // console.log(datee);
+
     let dISO = list[2] + "-" + list[1] + "-" + datee + "T" + "00:00:00.00Z";
     // console.log(dISO);
     return dISO;
@@ -620,8 +626,8 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
                 )
                 .populate("customerId");
             if(record.length > 0){
-                console.log(record[0].courierId[0].firstName);
-                console.log(record.length);
+                // console.log(record[0].courierId[0].firstName);
+                // console.log(record.length);
                 // console.log(record[j].courierId);
                 let Amount = 0;
                 let ThirdPartyCollection = 0;
@@ -640,6 +646,7 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
                 // console.log(TotalDistance);
                 var data = {
                     EmployeeName : record[0].courierId[0].firstName + " "+ record[0].courierId[0].lastName,
+                    EmployeeId : record[0]._id,
                     EmployeeMobile : record[0].courierId[0].mobileNo,
                     AmoutCollect : Amount,
                     ThirdPartyCollection: ThirdPartyCollection,
@@ -647,11 +654,11 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
                     TotalDistance: TotalDistance,
                     TotalDelivery : record.length,
                 }
-                console.log(data);
+                // console.log(data);
                 courierOrdersData.push(data); 
             }
             // console.log("Index :" + j);
-            console.log(courierOrdersData);
+            // console.log(courierOrdersData);
 
         }
         let maxBusinessMakeBy = 0
@@ -661,9 +668,9 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
                 return (prev.TotalPrice > current.TotalPrice) ? prev : current
             }) //returns object
         }
-        console.log("maxBusinessMakeBy");
-        console.log(maxBusinessMakeBy);
-        console.log(courierOrdersData);
+        // console.log("maxBusinessMakeBy");
+        // console.log(maxBusinessMakeBy);
+        // console.log(courierOrdersData);
         for(datas in courierOrdersData){
             // console.log(courierOrdersData[datas]);
             
