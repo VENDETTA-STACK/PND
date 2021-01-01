@@ -85,13 +85,28 @@ const demoOrderSchema = mongoose.Schema({
             type: Number,
             //required: true,
         },
+        vendorBillAmount: {
+            type: Number,
+            default: 0,
+        },
+        customerCourierCharge: {
+            type: Number,
+            default: 0,
+        },
+        vendorBillFinalAmount: {
+            type: Number,
+            default: 0,
+        },
+        isAmountCollect: {
+            type: Boolean
+        },
         courierChargeCollectFromCustomer: {
             type: Boolean
         }
     },
     collectCash: {
         type: String,
-        required: true,
+        // required: true,
     },
     promoCode: {
         type: String,

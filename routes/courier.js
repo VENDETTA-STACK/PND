@@ -672,8 +672,6 @@ router.post("/getAllEmployeeOrderHistory", async function(req,res,next){
         // console.log(maxBusinessMakeBy);
         // console.log(courierOrdersData);
         for(datas in courierOrdersData){
-            // console.log(courierOrdersData[datas]);
-            
             totalOfAmount = totalOfAmount + courierOrdersData[datas].AmoutCollect;
             totalOfThirdPartyCollection = totalOfThirdPartyCollection + courierOrdersData[datas].ThirdPartyCollection;
             totalOfTotalPrice = totalOfTotalPrice + courierOrdersData[datas].TotalPrice;
