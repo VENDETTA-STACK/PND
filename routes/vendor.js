@@ -224,17 +224,17 @@ router.post("/vendorOrderCalc",async function(req,res,next){
             extradeliverycharges = 0,
             amount = basicamt + extraamt + extradeliverycharges,
             totalamt = amount
-            console.log(totalamt);
-            console.log("Basic AMT :"+basicamt);
-            console.log("Extraa KM :"+extrakm);
-            console.log("Exraa AMT :"+extraamt);
-            console.log("AMT :"+amount);
+            // console.log(totalamt);
+            // console.log("Basic AMT :"+basicamt);
+            // console.log("Extraa KM :"+extrakm);
+            // console.log("Exraa AMT :"+extraamt);
+            // console.log("AMT :"+amount);
         }
         // console.log(totalamt);
-        // console.log("Basic AMT :"+basicamt);
-        // console.log("Extraa KM :"+extrakm);
-        // console.log("Exraa AMT :"+extraamt);
-        // console.log("AMT :"+amount);
+        console.log("Basic AMT :"+basicamt);
+        console.log("Extraa KM :"+extrakm);
+        console.log("Exraa AMT :"+extraamt);
+        console.log("AMT :"+amount);
 
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
@@ -301,7 +301,6 @@ router.post("/vendorOrder", orderimg.single("orderimg"), async function(req,res,
                     vendorBillAmount : deliveryAddresses[i].vendorBillAmount,
                     customerCourierCharge : deliveryAddresses[i].customerCourierCharge,
                     vendorBillFinalAmount : deliveryAddresses[i].vendorBillFinalAmount,
-                    isAmountCollect : deliveryAddresses[i].isAmountCollect,
                     courierChargeCollectFromCustomer: deliveryAddresses[i].courierChargeCollectFromCustomer,
                 },
                 // collectCash: collectCash,

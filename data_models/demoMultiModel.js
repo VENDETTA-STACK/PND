@@ -97,9 +97,6 @@ const demoOrderSchema = mongoose.Schema({
             type: Number,
             default: 0,
         },
-        isAmountCollect: {
-            type: Boolean
-        },
         courierChargeCollectFromCustomer: {
             type: Boolean
         }
