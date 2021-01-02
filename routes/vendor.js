@@ -155,8 +155,6 @@ function getVendorMultiOrderNumber() {
 router.post("/vendorOrderCalc",async function(req,res,next){
     const { 
         vendorId,
-        picklat,
-        picklong,
         deliveryPoints,
         deliverytype,
         promocode,
@@ -164,16 +162,19 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         amountCollected,  
     } = req.body;
     try {
-        let tempDistanceForALL = 0;
+        // let tempDistanceForALL = 0;
+        let vendorData = await vendorModelSchema.find({ _id: vendorId })
+        let picklat = vendorData[0].gpsLocation.lat;
+        let picklong = vendorData[0].gpsLocation.long;
+
+        console.log(picklat);
+        console.log(picklong);
 
         let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
 
         let prmcodes = await promoCodeSchema.find({ code: promocode });
         let settings = await settingsSchema.find({});
         let delivery = await deliverytypesSchema.find({});
-       
-
-        let vendorData = await vendorModelSchema.find({ _id: vendorId })
 
         // let promoused = 0;
 
@@ -197,6 +198,9 @@ router.post("/vendorOrderCalc",async function(req,res,next){
 
         let DataPass = [];
 
+        let handlingCharge = parseFloat(settings[0].handling_charges);
+        // console.log("HAndling : "+handlingCharge);
+
         for(let j=0;j<deliveryPoints.length;j++){
 
             let lat3 = parseFloat(deliveryPoints[j].lat);
@@ -204,9 +208,6 @@ router.post("/vendorOrderCalc",async function(req,res,next){
             let tolocation = { latitude: Number(lat3), longitude: Number(long3) };
             
             let totaldistance = await GoogleMatrix(fromlocation, tolocation);
-
-            let handlingCharge = parseFloat(settings[0].handling_charges);
-            console.log("HAndling : "+handlingCharge);
 
             if(amountCollected){
                 if(totaldistance < FixKm){
