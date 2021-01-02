@@ -1049,7 +1049,7 @@ router.post("/AssignOrder", async function (req, res, next) {
                     "distance": distanceKM,
                     "click_action": "FLUTTER_NOTIFICATION_CLICK"
                 },
-                "to": courierboy[0].fcmToken + ""
+                "to": courierboy[0].fcmToken
             };
             var options = {
                 'method': 'POST',
@@ -1068,7 +1068,7 @@ router.post("/AssignOrder", async function (req, res, next) {
                     console.log(response.body);
                 }
             });
-
+            console.log(courierboy[0].fcmToken);
             res
                 .status(200)
                 .json({ Message: "Order Assigned !", Data: 1, IsSuccess: true });

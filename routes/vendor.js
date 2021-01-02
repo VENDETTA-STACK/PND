@@ -7,6 +7,7 @@ var router = express.Router();
 var config = require("../config");
 var { encryptPWD, comparePWD } = require('../crypto');
 var Bcrypt = require("bcryptjs");
+var mongoose = require("mongoose");
 
 var vendorModelSchema = require("../data_models/vendor.model");
 var demoOrderSchema = require("../data_models/demoMultiModel");
@@ -166,30 +167,15 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         let tempDistanceForALL = 0;
 
         let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
-        
-        for(let i=0;i<deliveryPoints.length;i++){
-            let lat3 = parseFloat(deliveryPoints[i].lat);
-            let long3 = parseFloat(deliveryPoints[i].long);
-            let tolocation = { latitude: Number(lat3), longitude: Number(long3) };
-            
-            let totaldistance = await GoogleMatrix(fromlocation, tolocation);
-            
-            tempDistanceForALL = tempDistanceForALL + totaldistance;
-        }
-        console.log("Total Distance :"+tempDistanceForALL);
 
         let prmcodes = await promoCodeSchema.find({ code: promocode });
         let settings = await settingsSchema.find({});
         let delivery = await deliverytypesSchema.find({});
-        // console.log("Delivery Check :"+ delivery.length);
-        // let totaldistance = await GoogleMatrix(fromlocation, tolocation);
-        let totaldistance = tempDistanceForALL;
+       
 
         let vendorData = await vendorModelSchema.find({ _id: vendorId })
 
         // let promoused = 0;
-       
-        // let aboveKmCharge = 0;
 
         let FixKm = parseFloat(vendorData[0].FixKm);
         let UnderFixKmCharge = parseFloat(vendorData[0].UnderFixKmCharge);
@@ -198,44 +184,96 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         // console.log(FixKm);
         // console.log(UnderFixKmCharge);
         // console.log(perKmCharge);
-        //HERE
+
         let basicKm = 0;
-        let basicAmt = 0;
-        let extraKm = 0;
-        let extraAmt = 0;
-        let extraDeliverycharges = 0;
+        let basicCharge = 0;
+        let extraaKm = 0;
+        let extraaCharge = 0;
         let Amount = 0;
-        let totalAmt = 0;
+        let totalAmount = 0;
+        let addionalCharges = 0;
+        let thirdPartyCollection = 0
+        let thirdPartyCollectionCharge = 0;
 
-        if(totaldistance < FixKm){
-            basicKm = totaldistance,
-            basicamt = UnderFixKmCharge,
-            extrakm = 0,
-            extraamt = 0,
-            extradeliverycharges = 0,
-            amount = basicamt + extraamt + extradeliverycharges,
-            totalamt = amount
-        }else{
-            console.log("Here...!!!")
-            let remdis = totaldistance - FixKm,
-            basicamt = UnderFixKmCharge,
-            extrakm = remdis,
-            extraamt = remdis * perKmCharge,
-            extradeliverycharges = 0,
-            amount = basicamt + extraamt + extradeliverycharges,
-            totalamt = amount
-            // console.log(totalamt);
-            // console.log("Basic AMT :"+basicamt);
-            // console.log("Extraa KM :"+extrakm);
-            // console.log("Exraa AMT :"+extraamt);
-            // console.log("AMT :"+amount);
+        let DataPass = [];
+
+        for(let j=0;j<deliveryPoints.length;j++){
+
+            let lat3 = parseFloat(deliveryPoints[j].lat);
+            let long3 = parseFloat(deliveryPoints[j].long);
+            let tolocation = { latitude: Number(lat3), longitude: Number(long3) };
+            
+            let totaldistance = await GoogleMatrix(fromlocation, tolocation);
+
+            let handlingCharge = parseFloat(settings[0].handling_charges);
+            console.log("HAndling : "+handlingCharge);
+
+            if(amountCollected){
+                if(totaldistance < FixKm){
+                    basicKm = totaldistance;
+                    basicCharge = UnderFixKmCharge;
+                    extraaKm = 0;
+                    extraaCharge = 0;
+                    addionalCharges = 0;
+                    thirdPartyCollection = amountCollected;
+                    thirdPartyCollectionCharge = parseFloat(thirdPartyCollection) * handlingCharge; 
+                    Amount = basicCharge + extraaCharge + addionalCharges + thirdPartyCollectionCharge;
+                    totalAmount = Amount; 
+                }else{
+                    let remKm = totaldistance - FixKm;
+                    basicCharge = UnderFixKmCharge;
+                    extraaKm = remKm;
+                    extraaCharge = extraaKm * perKmCharge;
+                    addionalCharges = 0;
+                    thirdPartyCollection = amountCollected;
+                    thirdPartyCollectionCharge = parseFloat(thirdPartyCollection) * handlingCharge;
+                    Amount = basicCharge + extraaCharge + addionalCharges + thirdPartyCollectionCharge;
+                    totalAmount = Amount;
+                }
+            }else{
+                if(totaldistance < FixKm){
+                    basicKm = totaldistance;
+                    basicCharge = UnderFixKmCharge;
+                    extraaKm = 0;
+                    extraaCharge = 0;
+                    addionalCharges = 0;
+                    Amount = basicCharge + extraaCharge + addionalCharges;
+                    totalAmount = Amount; 
+                }else{
+                    let remKm = totaldistance - FixKm;
+                    basicCharge = UnderFixKmCharge;
+                    extraaKm = remKm;
+                    extraaCharge = extraaKm * perKmCharge;
+                    addionalCharges = 0;
+                    Amount = basicCharge + extraaCharge + addionalCharges;
+                    totalAmount = Amount;
+                }
+            }
+            let courierChargeCollectFromCust = deliveryPoints[j].courierChargeCollectFromCustomer;
+            let vendorAmount = parseFloat(deliveryPoints[j].vendorBillAmount);
+            let totalVendorBill = 0;
+            // console.log("C Charge :" + courierChargeCollectFromCust);
+            // console.log("vendorAmT :"+vendorAmount);
+            // console.log("Amount :" + Amount);
+            if(courierChargeCollectFromCust == false){
+                totalVendorBill = totalAmount + vendorAmount;
+            }else{
+                totalVendorBill = vendorAmount;
+            }
+            let sendData = {
+                VendorAmount : vendorAmount,
+                CouriersChargeIs : totalAmount,
+                VendorTotalBill : totalVendorBill
+            }
+            
+            DataPass.push(sendData);
         }
-        // console.log(totalamt);
-        console.log("Basic AMT :"+basicamt);
-        console.log("Extraa KM :"+extrakm);
-        console.log("Exraa AMT :"+extraamt);
-        console.log("AMT :"+amount);
-
+        console.log(DataPass);
+        // console.log("basicCharge :" + basicCharge);
+        // console.log("extraaKm :" + extraaKm);
+        // console.log("extraaCharge :" + extraaCharge);
+        // console.log("Amount :" + Amount);
+        res.status(200).json({ IsSuccess: true , Data: DataPass, Message: "calculation Done" })
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
@@ -330,12 +368,17 @@ router.post("/vendorOrdersList" , async function(req,res,next){
     try {
         let orderData = await demoOrderSchema.aggregate([
             { $match : {
-                        vendorId: vendorId 
+                        vendorId: mongoose.Types.ObjectId(vendorId) 
                         }
         }
         ]);
         // let orderData = await demoOrderSchema.find({ vendorId: vendorId });
-        console.log(orderData);
+        // console.log(orderData);
+        if(orderData.length > 0){
+            res.status(200).json({ IsSuccess: true , Data: orderData , Message: "Vendor Order Found" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: [] , Message: "Order Not Found" })
+        }
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
