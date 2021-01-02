@@ -197,6 +197,7 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         let thirdPartyCollectionCharge = 0;
 
         let DataPass = [];
+        let pndBill = [];
 
         let handlingCharge = parseFloat(settings[0].handling_charges);
         // console.log("HAndling : "+handlingCharge);
@@ -256,6 +257,14 @@ router.post("/vendorOrderCalc",async function(req,res,next){
             // console.log("C Charge :" + courierChargeCollectFromCust);
             // console.log("vendorAmT :"+vendorAmount);
             // console.log("Amount :" + Amount);
+
+            // let pndChargeRecord = {
+            //     AmountCollect : vendorAmount,
+            //     DeliveryCharge : totalAmount
+            // }
+            
+            // pndBill.push(pndChargeRecord);
+
             if(courierChargeCollectFromCust == false){
                 totalVendorBill = totalAmount + vendorAmount;
             }else{
@@ -266,15 +275,30 @@ router.post("/vendorOrderCalc",async function(req,res,next){
                 CouriersChargeIs : totalAmount,
                 VendorTotalBill : totalVendorBill
             }
-            
             DataPass.push(sendData);
         }
         console.log(DataPass);
-        // console.log("basicCharge :" + basicCharge);
-        // console.log("extraaKm :" + extraaKm);
-        // console.log("extraaCharge :" + extraaCharge);
-        // console.log("Amount :" + Amount);
-        res.status(200).json({ IsSuccess: true , Data: DataPass, Message: "calculation Done" })
+        let pndTotalAmountCollect = 0;
+        let pndTotalCourierCharge = 0;
+
+        for(let k=0;k<DataPass.length;k++){
+            // console.log(DataPass[k]);
+            pndTotalAmountCollect = pndTotalAmountCollect + parseFloat(DataPass[k].VendorTotalBill);
+            pndTotalCourierCharge = pndTotalCourierCharge + parseFloat(DataPass[k].CouriersChargeIs);
+        }
+        console.log(pndTotalAmountCollect);
+        console.log(pndTotalCourierCharge);
+
+        let finalPNDBill = parseFloat(pndTotalAmountCollect) - parseFloat(pndTotalCourierCharge);
+        
+        res.status(200).json({ 
+                               IsSuccess: true,
+                               PndTotalAmountCollect: pndTotalAmountCollect,
+                               PndTotalCourierCharge: pndTotalCourierCharge,
+                               PNDBill : finalPNDBill,
+                               Data: DataPass, 
+                               Message: "calculation Done" 
+                            })
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
