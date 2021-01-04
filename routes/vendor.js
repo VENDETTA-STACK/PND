@@ -331,6 +331,7 @@ router.post("/vendorOrder", orderimg.single("orderimg"), async function(req,res,
     let vendorOrders = [];
     try {
         let pickData = await vendorModelSchema.find({ _id: vendorId });
+        // if(pickData[0].isApprove == true)
         for(let i=0;i<deliveryAddresses.length;i++){
             var newVendorMultiOrder = new demoOrderSchema({
                 _id: new config.mongoose.Types.ObjectId(),
@@ -406,6 +407,16 @@ router.post("/vendorOrdersList" , async function(req,res,next){
         }
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
+//Delete Records from demoorder Table
+router.post("/delVendorOrder", async function(req,res,next){
+    try {
+        let delRecord = await demoOrderSchema.deleteMany();
+        res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Vendor Order Deleted" });
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message })
     }
 });
 

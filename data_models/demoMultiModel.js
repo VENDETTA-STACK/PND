@@ -158,6 +158,13 @@ const demoOrderSchema = mongoose.Schema({
     isAmountCollect: {
         type: Boolean,
     },
+    noteByCustomer: {
+        type: String,
+        default: ""
+    },
+    extraKmByCourierBoy: {
+        type: Number
+    },
 });
 
 module.exports = mongoose.model("DemoOrders", demoOrderSchema);

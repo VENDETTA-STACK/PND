@@ -59,7 +59,11 @@ const vendorSchema = mongoose.Schema({
   perKmCharge:{
       type: Number,
       default: 0,
-  }
+  },
+  isApprove: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("Vendor", vendorSchema);

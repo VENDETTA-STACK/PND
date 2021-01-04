@@ -10,8 +10,32 @@ var cors = require("cors");
 var multer = require("multer");
 var request = require('request');
 const { getDistance, convertDistance } = require("geolib");
+const geolib = require("geolib");
 const isEmpty = require('lodash.isempty');
 const moment = require('moment-timezone');
+
+//Distance Calculations between two lat & long
+function calculatelocation(lat1, long1, lat2, long2) {
+    if (lat1 == 0 || long1 == 0) {
+      area = 1; // Company Lat and Long is not defined.
+    } else {
+      const location1 = {
+        lat: parseFloat(lat1),
+        lon: parseFloat(long1),
+      };
+      const location2 = {
+        lat: parseFloat(lat2),
+        lon: parseFloat(long2),
+      };
+      heading = geolib.getDistance(location1, location2);
+      if (!isNaN(heading)) {
+          return heading;
+      } else {
+        heading =  -1; // Employee Lat and Long is not defined.
+    }
+    return heading;
+  }
+}
 
 //image uploading
 var bannerlocation = multer.diskStorage({
@@ -104,6 +128,7 @@ var prooftypeSchema = require("../data_models/prooftype.modal");
 var orderCancelSchema = require("../data_models/orderCancelReason");
 var sumulOrderSchema = require('../data_models/sumulOrderModel');
 var ecommOrderSchema = require('../data_models/ecommModel');
+const vendorModel = require("../data_models/vendor.model");
 
 async function currentLocation(id) {
     var CourierRef = config.docref.child(id);
@@ -964,6 +989,56 @@ router.post("/getAvailableBoys", async function (req, res, next) {
             }
         }
 
+        res.status(200).json({
+            Message: "Delivery Boys Found!",
+            Data: list_courier,
+            IsSuccess: true,
+        });
+    } catch (err) {
+        res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
+    }
+});
+
+//get delivery Boys whose duty is on with distance From Order pickup --04/01/2021------MONIL
+router.post("/getAvailableBoys_V2", async function (req, res, next) {
+    const { orderNo } = req.body;
+    try {
+        var list_courier = [];
+
+        let orderIs = await orderSchema.find({ orderNo: orderNo });
+        // console.log(orderIs[0].pickupPoint.lat);
+        // console.log(orderIs[0].pickupPoint.long);
+
+        let pickUpLat = parseFloat(orderIs[0].pickupPoint.lat);
+        let pickUpLong = parseFloat(orderIs[0].pickupPoint.long);
+
+        var listIds = await courierSchema
+            .find({ isActive: true, "accStatus.flag": true, isVerified: true })
+            .select("id firstName lastName");
+
+        for (let i = 0; i < listIds.length; i++) {
+            let location = await currentLocation(listIds[i].id);
+            // console.log(location);
+            if (location != null && location.duty == "ON") {
+                let dbID = listIds[i].id;
+                let name = listIds[i].firstName + " " + listIds[i].lastName;
+                let empLat = parseFloat(location.latitude);
+                let empLong = parseFloat(location.longitude);
+                // console.log(empLat);
+                // console.log(empLong);
+                let empDistanceFromPickUp = await calculatelocation(pickUpLat,pickUpLong,empLat,empLong);
+                // console.log(empDistanceFromPickUp);
+                empDistanceFromPickUp = parseFloat(empDistanceFromPickUp) / 1000;
+                list_courier.push({
+                    Id: dbID,
+                    name: name,
+                    Distance: empDistanceFromPickUp,
+                });
+            }
+        }
+        list_courier.sort((a, b) => {
+            return a.Distance - b.Distance;
+        });
         res.status(200).json({
             Message: "Delivery Boys Found!",
             Data: list_courier,
@@ -2040,6 +2115,25 @@ router.post("/getBusinessOfDay", async function(req,res,next){
             .populate("customerId");
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.messag });
+    }
+});
+
+//Approve Vendor------------------------04-01-2021----MONIL
+router.post("/vendorUpdate", async function(req,res,next){
+    const { isApprove , vendorId } = req.body;
+    try {
+        let existVendor = await vendorModel.find({ _id: vendorId });
+        if(existVendor.length == 1){
+            let updateIs = {
+                isApprove : isApprove
+            };
+            let updateVendor = await vendorModel.findByIdAndUpdate(existVendor[0]._id,updateIs);
+            res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Vendor Is Approved" }); 
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Vendor Not Found" }); 
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
     }
 });
 

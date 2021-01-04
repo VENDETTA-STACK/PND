@@ -1561,9 +1561,11 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
         finalAmount,
         schedualDateTime,
         amountCollection,
-        eOrderDeliveryType,
+        // eOrderDeliveryType,
         handlingCharge,
         TransactionId,
+        noteByCustomer,
+        extraKmByCourierBoy,
     } = req.body;
     console.log("-------------New Order--------------------------");
     // console.log(req.body.amount);
@@ -1586,6 +1588,8 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
             deliveryType: deliveryType,
             schedualDateTime: schedualDateTime,
             weightLimit: weightLimit,
+            noteByCustomer: noteByCustomer,
+            extraKmByCourierBoy: extraKmByCourierBoy == undefined ? 0 : extraKmByCourierBoy,
             orderImg: file == undefined ? "" : file.path,
             pickupPoint: {
                 name: pkName,

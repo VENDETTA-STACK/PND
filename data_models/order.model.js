@@ -138,9 +138,9 @@ const orderSchema = mongoose.Schema({
         type: String,
         default: "0"
     },
-    eOrderDeliveryType: {
-        type: String,
-    },
+    // eOrderDeliveryType: {
+    //     type: String,
+    // },
     handlingCharge: {
         type: Number,
     },
@@ -151,7 +151,13 @@ const orderSchema = mongoose.Schema({
     orderType: {
         type: String,
         default: "customer"
-    }
+    },
+    noteByCustomer: {
+        type: String
+    },
+    extraKmByCourierBoy: {
+        type: Number
+    },
 });
 
 module.exports = mongoose.model("Orders", orderSchema);
