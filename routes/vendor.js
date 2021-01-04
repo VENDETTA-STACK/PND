@@ -270,16 +270,6 @@ router.post("/vendorOrderCalc",async function(req,res,next){
             let courierChargeCollectFromCust = deliveryPoints[j].courierChargeCollectFromCustomer;
             let vendorAmount = parseFloat(deliveryPoints[j].vendorBillAmount);
             let totalVendorBill = 0;
-            // console.log("C Charge :" + courierChargeCollectFromCust);
-            // console.log("vendorAmT :"+vendorAmount);
-            // console.log("Amount :" + Amount);
-
-            // let pndChargeRecord = {
-            //     AmountCollect : vendorAmount,
-            //     DeliveryCharge : totalAmount
-            // }
-            
-            // pndBill.push(pndChargeRecord);
 
             if(courierChargeCollectFromCust == false){
                 totalVendorBill = totalAmount + vendorAmount;
@@ -306,7 +296,22 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         console.log(pndTotalCourierCharge);
 
         let finalPNDBill = parseFloat(pndTotalAmountCollect) - parseFloat(pndTotalCourierCharge);
-        
+
+        for(let jk=0;jk<orderIs.length;jk++){
+            let updateIs = {
+                "deliveryPoint.customerCourierCharge" : DataPass[jk].CouriersChargeIs,
+                "deliveryPoint.vendorBillFinalAmount" : DataPass[jk].VendorTotalBill,
+                "chargeOfPND" : finalPNDBill,
+            }
+            let vendorOrderMTNum = orderIs[jk].multiOrderNo;
+            // console.log(vendorOrderMTNum);
+            let updateInOrder = await demoOrderSchema.findOneAndUpdate({ multiOrderNo: vendorOrderMTNum},updateIs);
+        }
+        // let updateIs = {
+
+        // };
+        // let updateInOrder = await demoOrderSchema.findOneAndUpdate({ orderNo: orderNo},updateIs)
+
         res.status(200).json({ 
                                IsSuccess: true,
                                PndTotalAmountCollect: pndTotalAmountCollect,
