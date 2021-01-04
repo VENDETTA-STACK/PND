@@ -421,25 +421,43 @@ router.post("/vendorOrdersList" , async function(req,res,next){
                         }
             }
         ]);
-        // let aciveOrderIs = [];
-        // for(let i=0;i<orderData.length;i++){
-        //     aciveOrderIs.push(orderData[i].orderNo);
-        // }
-        // // console.log("Orders No: "+aciveOrderIs);
-        // var unique = aciveOrderIs.filter(onlyUnique);
-        // // console.log(unique);
-        // let result = [];
-        // for(let j=0;j<unique.length;j++){
-        //     // console.log(unique[j]);
-        //     let orderDataIs = await demoOrderSchema.find({ orderNo: unique[j] });
-        //     result.push(orderDataIs);
-        // }
-        // let orderData = await demoOrderSchema.find({ vendorId: vendorId });
-        // console.log(result);
-        if(orderData.length > 0){
-            res.status(200).json({ IsSuccess: true , DeliveryCount: orderData.length , Data: orderData , Message: "Vendor Order Found" });
+        let vendorOrderData = [];
+        for(let i=0;i<orderData.length;i++){
+            let deliveryNo = orderData[i].multiOrderNo;
+            let vendorAmountCollect = orderData[i].deliveryPoint.vendorBillAmount == null ? 0 : orderData[i].deliveryPoint.vendorBillAmount;
+            let courierCharge = orderData[i].deliveryPoint.customerCourierCharge == null ? 0 : orderData[i].deliveryPoint.customerCourierCharge;
+            let courierChargeCollectFromCustomerIs = orderData[i].deliveryPoint.courierChargeCollectFromCustomer == null ? 0 : orderData[i].deliveryPoint.courierChargeCollectFromCustomer;
+            let vendorBill = orderData[i].deliveryPoint.vendorBillFinalAmount == null ? 0 : orderData[i].deliveryPoint.vendorBillFinalAmount;
+            let PNDBill = orderData[i].chargeOfPND;
+            let orderDataSend = {
+                DeliveryNo: deliveryNo,
+                VendorAmountCollect: vendorAmountCollect,
+                CourierCharge: courierCharge,
+                CourierChargeCollectFromCustomerIs: courierChargeCollectFromCustomerIs,
+                VendorBill : vendorBill,
+                PNDBill : PNDBill
+            }
+            vendorOrderData.push(orderDataSend);
+        }
+        if(vendorOrderData.length > 0){
+            res.status(200).json({ IsSuccess: true , DeliveryCount: orderData.length , Data: vendorOrderData , Message: "Vendor Order Found" });
         }else{
             res.status(200).json({ IsSuccess: true , Data: [] , Message: "Order Not Found" })
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
+//Get DeliverOrder Details------------04/01/2021--------MONIL
+router.post("/getDeliveryOrderDetails", async function(req,res,next){
+    const { orderMTNo } = req.body;
+    try {
+        let orderIs = await demoOrderSchema.find({ multiOrderNo: orderMTNo });
+        if(orderIs.length == 1){
+            res.status(200).json({ IsSuccess: true, Data: orderIs , Message: "Order Data Found" });
+        }else{
+            res.status(200).json({ IsSuccess: true, Data: [] , Message: "Order Not Found" });
         }
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
@@ -461,6 +479,18 @@ router.post("/getAllVendor", async function(req,res,next){
 });
 
 //Get All Vendor Orders Listing
+router.post("/getAllVendorOrderListing",async function(req,res,next){
+    try {
+        let vendorOrderIs = await demoOrderSchema.find({ orderBy : "vendor" });
+        if(vendorOrderIs.length > 0){
+            res.status(200).json({ IsSuccess: true , Data: vendorOrderIs , Message: "All Vendor Orders Found" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: [] , Message: "Orders Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
 
 //Delete Records from demoorder Table
 router.post("/delVendorOrder", async function(req,res,next){
