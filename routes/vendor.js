@@ -481,9 +481,50 @@ router.post("/getAllVendor", async function(req,res,next){
 //Get All Vendor Orders Listing
 router.post("/getAllVendorOrderListing",async function(req,res,next){
     try {
-        let vendorOrderIs = await demoOrderSchema.find({ orderBy : "vendor" });
-        if(vendorOrderIs.length > 0){
-            res.status(200).json({ IsSuccess: true , Data: vendorOrderIs , Message: "All Vendor Orders Found" });
+        let vendorOrderIs = await demoOrderSchema.find({ orderBy : "vendor" })
+                                                 .populate({
+                                                     path: "vendorId"
+                                                 });
+        let vendorsData = await vendorModelSchema.find();
+        let vendorIds = [];
+        let vendorsOrders = [];
+        for(let j=0;j<vendorsData.length;j++){
+            console.log(vendorsData[j]._id);
+            // vendorIds.push(vendorsData[j]._id);
+            let orderIs = await demoOrderSchema.find({ vendorId: vendorsData[j]._id })
+                                               .populate({
+                                                   path: "vendorId",
+                                                   select: "name mobileNo"
+                                               });
+            console.log(orderIs);
+            var vendorOrderData = [];
+            for(let i=0;i<orderIs.length;i++){
+                let deliveryNo = orderIs[i].multiOrderNo;
+                // let VendorId = orderIs.vendorId._id;
+                // let VendorName = orderIs.vendorId.name == null ? 0 : orderIs.vendorId.name;
+                // let VendorMobileNo = orderIs.vendorId.mobileNo == null ? 0 : orderIs.vendorId.mobileNo;
+                let vendorAmountCollect = orderIs[i].deliveryPoint.vendorBillAmount == null ? 0 : orderIs[i].deliveryPoint.vendorBillAmount;
+                let courierCharge = orderIs[i].deliveryPoint.customerCourierCharge == null ? 0 : orderIs[i].deliveryPoint.customerCourierCharge;
+                let courierChargeCollectFromCustomerIs = orderIs[i].deliveryPoint.courierChargeCollectFromCustomer == null ? 0 : orderIs[i].deliveryPoint.courierChargeCollectFromCustomer;
+                let vendorBill = orderIs[i].deliveryPoint.vendorBillFinalAmount == null ? 0 : orderIs[i].deliveryPoint.vendorBillFinalAmount;
+                let PNDBill = orderIs[i].chargeOfPND;
+                let orderDataSend = {
+                    DeliveryNo: deliveryNo,
+                    // VendorName: VendorName,
+                    // VendorMobileNo: VendorMobileNo,
+                    VendorAmountCollect: vendorAmountCollect,
+                    CourierCharge: courierCharge,
+                    CourierChargeCollectFromCustomerIs: courierChargeCollectFromCustomerIs,
+                    VendorBill : vendorBill,
+                    PNDBill : PNDBill
+                }
+                vendorOrderData.push(orderDataSend);
+            }
+        }
+
+        console.log(vendorOrderData);
+        if(vendorOrderData.length > 0){
+            res.status(200).json({ IsSuccess: true , Data: vendorOrderData , Message: "All Vendor Orders Found" });
         }else{
             res.status(200).json({ IsSuccess: true , Data: [] , Message: "Orders Not Found" });
         }
