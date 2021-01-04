@@ -445,6 +445,20 @@ router.post("/vendorOrdersList" , async function(req,res,next){
     }
 });
 
+//Get All Vendor List 
+router.post("/getAllVendor", async function(req,res,next){
+    try {
+        let vendorsAre = await vendorModelSchema.find();
+        if(vendorsAre.length > 0){
+            res.status(200).json({ IsSuccess: true , Data: vendorsAre , Message: "Vendors Found" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: [] , Message: "Empty Vendors List" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
 //Delete Records from demoorder Table
 router.post("/delVendorOrder", async function(req,res,next){
     try {
