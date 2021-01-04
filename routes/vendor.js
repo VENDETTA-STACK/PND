@@ -216,16 +216,17 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         let pndBill = [];
 
         let handlingCharge = parseFloat(settings[0].handling_charges);
-        // console.log("HAndling : "+handlingCharge);
+        console.log("HAndling : "+handlingCharge);
 
         for(let j=0;j<deliveryPoints.length;j++){
 
             let lat3 = parseFloat(deliveryPoints[j].lat);
             let long3 = parseFloat(deliveryPoints[j].long);
             let tolocation = { latitude: Number(lat3), longitude: Number(long3) };
-            
+            console.log(tolocation);
+            console.log(fromlocation);
             let totaldistance = await GoogleMatrix(fromlocation, tolocation);
-
+            console.log(totaldistance);
             if(amountCollected){
                 if(totaldistance < FixKm){
                     basicKm = totaldistance;
@@ -249,6 +250,7 @@ router.post("/vendorOrderCalc",async function(req,res,next){
                     totalAmount = Amount;
                 }
             }else{
+                console.log("Here...!!!")
                 if(totaldistance < FixKm){
                     basicKm = totaldistance;
                     basicCharge = UnderFixKmCharge;
@@ -486,8 +488,9 @@ router.post("/getAllVendorOrderListing",async function(req,res,next){
                                                      path: "vendorId"
                                                  });
         let vendorsData = await vendorModelSchema.find();
-        let vendorIds = [];
-        let vendorsOrders = [];
+        // let vendorIds = [];
+        // let vendorsOrders = [];
+        var vendorOrderData = [];
         for(let j=0;j<vendorsData.length;j++){
             console.log(vendorsData[j]._id);
             // vendorIds.push(vendorsData[j]._id);
@@ -496,33 +499,39 @@ router.post("/getAllVendorOrderListing",async function(req,res,next){
                                                    path: "vendorId",
                                                    select: "name mobileNo"
                                                });
-            console.log(orderIs);
-            var vendorOrderData = [];
-            for(let i=0;i<orderIs.length;i++){
-                let deliveryNo = orderIs[i].multiOrderNo;
-                // let VendorId = orderIs.vendorId._id;
-                // let VendorName = orderIs.vendorId.name == null ? 0 : orderIs.vendorId.name;
-                // let VendorMobileNo = orderIs.vendorId.mobileNo == null ? 0 : orderIs.vendorId.mobileNo;
-                let vendorAmountCollect = orderIs[i].deliveryPoint.vendorBillAmount == null ? 0 : orderIs[i].deliveryPoint.vendorBillAmount;
-                let courierCharge = orderIs[i].deliveryPoint.customerCourierCharge == null ? 0 : orderIs[i].deliveryPoint.customerCourierCharge;
-                let courierChargeCollectFromCustomerIs = orderIs[i].deliveryPoint.courierChargeCollectFromCustomer == null ? 0 : orderIs[i].deliveryPoint.courierChargeCollectFromCustomer;
-                let vendorBill = orderIs[i].deliveryPoint.vendorBillFinalAmount == null ? 0 : orderIs[i].deliveryPoint.vendorBillFinalAmount;
-                let PNDBill = orderIs[i].chargeOfPND;
-                let orderDataSend = {
-                    DeliveryNo: deliveryNo,
-                    // VendorName: VendorName,
-                    // VendorMobileNo: VendorMobileNo,
-                    VendorAmountCollect: vendorAmountCollect,
-                    CourierCharge: courierCharge,
-                    CourierChargeCollectFromCustomerIs: courierChargeCollectFromCustomerIs,
-                    VendorBill : vendorBill,
-                    PNDBill : PNDBill
+            // console.log(orderIs.length);
+            if(orderIs.length > 0){
+                // console.log(orderIs[j]._id);
+                for(let i=0;i<orderIs.length;i++){
+                    // console.log("Vendor Id : " + orderIs[i].vendorId);
+                    // console.log(orderIs[i].vendorId._id);
+                    let deliveryNo = orderIs[i].multiOrderNo;
+                    let VendorId = orderIs[i].vendorId._id;
+                    let VendorName = orderIs[i].vendorId.name;
+                    let VendorMobileNo = orderIs[i].vendorId.mobileNo;
+                    let vendorAmountCollect = orderIs[i].deliveryPoint.vendorBillAmount == null ? 0 : orderIs[i].deliveryPoint.vendorBillAmount;
+                    let courierCharge = orderIs[i].deliveryPoint.customerCourierCharge == null ? 0 : orderIs[i].deliveryPoint.customerCourierCharge;
+                    let courierChargeCollectFromCustomerIs = orderIs[i].deliveryPoint.courierChargeCollectFromCustomer == null ? 0 : orderIs[i].deliveryPoint.courierChargeCollectFromCustomer;
+                    let vendorBill = orderIs[i].deliveryPoint.vendorBillFinalAmount == null ? 0 : orderIs[i].deliveryPoint.vendorBillFinalAmount;
+                    let PNDBill = orderIs[i].chargeOfPND;
+                    let orderDataSend = {
+                        DeliveryNo: deliveryNo,
+                        VendorName: VendorName,
+                        VendorMobileNo: VendorMobileNo,
+                        VendorAmountCollect: vendorAmountCollect,
+                        CourierCharge: courierCharge,
+                        CourierChargeCollectFromCustomerIs: courierChargeCollectFromCustomerIs,
+                        VendorBill : vendorBill,
+                        PNDBill : PNDBill
+                    }
+                    // console.log(orderDataSend);
+                    vendorOrderData.push(orderDataSend);
                 }
-                vendorOrderData.push(orderDataSend);
             }
+            // console.log(vendorOrderData);
         }
 
-        console.log(vendorOrderData);
+        // console.log(vendorOrderData);
         if(vendorOrderData.length > 0){
             res.status(200).json({ IsSuccess: true , Data: vendorOrderData , Message: "All Vendor Orders Found" });
         }else{
