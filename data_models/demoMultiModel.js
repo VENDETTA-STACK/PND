@@ -155,9 +155,6 @@ const demoOrderSchema = mongoose.Schema({
         type: String,
         default: "customer"
     },
-    isAmountCollect: {
-        type: Boolean,
-    },
     noteByCustomer: {
         type: String,
         default: ""

@@ -155,7 +155,8 @@ function getVendorMultiOrderNumber() {
 router.post("/vendorOrderCalc",async function(req,res,next){
     const { 
         vendorId,
-        deliveryPoints,
+        // deliveryPoints,
+        orderNo,
         deliverytype,
         promocode,
         parcelcontents,
@@ -163,7 +164,22 @@ router.post("/vendorOrderCalc",async function(req,res,next){
     } = req.body;
     try {
         // let tempDistanceForALL = 0;
-        let vendorData = await vendorModelSchema.find({ _id: vendorId })
+        let vendorData = await vendorModelSchema.find({ _id: vendorId });
+        let orderIs = await demoOrderSchema.find({ orderNo: orderNo});
+
+        let deliveryPoints = [];
+        for(let ij=0;ij<orderIs.length;ij++){
+            // console.log(orderIs[ij].deliveryPoint);
+            let deliveryData = {
+                lat : orderIs[ij].deliveryPoint.lat,
+                long: orderIs[ij].deliveryPoint.long,
+                vendorBillAmount : orderIs[ij].deliveryPoint.vendorBillAmount,
+                courierChargeCollectFromCustomer : orderIs[ij].deliveryPoint.courierChargeCollectFromCustomer,
+            }
+            deliveryPoints.push(deliveryData);
+        }
+        console.log(deliveryPoints);
+
         let picklat = vendorData[0].gpsLocation.lat;
         let picklong = vendorData[0].gpsLocation.long;
 
@@ -393,10 +409,11 @@ router.post("/vendorOrdersList" , async function(req,res,next){
     const { vendorId } = req.body;
     try {
         let orderData = await demoOrderSchema.aggregate([
-            { $match : {
+            { 
+                $match : {
                         vendorId: mongoose.Types.ObjectId(vendorId) 
                         }
-        }
+            }
         ]);
         let aciveOrderIs = [];
         for(let i=0;i<orderData.length;i++){
