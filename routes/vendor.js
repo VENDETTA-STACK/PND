@@ -410,6 +410,7 @@ router.post("/vendorOrder", orderimg.single("orderimg"), async function(req,res,
     }
 });
 
+//All Vendor Order Listing-----------04/01/2021----MONIL
 router.post("/vendorOrdersList" , async function(req,res,next){
     const { vendorId } = req.body;
     try {
@@ -420,23 +421,23 @@ router.post("/vendorOrdersList" , async function(req,res,next){
                         }
             }
         ]);
-        let aciveOrderIs = [];
-        for(let i=0;i<orderData.length;i++){
-            aciveOrderIs.push(orderData[i].orderNo);
-        }
-        // console.log("Orders No: "+aciveOrderIs);
-        var unique = aciveOrderIs.filter(onlyUnique);
-        // console.log(unique);
-        let result = [];
-        for(let j=0;j<unique.length;j++){
-            // console.log(unique[j]);
-            let orderDataIs = await demoOrderSchema.find({ orderNo: unique[j] });
-            result.push(orderDataIs);
-        }
+        // let aciveOrderIs = [];
+        // for(let i=0;i<orderData.length;i++){
+        //     aciveOrderIs.push(orderData[i].orderNo);
+        // }
+        // // console.log("Orders No: "+aciveOrderIs);
+        // var unique = aciveOrderIs.filter(onlyUnique);
+        // // console.log(unique);
+        // let result = [];
+        // for(let j=0;j<unique.length;j++){
+        //     // console.log(unique[j]);
+        //     let orderDataIs = await demoOrderSchema.find({ orderNo: unique[j] });
+        //     result.push(orderDataIs);
+        // }
         // let orderData = await demoOrderSchema.find({ vendorId: vendorId });
         // console.log(result);
-        if(result.length > 0){
-            res.status(200).json({ IsSuccess: true , Data: result , Message: "Vendor Order Found" });
+        if(orderData.length > 0){
+            res.status(200).json({ IsSuccess: true , DeliveryCount: orderData.length , Data: orderData , Message: "Vendor Order Found" });
         }else{
             res.status(200).json({ IsSuccess: true , Data: [] , Message: "Order Not Found" })
         }
@@ -458,6 +459,8 @@ router.post("/getAllVendor", async function(req,res,next){
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
 });
+
+//Get All Vendor Orders Listing
 
 //Delete Records from demoorder Table
 router.post("/delVendorOrder", async function(req,res,next){
