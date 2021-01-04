@@ -2262,6 +2262,7 @@ router.post("/takeThisOrder", async function (req, res, next) {
             .find({ _id: orderId })
             .populate("customerId");
         let getlocation = await currentLocation(courierId);
+        console.log(getlocation);
         if (getlocation.duty == "ON") {
             let updateorder = await requestSchema.findOneAndUpdate({ courierId: courierId, orderId: orderId }, { status: "Takethisorder" });
             if (updateorder != null) {
@@ -2509,16 +2510,29 @@ router.post("/reachPickPoint", async function (req, res, next) {
                     data
                 );
 
-                // sendMessages(
-                //     checkif[0].pickupPoint.mobileNo,
-                //     "Your delivery boy reached To pickup Point."
-                // );
+                sendMessages(
+                    checkif[0].pickupPoint.mobileNo,
+                    "Your delivery boy reached To pickup Point."
+                );
 
-                // sendMessages(
-                //     checkif[0].deliveryPoint.mobileNo,
-                //     "Your delivery boy reached To pickup point. He will reach to you shortly."
-                // );
+                sendMessages(
+                    checkif[0].deliveryPoint.mobileNo,
+                    "Your delivery boy reached To pickup point. He will reach to you shortly."
+                );
+                let locationDataIs = await ExtatimeSchema.find({ courierId: courierId , orderId: orderId })
+                // console.log(locationDataIs);
+                let startLat = parseFloat(locationDataIs[0].blat);
+                let startLong = parseFloat(locationDataIs[0].blong);
+                let pickLat = parseFloat(location.latitude);
+                let pickLong = parseFloat(location.longitude);
 
+                let distance = calculatelocation(startLat,startLong,pickLat,pickLong);
+                distance = parseFloat(distance) / 1000 ;
+                console.log(distance);
+                let updateIs = {
+                    extraKmByCourierBoy: distance,
+                };
+                let updateExtraKmToOrderIs = await orderSchema.findByIdAndUpdate(orderId,updateIs);
                 res
                     .status(200)
                     .json({ Message: "Reached Pickup Point!", Data: 1, IsSuccess: true });
