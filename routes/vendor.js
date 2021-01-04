@@ -516,6 +516,7 @@ router.post("/getAllVendorOrderListing",async function(req,res,next){
                     let PNDBill = orderIs[i].chargeOfPND;
                     let orderDataSend = {
                         DeliveryNo: deliveryNo,
+                        VendorId: VendorId,
                         VendorName: VendorName,
                         VendorMobileNo: VendorMobileNo,
                         VendorAmountCollect: vendorAmountCollect,
