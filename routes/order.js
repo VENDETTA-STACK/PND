@@ -671,7 +671,7 @@ router.post("/ordercalcV3", async (req, res, next) => {
     console.log(totalamt);
 
     if(userPastOrders.length == 0 && totaldistance < newUserPromocodeLimit[0].NewUserUnderKm && newUserpromocode.length == 1){
-        // console.log("-------------in-------------------");
+        console.log("-------------in-------------------");
         if (totaldistance <= 5) {
             if (deliverytype == "Normal Delivery") {
                 basickm = totaldistance;
@@ -696,6 +696,7 @@ router.post("/ordercalcV3", async (req, res, next) => {
             }
         } else {
             if (deliverytype == "Normal Delivery") {
+                console.log("--------------------Normal--------------------");
                 let remdis = totaldistance - 5;
                 basickm = 5;
                 basicamt = settings[0].NewUserprice;
@@ -705,6 +706,7 @@ router.post("/ordercalcV3", async (req, res, next) => {
                 amount = basicamt + extraamt + extadeliverycharges;
                 totalamt = amount;
             } else {
+                console.log("Express---")
                 for (let i = 1; i < delivery.length; i++) {
                     if (deliverytype == delivery[i].title) {
                         let remdis = totaldistance - 5;
@@ -1626,12 +1628,13 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
         });
         // console.log("---------------amount Collected-----------");
         var placedorder = await newOrder.save();
-            var avlcourier = await PNDfinder(
-                pkLat,
-                pkLong,
-                placedorder.id,
-                placedorder.deliveryType
-            );
+
+        var avlcourier = await PNDfinder(
+            pkLat,
+            pkLong,
+            placedorder.id,
+            placedorder.deliveryType
+        );
         
         if (promoCode != "0") {
             let usedpromo = new usedpromoSchema({
@@ -2890,4 +2893,9 @@ router.post("/cancelOrder" , async function(req,res,next){
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
     }
 });
+
+// router.post("/calcDist",async function(req,res,next){
+//     const {  } = req.body;
+// });
+
 module.exports = router;
