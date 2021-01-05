@@ -350,6 +350,7 @@ router.post("/vendorOrder", orderimg.single("orderimg"), async function(req,res,
         // finalAmount,
         schedualDateTime,
     } = req.body;
+    const file = req.file;
     let num = getVendorOrderNumber();
     let vendorOrders = [];
     try {
@@ -365,7 +366,7 @@ router.post("/vendorOrder", orderimg.single("orderimg"), async function(req,res,
                 deliveryType: deliveryType,
                 schedualDateTime: schedualDateTime,
                 weightLimit: weightLimit,
-                // orderImg: file == undefined ? "" : file.path,
+                orderImg: file == undefined ? "" : file.path,
                 pickupPoint: {
                     name: pickData[0].name,
                     mobileNo: pickData[0].mobileNo,
@@ -492,7 +493,7 @@ router.post("/getAllVendorOrderListing",async function(req,res,next){
         // let vendorsOrders = [];
         var vendorOrderData = [];
         for(let j=0;j<vendorsData.length;j++){
-            console.log(vendorsData[j]._id);
+            // console.log(vendorsData[j]._id);
             // vendorIds.push(vendorsData[j]._id);
             let orderIs = await demoOrderSchema.find({ vendorId: vendorsData[j]._id })
                                                .populate({
@@ -509,21 +510,25 @@ router.post("/getAllVendorOrderListing",async function(req,res,next){
                     let VendorId = orderIs[i].vendorId._id;
                     let VendorName = orderIs[i].vendorId.name;
                     let VendorMobileNo = orderIs[i].vendorId.mobileNo;
+                    let deliveryTo = orderIs[i].deliveryPoint;
                     let vendorAmountCollect = orderIs[i].deliveryPoint.vendorBillAmount == null ? 0 : orderIs[i].deliveryPoint.vendorBillAmount;
                     let courierCharge = orderIs[i].deliveryPoint.customerCourierCharge == null ? 0 : orderIs[i].deliveryPoint.customerCourierCharge;
                     let courierChargeCollectFromCustomerIs = orderIs[i].deliveryPoint.courierChargeCollectFromCustomer == null ? 0 : orderIs[i].deliveryPoint.courierChargeCollectFromCustomer;
                     let vendorBill = orderIs[i].deliveryPoint.vendorBillFinalAmount == null ? 0 : orderIs[i].deliveryPoint.vendorBillFinalAmount;
-                    let PNDBill = orderIs[i].chargeOfPND;
+                    // let PNDBill = orderIs[i].chargeOfPND;
+                    let deliveryDate = orderIs[i].dateTime;
                     let orderDataSend = {
                         DeliveryNo: deliveryNo,
                         VendorId: VendorId,
                         VendorName: VendorName,
+                        DeliveryData: deliveryTo,
                         VendorMobileNo: VendorMobileNo,
                         VendorAmountCollect: vendorAmountCollect,
                         CourierCharge: courierCharge,
                         CourierChargeCollectFromCustomerIs: courierChargeCollectFromCustomerIs,
                         VendorBill : vendorBill,
-                        PNDBill : PNDBill
+                        DeliveryDate : deliveryDate,
+                        // PNDBill : PNDBill
                     }
                     // console.log(orderDataSend);
                     vendorOrderData.push(orderDataSend);
