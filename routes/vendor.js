@@ -442,12 +442,32 @@ router.post("/vendorOrdersList" , async function(req,res,next){
                 CourierCharge: courierCharge,
                 CourierChargeCollectFromCustomerIs: courierChargeCollectFromCustomerIs,
                 VendorBill : vendorBill,
-                // PNDBill : PNDBill
             }
             vendorOrderData.push(orderDataSend);
         }
+        let pndBillTotalCourierCharge = 0;
+        let pndTotalVendorAmount = 0;
+        
+        for(let jk=0;jk<vendorOrderData.length;jk++){
+            // console.log(vendorOrderData[jk].VendorAmountCollect);
+            // console.log(vendorOrderData[jk].CourierChargeCollectFromCustomerIs);
+            // console.log(vendorOrderData[jk].CourierCharge);
+            // if(CourierChargeCollectFromCustomerIs)
+            pndBillTotalCourierCharge = pndBillTotalCourierCharge + parseFloat(vendorOrderData[jk].CourierCharge);
+            
+            pndTotalVendorAmount = pndTotalVendorAmount + parseFloat(vendorOrderData[jk].VendorBill);
+        }
+        console.log(`Courier : ${pndBillTotalCourierCharge}`);
+        console.log(`Total Amount : ${pndTotalVendorAmount}`);
         if(vendorOrderData.length > 0){
-            res.status(200).json({ IsSuccess: true , DeliveryCount: orderData.length , Data: vendorOrderData , Message: "Vendor Order Found" });
+            res.status(200).json({ 
+                IsSuccess: true,
+                PNDCourierCharge: pndBillTotalCourierCharge, 
+                PNDBill: pndTotalVendorAmount, 
+                DeliveryCount: orderData.length, 
+                Data: vendorOrderData, 
+                Message: "Vendor Order Found" 
+            });
         }else{
             res.status(200).json({ IsSuccess: true , Data: [] , Message: "Order Not Found" })
         }
@@ -551,10 +571,6 @@ router.post("/getAllVendorOrderListing",async function(req,res,next){
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
 });
-
-// router.post("/pndBillOfVendor",async function(req,res,next){
-//     const {  }
-// });
 
 //Delete Records from demoorder Table
 router.post("/delVendorOrder", async function(req,res,next){
