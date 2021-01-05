@@ -8,8 +8,14 @@ var expenseEntrySchema = mongoose.Schema({
     date: {
         type: String,
     },
+    time: {
+        type: String,
+    },
     amount: {
         type: Number,
+    },
+    paymentType: {
+        type: String,
     },
     description: {
         type: String,

@@ -2178,17 +2178,25 @@ router.post("/getAllExpenseCategory",async function(req,res,next){
 
 //Add Expense Data----------------05/01/2021----MONIL
 router.post("/addExpenseData",async function(req,res,next){
-    const { expenseCategory , amount , description } = req.body;
+    const { expenseCategory , amount , description , paymentType } = req.body;
     let date = moment()
             .tz("Asia/Calcutta")
             .format("DD/MM/YYYY, h:mm:ss a")
             .split(",")[0];
+
+    let time = moment()
+            .tz("Asia/Calcutta")
+            .format("DD/MM/YYYY, h:mm:ss a")
+            .split(",")[1];
+
     try {
         let expenseRecord = await new expenseEntrySchema({
             expenseCategory: expenseCategory,
             amount: amount,
+            paymentType: paymentType,
             description: description,
             date: date,
+            time: time,
         });
         expenseRecord.save();
         if(expenseRecord){
