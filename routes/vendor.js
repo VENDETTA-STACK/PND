@@ -442,7 +442,7 @@ router.post("/vendorOrdersList" , async function(req,res,next){
                 CourierCharge: courierCharge,
                 CourierChargeCollectFromCustomerIs: courierChargeCollectFromCustomerIs,
                 VendorBill : vendorBill,
-                PNDBill : PNDBill
+                // PNDBill : PNDBill
             }
             vendorOrderData.push(orderDataSend);
         }
@@ -551,6 +551,10 @@ router.post("/getAllVendorOrderListing",async function(req,res,next){
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
 });
+
+// router.post("/pndBillOfVendor",async function(req,res,next){
+//     const {  }
+// });
 
 //Delete Records from demoorder Table
 router.post("/delVendorOrder", async function(req,res,next){
