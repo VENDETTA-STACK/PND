@@ -521,11 +521,19 @@ router.post("/getAllVendor", async function(req,res,next){
 
 //Get All Vendor Orders Listing
 router.post("/getAllVendorOrderListing",async function(req,res,next){
+    const { ofDate } = req.body;
     try {
-        let vendorOrderIs = await demoOrderSchema.find({ orderBy : "vendor" })
-                                                 .populate({
-                                                     path: "vendorId"
-                                                 });
+        
+        // let vendorOrderIs = await demoOrderSchema.find({ 
+        //                                             orderBy : "vendor",
+        //                                             dateTime: {
+        //                                                 $gte: isoDate1,
+        //                                                 $lt: isoDate2,
+        //                                             },
+        //                                         })
+        //                                          .populate({
+        //                                              path: "vendorId"
+        //                                          });
         let vendorsData = await vendorModelSchema.find();
         // let vendorIds = [];
         // let vendorsOrders = [];
@@ -533,11 +541,31 @@ router.post("/getAllVendorOrderListing",async function(req,res,next){
         for(let j=0;j<vendorsData.length;j++){
             // console.log(vendorsData[j]._id);
             // vendorIds.push(vendorsData[j]._id);
-            let orderIs = await demoOrderSchema.find({ vendorId: vendorsData[j]._id })
-                                               .populate({
-                                                   path: "vendorId",
-                                                   select: "name mobileNo"
-                                               });
+            let orderIs;
+            if(ofDate){
+                let isoDate1 = convertStringDateToISO(ofDate);
+                let isoDate2 = convertStringDateToISOPlusOne(ofDate);
+                orderIs = await demoOrderSchema.find({ 
+                    vendorId: vendorsData[j]._id,
+                    dateTime: {
+                        $gte: isoDate1,
+                        $lt:  isoDate2,
+                    }, 
+                })
+               .populate({
+                   path: "vendorId",
+                   select: "name mobileNo"
+               });
+            }else{
+                console.log("-------------------Here------------------------------------------")
+                orderIs = await demoOrderSchema.find({ 
+                    vendorId: vendorsData[j]._id, 
+                })
+               .populate({
+                   path: "vendorId",
+                   select: "name mobileNo"
+               });
+            }
             // console.log(orderIs.length);
             if(orderIs.length > 0){
                 // console.log(orderIs[j]._id);
