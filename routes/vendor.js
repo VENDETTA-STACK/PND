@@ -415,15 +415,33 @@ router.post("/vendorOrder", orderimg.single("orderimg"), async function(req,res,
 
 //All Vendor Order Listing-----------04/01/2021----MONIL
 router.post("/vendorOrdersList" , async function(req,res,next){
-    const { vendorId } = req.body;
+    const { vendorId , ofDate } = req.body;
+    
     try {
-        let orderData = await demoOrderSchema.aggregate([
-            { 
-                $match : {
-                        vendorId: mongoose.Types.ObjectId(vendorId) 
-                        }
-            }
-        ]);
+        let orderData;
+        // console.log(isoDate1);
+        // console.log(isoDate2);
+        if(ofDate){
+            let isoDate1 = convertStringDateToISO(ofDate);
+            let isoDate2 = convertStringDateToISOPlusOne(ofDate);
+            
+            orderData = await demoOrderSchema.find({
+                vendorId: mongoose.Types.ObjectId(vendorId),
+                dateTime: {
+                    $gte: isoDate1,
+                    $lt: isoDate2,
+                },
+            })
+        }else{
+            orderData = await demoOrderSchema.aggregate([
+                { 
+                    $match : {
+                            vendorId: mongoose.Types.ObjectId(vendorId) 
+                            }
+                }
+            ]);
+        }
+        
         let vendorOrderData = [];
         for(let i=0;i<orderData.length;i++){
             let deliveryNo = orderData[i].multiOrderNo;
@@ -449,16 +467,12 @@ router.post("/vendorOrdersList" , async function(req,res,next){
         let pndTotalVendorAmount = 0;
         
         for(let jk=0;jk<vendorOrderData.length;jk++){
-            // console.log(vendorOrderData[jk].VendorAmountCollect);
-            // console.log(vendorOrderData[jk].CourierChargeCollectFromCustomerIs);
-            // console.log(vendorOrderData[jk].CourierCharge);
-            // if(CourierChargeCollectFromCustomerIs)
             pndBillTotalCourierCharge = pndBillTotalCourierCharge + parseFloat(vendorOrderData[jk].CourierCharge);
             
             pndTotalVendorAmount = pndTotalVendorAmount + parseFloat(vendorOrderData[jk].VendorBill);
         }
-        console.log(`Courier : ${pndBillTotalCourierCharge}`);
-        console.log(`Total Amount : ${pndTotalVendorAmount}`);
+        // console.log(`Courier : ${pndBillTotalCourierCharge}`);
+        // console.log(`Total Amount : ${pndTotalVendorAmount}`);
         if(vendorOrderData.length > 0){
             res.status(200).json({ 
                 IsSuccess: true,
@@ -581,6 +595,34 @@ router.post("/delVendorOrder", async function(req,res,next){
         res.status(500).json({ IsSuccess: false , Message: error.message })
     }
 });
+
+//Convert String Date to ISO
+function convertStringDateToISO(date){
+    var dateList = date;
+    // console.log(dateList.split("/"));
+    let list = dateList.split("/");
+    
+    let dISO = list[2] + "-" + list[1] + "-" + list[0] + "T" + "00:00:00.00Z";
+    // console.log(dISO);
+    return dISO;
+}
+
+function convertStringDateToISOPlusOne(date){
+    var dateList = date;
+    // console.log(dateList.split("/"));
+    let list = dateList.split("/");
+    let datee = parseFloat(list[0]) + 1;
+    
+    // console.log(datee);
+    if(datee < 10){
+        datee = "0" + String(datee); 
+    }
+    // console.log(datee);
+
+    let dISO = list[2] + "-" + list[1] + "-" + datee + "T" + "00:00:00.00Z";
+    // console.log(dISO);
+    return dISO;
+}
 
 //Find Unique values from List
 function onlyUnique(value, index, self) {
