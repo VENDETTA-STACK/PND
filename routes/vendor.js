@@ -87,8 +87,8 @@ router.post("/vendor_register", async function(req , res , next){
 });
 
 //Update Customer Charges-----31-12-2020---MONIL
-router.post("/updateVendorCharge" , async function(req,res,next){
-    const { vendorId , FixKm , UnderFixKmCharge , perKmCharge } = req.body;
+router.post("/updateVendor" , async function(req,res,next){
+    const { vendorId , FixKm , UnderFixKmCharge , perKmCharge , lat , long , completeAddress} = req.body;
     try {
         let existVendor = await vendorModelSchema.find({ _id: vendorId });
         if(existVendor.length == 1){
@@ -96,6 +96,11 @@ router.post("/updateVendorCharge" , async function(req,res,next){
                 FixKm: FixKm,
                 UnderFixKmCharge: UnderFixKmCharge,
                 perKmCharge: perKmCharge,
+                gpsLocation :{
+                    lat: lat,
+                    long: long,
+                    completeAddress: completeAddress,
+                },
             }
             let updateRecord = await vendorModelSchema.findByIdAndUpdate(existVendor[0]._id,updateIs);
             res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Data Updated" });

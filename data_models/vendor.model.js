@@ -5,7 +5,10 @@ const jwt = require('jsonwebtoken');
 
 const vendorSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
-  courierId: { type: mongoose.Types.ObjectId },
+  courierId: { 
+    type: mongoose.Types.ObjectId,
+    ref: "Couriers",
+  },
   name: {
     type: String,
     required: true,
@@ -31,6 +34,9 @@ const vendorSchema = mongoose.Schema({
         type: String,
         // required: true,
     },
+    completeAddress: {
+      type: String
+    }
   },
   address: {
     type: String,

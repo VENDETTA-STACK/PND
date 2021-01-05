@@ -129,6 +129,8 @@ var orderCancelSchema = require("../data_models/orderCancelReason");
 var sumulOrderSchema = require('../data_models/sumulOrderModel');
 var ecommOrderSchema = require('../data_models/ecommModel');
 const vendorModel = require("../data_models/vendor.model");
+var expenseSchema = require('../data_models/expenseCategory');
+var expenseEntrySchema = require('../data_models/expenseEntry');
 
 async function currentLocation(id) {
     var CourierRef = config.docref.child(id);
@@ -2131,6 +2133,85 @@ router.post("/vendorUpdate", async function(req,res,next){
             res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Vendor Is Approved" }); 
         }else{
             res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Vendor Not Found" }); 
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
+//Add Expense Category----------------05/01/2021----MONIL
+router.post("/addExpenseCategory",async function(req,res,next){
+    const { name } = req.body;
+    let date = moment()
+            .tz("Asia/Calcutta")
+            .format("DD/MM/YYYY, h:mm:ss a")
+            .split(",")[0];
+    try {
+        let expenseRecord = await new expenseSchema({
+            name: name,
+            date: date,
+        });
+        expenseRecord.save();
+        if(expenseRecord){
+            res.status(200).json({ IsSuccess: true , Data: [expenseRecord] , Message: "Category Added" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: [] , Message: "Category Not Added" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
+//Get All Expense Category--------------05/01/2020------MONIL
+router.post("/getAllExpenseCategory",async function(req,res,next){
+    try {
+        let expenseCategoryAre = await expenseSchema.find();
+        if(expenseCategoryAre.length > 0){
+            res.status(200).json({ IsSuccess: true , Data: expenseCategoryAre , Message: "Category Found" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: [] , Message: "Category Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
+//Add Expense Data----------------05/01/2021----MONIL
+router.post("/addExpenseData",async function(req,res,next){
+    const { expenseCategory , amount , description } = req.body;
+    let date = moment()
+            .tz("Asia/Calcutta")
+            .format("DD/MM/YYYY, h:mm:ss a")
+            .split(",")[0];
+    try {
+        let expenseRecord = await new expenseEntrySchema({
+            expenseCategory: expenseCategory,
+            amount: amount,
+            description: description,
+            date: date,
+        });
+        expenseRecord.save();
+        if(expenseRecord){
+            res.status(200).json({ IsSuccess: true , Data: [expenseRecord] , Message: "Category Added" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: [] , Message: "Category Not Added" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
+//Get All Expense Record--------------05/01/2020------MONIL
+router.post("/getAllExpenseData",async function(req,res,next){
+    try {
+        let expenseRecordAre = await expenseEntrySchema.find()
+                                                       .populate({
+                                                           path: "expenseCategory"
+                                                       });
+        if(expenseRecordAre.length > 0){
+            res.status(200).json({ IsSuccess: true , Data: expenseRecordAre , Message: "Category Found" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: [] , Message: "Category Not Found" });
         }
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
