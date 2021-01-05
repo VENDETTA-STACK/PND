@@ -427,6 +427,8 @@ router.post("/vendorOrdersList" , async function(req,res,next){
         let vendorOrderData = [];
         for(let i=0;i<orderData.length;i++){
             let deliveryNo = orderData[i].multiOrderNo;
+            let deliveryData = orderData[i].deliveryPoint;
+            let deliveryDate = orderData[i].dateTime;
             let vendorAmountCollect = orderData[i].deliveryPoint.vendorBillAmount == null ? 0 : orderData[i].deliveryPoint.vendorBillAmount;
             let courierCharge = orderData[i].deliveryPoint.customerCourierCharge == null ? 0 : orderData[i].deliveryPoint.customerCourierCharge;
             let courierChargeCollectFromCustomerIs = orderData[i].deliveryPoint.courierChargeCollectFromCustomer == null ? 0 : orderData[i].deliveryPoint.courierChargeCollectFromCustomer;
@@ -434,6 +436,8 @@ router.post("/vendorOrdersList" , async function(req,res,next){
             let PNDBill = orderData[i].chargeOfPND;
             let orderDataSend = {
                 DeliveryNo: deliveryNo,
+                DeliveryData: deliveryData,
+                DeliveryDate: deliveryDate,
                 VendorAmountCollect: vendorAmountCollect,
                 CourierCharge: courierCharge,
                 CourierChargeCollectFromCustomerIs: courierChargeCollectFromCustomerIs,
