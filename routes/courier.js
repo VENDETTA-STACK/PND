@@ -852,7 +852,32 @@ router.post('/updateCustomerPickUp' , async function(req , res , next){
 
 //Update Order Delivery Location
 router.post("/updateDeliveryLocation", async function(req,res,next){
-
+    const { orderNo , name , mobileNo , address , lat , long, completeAddress, distance } = req.body;
+    try {
+        let existOrder = await orderSchema.find({ orderNo : orderNo });
+        if(existOrder.length > 0){
+            let updateLocation = {
+                deliveryPoint:{
+                    name : name,
+                    mobileNo : mobileNo,
+                    address : address,
+                    lat : lat,
+                    long : long,
+                    completeAddress : completeAddress,
+                    distance : distance,
+                }
+            };
+            let UpdatedCustomerDropLocation = await orderSchema.findOneAndUpdate({orderNo : orderNo},updateLocation);
+            let updatedDataIs = await orderSchema.find({orderNo : orderNo})
+            if(updatedDataIs != null){
+                res.status(200).json({ Message : "Customer Location Update" , IsSuccess : true , Data : updatedDataIs});
+            }else{
+                res.status(400).json({ Message : "Customer Location Not Update" , IsSuccess : false });
+            }
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
 });
 
 router.post('/getOtp', (req, res, next) => {

@@ -15,7 +15,7 @@ var expenseEntrySchema = mongoose.Schema({
         type: Number,
     },
     paymentType: {
-        type: String,
+        type: String,   
     },
     description: {
         type: String,
