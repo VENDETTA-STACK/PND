@@ -202,13 +202,11 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         amountCollected,  
     } = req.body;
     try {
-        // let tempDistanceForALL = 0;
         let vendorData = await vendorModelSchema.find({ _id: vendorId });
         let orderIs = await demoOrderSchema.find({ orderNo: orderNo});
 
         let deliveryPoints = [];
         for(let ij=0;ij<orderIs.length;ij++){
-            // console.log(orderIs[ij].deliveryPoint);
             let deliveryData = {
                 lat : orderIs[ij].deliveryPoint.lat,
                 long: orderIs[ij].deliveryPoint.long,
@@ -221,9 +219,6 @@ router.post("/vendorOrderCalc",async function(req,res,next){
 
         let picklat = vendorData[0].gpsLocation.lat;
         let picklong = vendorData[0].gpsLocation.long;
-
-        console.log(picklat);
-        console.log(picklong);
 
         let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
 
@@ -270,7 +265,7 @@ router.post("/vendorOrderCalc",async function(req,res,next){
             
             let totaldistance = await calculatelocation(fromLatitude, fromLongitude,toLatitude,toLongitude);
             totaldistance = parseFloat(totaldistance) / 1000;
-            console.log(totaldistance);
+            // console.log(totaldistance);
             if(amountCollected){
                 if(totaldistance < FixKm){
                     basicKm = totaldistance;
@@ -334,7 +329,6 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         let pndTotalCourierCharge = 0;
 
         for(let k=0;k<DataPass.length;k++){
-            // console.log(DataPass[k]);
             pndTotalAmountCollect = pndTotalAmountCollect + parseFloat(DataPass[k].VendorTotalBill);
             pndTotalCourierCharge = pndTotalCourierCharge + parseFloat(DataPass[k].CouriersChargeIs);
         }

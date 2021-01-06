@@ -815,27 +815,31 @@ router.post("/getAllEmployeeOrders", async function(req,res,next){
 });
 
 //Not Completed Yet----Not Any update for changes
-router.post('/updateCustomerLocation' , async function(req , res , next){
-    // const { orderId , name , mobileNo , address , lat , long, completeAddress, distance } = req.body;
-    const { orderId , name , mobileNo , address , lat , long, completeAddress, distance } = req.body;
+router.post('/updateCustomerPickUp' , async function(req , res , next){
+
+    const { orderNo , name , mobileNo , address , lat , long, completeAddress, contents , arriveType , arriveTime } = req.body;
     try { 
-        let updateLocation = {
-            deliveryPoint:{
-                name : name,
-                mobileNo : mobileNo,
-                address : address,
-                lat : lat,
-                long : long,
-                completeAddress : completeAddress,
-                distance : distance
+        let existOrder = await orderSchema.find({ orderNo : orderNo });
+        if(existOrder.length > 0){
+            let updateLocation = {
+                pickupPoint:{
+                    name : name,
+                    mobileNo : mobileNo,
+                    address : address,
+                    lat : lat,
+                    long : long,
+                    completeAddress : completeAddress,
+                    contents : contents,
+                    arriveType: arriveType,
+                    arriveTime: arriveTime,
+                }
+            };
+            let UpdatedCustomerPickUpLocation = await orderSchema.findOneAndUpdate({orderNo : orderNo},updateLocation);
+            if(UpdatedCustomerPickUpLocation != null){
+                res.status(200).json({ Message : "Customer Location Update" , IsSuccess : true , Data : UpdatedCustomerPickUpLocation});
+            }else{
+                res.status(400).json({ Message : "Customer Location Not Update" , IsSuccess : false });
             }
-        };
-        
-        let UpdatedCustomerLocation = await orderSchema.findOneAndUpdate({_id : orderId},updateLocation);
-        if(UpdatedCustomerLocation != null){
-            res.status(200).json({ Message : "Customer Location Update" , IsSuccess : true , Data : UpdatedCustomerLocation});
-        }else{
-            res.status(400).json({ Message : "Customer Location Not Update" , IsSuccess : false });
         }
     } catch (error) {
         res.status(500).json({ Message : "Something Went Wrong" , ErrorMessage : error.message });
