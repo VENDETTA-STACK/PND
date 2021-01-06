@@ -821,6 +821,9 @@ router.post('/updateCustomerPickUp' , async function(req , res , next){
     try { 
         let existOrder = await orderSchema.find({ orderNo : orderNo });
         if(existOrder.length > 0){
+            // for(let i=0;i<existOrder.length;i++){
+                
+            // }
             let updateLocation = {
                 pickupPoint:{
                     name : name,
@@ -846,6 +849,10 @@ router.post('/updateCustomerPickUp' , async function(req , res , next){
     }
 });
 
+//Update Order Delivery Location
+router.post("/updateDeliveryLocation", async function(req,res,next){
+
+});
 
 router.post('/getOtp', (req, res, next) => {
     res.json({

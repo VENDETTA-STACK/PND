@@ -484,7 +484,7 @@ router.post("/vendorOrdersList" , async function(req,res,next){
         for(let i=0;i<orderData.length;i++){
             let deliveryNo = orderData[i].multiOrderNo;
             let deliveryData = orderData[i].deliveryPoint;
-            let deliveryDate = orderData[i].dateTime;
+            let deliveryDate = convertISOToReadable(orderData[i].dateTime);
             let vendorAmountCollect = orderData[i].deliveryPoint.vendorBillAmount == null ? 0 : orderData[i].deliveryPoint.vendorBillAmount;
             let courierCharge = orderData[i].deliveryPoint.customerCourierCharge == null ? 0 : orderData[i].deliveryPoint.customerCourierCharge;
             let courierChargeCollectFromCustomerIs = orderData[i].deliveryPoint.courierChargeCollectFromCustomer == null ? 0 : orderData[i].deliveryPoint.courierChargeCollectFromCustomer;
@@ -661,6 +661,28 @@ router.post("/delVendorOrder", async function(req,res,next){
         res.status(500).json({ IsSuccess: false , Message: error.message })
     }
 });
+
+router.post("/test",async function(req,res,next){
+    let order = await demoOrderSchema.find({ multiOrderNo: "ORDMT-VND-8651810000" })
+    let date = order[0].dateTime
+    let b = convertISOToReadable(date);
+    console.log(b);
+});
+
+//Convert ISO Time To Readable Time----06/01/2021---MONIL
+function convertISOToReadable(isoDate){
+    // console.log(typeof(isoDate));
+    let b = isoDate.toISOString();
+    let temp = b.split("T");
+    
+    let hour = isoDate.getHours();
+    let minutes = isoDate.getMinutes();
+    let seconds = isoDate.getSeconds();
+    
+    let TimeIs = hour + ":" + minutes + ":" + seconds; 
+    
+    return [temp[0],TimeIs];
+}
 
 //Convert String Date to ISO
 function convertStringDateToISO(date){
