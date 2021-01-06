@@ -838,8 +838,9 @@ router.post('/updateCustomerPickUp' , async function(req , res , next){
                 }
             };
             let UpdatedCustomerPickUpLocation = await orderSchema.findOneAndUpdate({orderNo : orderNo},updateLocation);
-            if(UpdatedCustomerPickUpLocation != null){
-                res.status(200).json({ Message : "Customer Location Update" , IsSuccess : true , Data : UpdatedCustomerPickUpLocation});
+            let updatedDataIs = await orderSchema.find({orderNo : orderNo})
+            if(updatedDataIs != null){
+                res.status(200).json({ Message : "Customer Location Update" , IsSuccess : true , Data : updatedDataIs});
             }else{
                 res.status(400).json({ Message : "Customer Location Not Update" , IsSuccess : false });
             }
