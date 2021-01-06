@@ -96,11 +96,101 @@ async function GoogleMatrix(fromlocation, tolocation) {
         process.env.GOOGLE_API;
     let results = await axios.get(link);
     let distancebe = results.data.rows[0].elements[0].distance.value;
-    console.log(distancebe + " Meter");
+    // console.log(distancebe + " Meter");
     return distancebe / 1000;
 }
 
 async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
+    let available = [];
+    let getpndpartners = await courierSchema
+        .find({
+            isActive: true,
+            isVerified: true,
+            "accStatus.flag": true,
+        })
+        .select("id fcmToken");
+
+    if (deliveryType == "Normal Delivery") {
+        for (let i = 0; i < getpndpartners.length; i++) {
+            let partnerlocation = await currentLocation(getpndpartners[i].id);
+            if (
+                (partnerlocation.duty == "ON") &
+                (Number(partnerlocation.parcel) < 3)
+            ) {
+                let totalrequests = await requestSchema.countDocuments({
+                    orderId: orderid,
+                });
+                let partnerrequest = await requestSchema.find({
+                    courierId: getpndpartners[i].id,
+                    orderId: orderid,
+                });
+                if (totalrequests <= 4) {
+                    if (partnerrequest.length == 0) {
+                        let pickupcoords = { latitude: pickuplat, longitude: pickuplong };
+                        let partnercoords = {
+                            latitude: partnerlocation.latitude,
+                            longitude: partnerlocation.longitude,
+                        };
+                        // console.log(partnerlocation);
+                        // console.log(pickupcoords, partnercoords)
+                        let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
+                        if (distancebtnpp <= 15) {
+                            available.push({
+                                courierId: getpndpartners[i].id,
+                                orderId: orderid,
+                                distance: distancebtnpp,
+                                status: "Pending",
+                                fcmToken: getpndpartners[i].fcmToken,
+                                reason: "",
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        for (let i = 0; i < getpndpartners.length; i++) {
+            let partnerlocation = await currentLocation(getpndpartners[i].id);
+            if (
+                (partnerlocation.duty == "ON") &
+                (Number(partnerlocation.parcel) == 0)
+            ) {
+                let totalrequests = await requestSchema.countDocuments({
+                    orderId: orderid,
+                });
+                let partnerrequest = await requestSchema.find({
+                    courierId: getpndpartners[i].id,
+                    orderId: orderid,
+                });
+                if (totalrequests <= 4) {
+                    if (partnerrequest.length == 0) {
+                        let pickupcoords = { latitude: pickuplat, longitude: pickuplong };
+                        let partnercoords = {
+                            latitude: partnerlocation.latitude,
+                            longitude: partnerlocation.longitude,
+                        };
+                        let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
+                        if (distancebtnpp <= 15) {
+                            available.push({
+                                courierId: getpndpartners[i].id,
+                                orderId: orderid,
+                                distance: distancebtnpp,
+                                status: "Pending",
+                                fcmToken: getpndpartners[i].fcmToken,
+                                reason: "",
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return available;
+}
+
+//PND Finder for Multiple delivery Order-----06/01/2021----MONIL
+async function PNDMTfinder(pickuplat, pickuplong, orderid, deliveryType) {
     let available = [];
     let getpndpartners = await courierSchema
         .find({
@@ -1015,7 +1105,7 @@ router.post("/ordercalcV4", async (req, res, next) => {
             }
         }
     }
-    console.log("MAin Checkkkkkkkkkkkk....!!!!!!1 :"+ basicamt);
+    // console.log("MAin Checkkkkkkkkkkkk....!!!!!!1 :"+ basicamt);
 
     var userPastOrders = await orderSchema.find({
         customerId : mongoose.Types.ObjectId(customerId),
@@ -1916,88 +2006,91 @@ router.post("/multiNewOrder", async function(req,res,next){
                 status: "Order Processing",
                 note: "Your order is processing!",
             });
-            var placeMultiOrder = await newMultiOrder.save();
+            // var placeMultiOrder = await newMultiOrder.save();
+            var placeMultiOrder = newMultiOrder;
             MultiOrders.push(placeMultiOrder);
         }
-        // var avlcourier = await PNDfinder(
-        //     pkLat,
-        //     pkLong,
-        //     placeMultiOrder.id,
-        //     placeMultiOrder.deliveryType
-        // );
+        console.log(placeMultiOrder);
+        var avlcourier = await PNDfinder(
+            pkLat,
+            pkLong,
+            placeMultiOrder.id,
+            placeMultiOrder.deliveryType
+        );
         // console.log("===============================================================");
+        // console.log(avlcourier);
+        if (promoCode != "0") {
+            let usedpromo = new usedpromoSchema({
+                _id: new config.mongoose.Types.ObjectId(),
+                customer: customerId,
+                code: promoCode,
+            });
+            usedpromo.save();
+        }
+        if (placeMultiOrder != null && avlcourier.length != 0) {
+            console.log("Total Found:" + avlcourier.length);
+            let courierfound = arraySort(avlcourier, "distance");
+            var newrequest = new requestSchema({
+                _id: new config.mongoose.Types.ObjectId(),
+                courierId: courierfound[0].courierId,
+                orderId: courierfound[0].orderId,
+                distance: courierfound[0].distance,
+                status: courierfound[0].status,
+                reason: courierfound[0].reason,
+                fcmToken: courierfound[0].fcmToken,
+            });
+            await newrequest.save();
+            var AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
+            console.log("Admin numbers-------------------------------------------------");
+            console.log(AdminMobile);
+            var AdminNumber1 = AdminMobile[0].AdminMObile1; 
+            var AdminNumber2 = AdminMobile[0].AdminMObile2; 
+            var AdminNumber3 = AdminMobile[0].AdminMObile3; 
+            var AdminNumber4 = AdminMobile[0].AdminMObile4; 
+            var AdminNumber5 = AdminMobile[0].AdminMObile5;
     
-        // if (promoCode != "0") {
-        //     let usedpromo = new usedpromoSchema({
-        //         _id: new config.mongoose.Types.ObjectId(),
-        //         customer: customerId,
-        //         code: promoCode,
-        //     });
-        //     usedpromo.save();
-        // }
-        // if (placeMultiOrder != null && avlcourier.length != 0) {
-        //     console.log("Total Found:" + avlcourier.length);
-        //     let courierfound = arraySort(avlcourier, "distance");
-        //     var newrequest = new requestSchema({
-        //         _id: new config.mongoose.Types.ObjectId(),
-        //         courierId: courierfound[0].courierId,
-        //         orderId: courierfound[0].orderId,
-        //         distance: courierfound[0].distance,
-        //         status: courierfound[0].status,
-        //         reason: courierfound[0].reason,
-        //         fcmToken: courierfound[0].fcmToken,
-        //     });
-        //     await newrequest.save();
-        //     var AdminMobile = await settingsSchema.find({}).select('AdminMObile1 AdminMObile2 AdminMObile3 AdminMObile4 AdminMObile5 -_id');
-        //     console.log("Admin numbers-------------------------------------------------");
-        //     console.log(AdminMobile);
-        //     var AdminNumber1 = AdminMobile[0].AdminMObile1; 
-        //     var AdminNumber2 = AdminMobile[0].AdminMObile2; 
-        //     var AdminNumber3 = AdminMobile[0].AdminMObile3; 
-        //     var AdminNumber4 = AdminMobile[0].AdminMObile4; 
-        //     var AdminNumber5 = AdminMobile[0].AdminMObile5;
-    
-        //     // console.log(AdminNumber1);
+            // console.log(AdminNumber1);
 
-        //     var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber1 }).select('fcmToken -_id');
-        //     var findAdminFcmToken2 = await customerSchema.find({ mobileNo: AdminNumber2 }).select('fcmToken -_id');
-        //     var findAdminFcmToken3 = await customerSchema.find({ mobileNo: AdminNumber3 }).select('fcmToken -_id');
-        //     var findAdminFcmToken4 = await customerSchema.find({ mobileNo: AdminNumber4 }).select('fcmToken -_id');
-        //     var findAdminFcmToken5 = await customerSchema.find({ mobileNo: AdminNumber5 }).select('fcmToken -_id');
+            var findAdminFcmToken = await customerSchema.find({ mobileNo: AdminNumber1 }).select('fcmToken -_id');
+            var findAdminFcmToken2 = await customerSchema.find({ mobileNo: AdminNumber2 }).select('fcmToken -_id');
+            var findAdminFcmToken3 = await customerSchema.find({ mobileNo: AdminNumber3 }).select('fcmToken -_id');
+            var findAdminFcmToken4 = await customerSchema.find({ mobileNo: AdminNumber4 }).select('fcmToken -_id');
+            var findAdminFcmToken5 = await customerSchema.find({ mobileNo: AdminNumber5 }).select('fcmToken -_id');
             
-        //     findAdminFcmToken == undefined ? " " : findAdminFcmToken[0].fcmToken;
-        //     findAdminFcmToken2 == undefined ? " " : findAdminFcmToken2[0].fcmToken;
-        //     findAdminFcmToken3 == undefined ? " " : findAdminFcmToken3[0].fcmToken;
-        //     findAdminFcmToken4 == undefined ? " " : findAdminFcmToken4[0].fcmToken;
-        //     findAdminFcmToken5 == undefined ? " " : findAdminFcmToken5[0].fcmToken;
+            findAdminFcmToken == undefined ? " " : findAdminFcmToken[0].fcmToken;
+            findAdminFcmToken2 == undefined ? " " : findAdminFcmToken2[0].fcmToken;
+            findAdminFcmToken3 == undefined ? " " : findAdminFcmToken3[0].fcmToken;
+            findAdminFcmToken4 == undefined ? " " : findAdminFcmToken4[0].fcmToken;
+            findAdminFcmToken5 == undefined ? " " : findAdminFcmToken5[0].fcmToken;
             
-        //     console.log(findAdminFcmToken);
-        //     console.log(findAdminFcmToken2);
-        //     console.log(findAdminFcmToken3);
-        //     console.log(findAdminFcmToken4);
-        //     console.log(findAdminFcmToken5);
+            console.log(findAdminFcmToken);
+            console.log(findAdminFcmToken2);
+            console.log(findAdminFcmToken3);
+            console.log(findAdminFcmToken4);
+            console.log(findAdminFcmToken5);
 
-        //     var AdminFcmToken = [findAdminFcmToken,findAdminFcmToken2,findAdminFcmToken3,findAdminFcmToken4,findAdminFcmToken5];
-        //     console.log("-------------------------ADMINS TOKENS-----------------------------");
-        //     console.log(AdminFcmToken);
+            var AdminFcmToken = [findAdminFcmToken,findAdminFcmToken2,findAdminFcmToken3,findAdminFcmToken4,findAdminFcmToken5];
+            console.log("-------------------------ADMINS TOKENS-----------------------------");
+            console.log(AdminFcmToken);
 
-        // let newOrderData = newMultiOrder.orderNo;
-        // let newOrderPickUp = newMultiOrder.pickupPoint.address;
-        // let newOrderDelivery = newMultiOrder.deliveryPoint.address;
-        // let newOrderCustomerId = newMultiOrder.customerId;
-        // console.log(newOrderCustomerId);
-        // let newOrderCustomer = await customerSchema.find({ _id: newOrderCustomerId }).select('name mobileNo -_id');
-        
-        // let newOrderNotification = `New Order Received 
-        // OrderID: ${newOrderData}
-        // Customer: ${newOrderCustomer[0].name}
-        // Mobile: ${newOrderCustomer[0].mobileNo}  
-        // PickUp: ${newOrderPickUp}`;
-        // console.log(newOrderNotification);
+            let newOrderData = newMultiOrder.orderNo;
+            let newOrderPickUp = newMultiOrder.pickupPoint.address;
+            let newOrderDelivery = newMultiOrder.deliveryPoint.address;
+            let newOrderCustomerId = newMultiOrder.customerId;
+            console.log(newOrderCustomerId);
+            let newOrderCustomer = await customerSchema.find({ _id: newOrderCustomerId }).select('name mobileNo -_id');
+            
+            let newOrderNotification = `New Order Received 
+            OrderID: ${newOrderData}
+            Customer: ${newOrderCustomer[0].name}
+            Mobile: ${newOrderCustomer[0].mobileNo}  
+            PickUp: ${newOrderPickUp}`;
+            console.log(newOrderNotification);
 
-        // var AdminPhoneNumbers = [AdminNumber1,AdminNumber2,AdminNumber3,AdminNumber4,AdminNumber5];
-    // }
-    res.status(200).json({ IsSuccess:true , Data: MultiOrders , Message: "Multiorder Added" });
+            var AdminPhoneNumbers = [AdminNumber1,AdminNumber2,AdminNumber3,AdminNumber4,AdminNumber5];
+            
+        }
+        res.status(200).json({ IsSuccess:true , Data: MultiOrders , Message: "Multiorder Added" });
     }catch(error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }

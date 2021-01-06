@@ -8,6 +8,7 @@ var config = require("../config");
 var { encryptPWD, comparePWD } = require('../crypto');
 var Bcrypt = require("bcryptjs");
 var mongoose = require("mongoose");
+var geolib = require("geolib");
 
 var vendorModelSchema = require("../data_models/vendor.model");
 var demoOrderSchema = require("../data_models/demoMultiModel");
@@ -28,22 +29,55 @@ var imguploader = multer.diskStorage({
 });
 var orderimg = multer({ storage: imguploader });
 
-async function GoogleMatrix(fromlocation, tolocation) {
-    let link =
-        "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&mode=driving&origins=" +
-        fromlocation.latitude +
-        "," +
-        fromlocation.longitude +
-        "&destinations=" +
-        tolocation.latitude +
-        "," +
-        tolocation.longitude +
-        "&key=" +
-        process.env.GOOGLE_API;
-    let results = await axios.get(link);
-    let distancebe = results.data.rows[0].elements[0].distance.value;
-    console.log("Distance : "+distancebe + " Meter");
-    return distancebe / 1000;
+// async function GoogleMatrix(fromlocation, tolocation) {
+//     let link =
+//         "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&mode=driving&origins=" +
+//         fromlocation.latitude +
+//         "," +
+//         fromlocation.longitude +
+//         "&destinations=" +
+//         tolocation.latitude +
+//         "," +
+//         tolocation.longitude +
+//         "&key=" +
+//         process.env.GOOGLE_API;
+//     let results = await axios.get(link);
+//     console.log(results);
+//     let distancebe = results.data.rows[0].elements[0].distance.value;
+//     console.log("Distance : "+distancebe + " Meter");
+//     return distancebe / 1000;
+// }
+
+router.post("/getData",async function(req,res,next){
+    let loc1 = { latitude: 21.052, longitude: 72.05151 };
+    let loc2 = { latitude: 21.1702401, longitude: 72.83106070000001 };
+    // let a = await GoogleMatrix(loc1,loc2);
+    let a = await calculatelocation(loc1.latitude,loc1.longitude,loc2.latitude,loc2.longitude);
+
+    console.log(a);
+});
+
+//Function for finding distance between two locations
+function calculatelocation(lat1, long1, lat2, long2) {
+    if (lat1 == 0 || long1 == 0) {
+      area = 1; // Company Lat and Long is not defined.
+    } else {
+      const location1 = {
+        lat: parseFloat(lat1),
+        lon: parseFloat(long1),
+      };
+      const location2 = {
+        lat: parseFloat(lat2),
+        lon: parseFloat(long2),
+      };
+      heading = geolib.getDistance(location1, location2);
+      if (!isNaN(heading)) {
+          return heading;
+      } else {
+        heading =  -1; //  Lat and Long is not defined.
+    }
+    return heading;
+  }
 }
 
 router.post("/vendor_register", async function(req , res , next){
@@ -228,9 +262,14 @@ router.post("/vendorOrderCalc",async function(req,res,next){
             let lat3 = parseFloat(deliveryPoints[j].lat);
             let long3 = parseFloat(deliveryPoints[j].long);
             let tolocation = { latitude: Number(lat3), longitude: Number(long3) };
-            console.log(tolocation);
-            console.log(fromlocation);
-            let totaldistance = await GoogleMatrix(fromlocation, tolocation);
+            
+            let fromLatitude = fromlocation.latitude;
+            let fromLongitude = fromlocation.longitude;
+            let toLatitude = tolocation.latitude;
+            let toLongitude = tolocation.longitude;
+            
+            let totaldistance = await calculatelocation(fromLatitude, fromLongitude,toLatitude,toLongitude);
+            totaldistance = parseFloat(totaldistance) / 1000;
             console.log(totaldistance);
             if(amountCollected){
                 if(totaldistance < FixKm){
@@ -303,7 +342,7 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         console.log(pndTotalCourierCharge);
 
         let finalPNDBill = parseFloat(pndTotalAmountCollect) - parseFloat(pndTotalCourierCharge);
-
+        finalPNDBill = Math.abs(finalPNDBill);
         for(let jk=0;jk<orderIs.length;jk++){
             let updateIs = {
                 "deliveryPoint.customerCourierCharge" : DataPass[jk].CouriersChargeIs,
