@@ -3107,7 +3107,8 @@ router.post("/cancelOrderV1", async function(req,res,next){
         if(currentDateTime < cancelLimit){
             // var deleteOrder = await orderSchema.findByIdAndDelete(orderIs[0]._id);
             let updateIs = {
-                status : "Order Cancelled"
+                status : "Order Cancelled",
+                isActive : false,
             }
             var deleteOrder = await orderSchema.findByIdAndUpdate(orderIs[0]._id,updateIs);
             res.status(200).json({ IsSuccess: true , Data: 1 ,Message: "Order Deleted" });
