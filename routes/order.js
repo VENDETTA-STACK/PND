@@ -1651,7 +1651,9 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
         discount,
         additionalAmount,
         finalAmount,
-        schedualDateTime,
+        // schedualDateTime,
+        scheduleDate,
+        scheduleTime,
         amountCollection,
         // eOrderDeliveryType,
         handlingCharge,
@@ -1672,13 +1674,15 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
     try {
         
         console.log("-------------Schedule Time-------------------");
-        console.log(req.body.schedualDateTime);
+        // console.log(req.body.schedualDateTime);
         var newOrder = new orderSchema({
             _id: new config.mongoose.Types.ObjectId(),
             orderNo: num,
             customerId: customerId,
             deliveryType: deliveryType,
-            schedualDateTime: schedualDateTime,
+            // schedualDateTime: schedualDateTime,
+            scheduleDate: scheduleDate,
+            scheduleTime: scheduleTime,
             weightLimit: weightLimit,
             noteByCustomer: noteByCustomer,
             extraKmByCourierBoy: extraKmByCourierBoy == undefined ? 0 : extraKmByCourierBoy,
@@ -1957,7 +1961,9 @@ router.post("/multiNewOrder", async function(req,res,next){
         discount,
         additionalAmount,
         finalAmount,
-        schedualDateTime,
+        // schedualDateTime,
+        scheduleDate,
+        scheduleTime,
     } = req.body;
     let num = getOrderNumber();
     // let numMulti = getMultiOrderNumber();
@@ -1974,7 +1980,9 @@ router.post("/multiNewOrder", async function(req,res,next){
                 multiOrderNo: getMultiOrderNumber(),
                 customerId: customerId,
                 deliveryType: deliveryType,
-                schedualDateTime: schedualDateTime,
+                // schedualDateTime: schedualDateTime,
+                scheduleDate: scheduleDate,
+                scheduleTime: scheduleTime,
                 weightLimit: weightLimit,
                 // orderImg: file == undefined ? "" : file.path,
                 pickupPoint: {
@@ -2006,8 +2014,8 @@ router.post("/multiNewOrder", async function(req,res,next){
                 status: "Order Processing",
                 note: "Your order is processing!",
             });
-            // var placeMultiOrder = await newMultiOrder.save();
-            var placeMultiOrder = newMultiOrder;
+            var placeMultiOrder = await newMultiOrder.save();
+            // var placeMultiOrder = newMultiOrder;
             MultiOrders.push(placeMultiOrder);
         }
         console.log(placeMultiOrder);
@@ -2914,7 +2922,7 @@ router.post("/cancelOrderV1", async function(req,res,next){
     const { orderNo , customerId } = req.body;
     try {
         let orderIs = await orderSchema.find({ $and: [ { orderNo: orderNo }, { customerId: customerId } ] });
-        var scheduleTime = orderIs[0].schedualDateTime;
+        var scheduleTime = orderIs[0].scheduleTime;
         // console.log(scheduleTime);
         // console.log("_ID IS :" + orderIs[0]._id);
         

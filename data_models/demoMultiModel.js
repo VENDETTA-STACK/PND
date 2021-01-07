@@ -144,8 +144,14 @@ const demoOrderSchema = mongoose.Schema({
     courierId: [
         { type: mongoose.Types.ObjectId, ref: "Couriers", default: null },
     ],
-    schedualDateTime: {
-        type: Date
+    // schedualDateTime: {
+    //     type: Date
+    // },
+    scheduleDate: {
+        type: String,
+    },
+    scheduleTime: {
+        type: String,
     },
     chargeOfPND: {
         type: Number,

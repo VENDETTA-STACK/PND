@@ -131,6 +131,12 @@ const orderSchema = mongoose.Schema({
     schedualDateTime: {
         type: Date
     },
+    scheduleDate: {
+        type: String,
+    },
+    schedualTime: {
+        type: String,
+    },
     orderType: {
         type: String
     },
