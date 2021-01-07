@@ -2089,7 +2089,13 @@ router.post("/multiNewOrder", async function(req,res,next){
             let newOrderCustomerId = newMultiOrder.customerId;
             console.log(newOrderCustomerId);
             let newOrderCustomer = await customerSchema.find({ _id: newOrderCustomerId }).select('name mobileNo -_id');
-            
+
+            // console.log(MultiOrders.length);
+            // let newOrderDelivery = [];
+            // for(let ik=0;ik<MultiOrders.length;ik++){
+            //     newOrderDelivery.push(MultiOrders[ik].deliveryPoint.address);
+            // }
+
             let newOrderNotification = `New Order Received 
             OrderID: ${newOrderData}
             Customer: ${newOrderCustomer[0].name}
@@ -2100,9 +2106,9 @@ router.post("/multiNewOrder", async function(req,res,next){
             var AdminPhoneNumbers = [AdminNumber1,AdminNumber2,AdminNumber3,AdminNumber4,AdminNumber5];
             for(let i=0;i<AdminFcmToken.length;i++){
                 console.log(`--------------------------------------- ${i}`);
-                console.log(AdminFcmToken[i])
+                console.log(AdminFcmToken[i][0].fcmToken)
                 var dataSendToAdmin = {
-                    "to":AdminFcmToken[i],
+                    "to":AdminFcmToken[i][0].fcmToken,
                     "priority":"high",
                     "content_available":true,
                     "data": {
