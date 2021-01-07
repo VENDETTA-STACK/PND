@@ -2098,7 +2098,89 @@ router.post("/multiNewOrder", async function(req,res,next){
             console.log(newOrderNotification);
 
             var AdminPhoneNumbers = [AdminNumber1,AdminNumber2,AdminNumber3,AdminNumber4,AdminNumber5];
-            
+            for(let i=0;i<AdminFcmToken.length;i++){
+                console.log(`--------------------------------------- ${i}`);
+                console.log(AdminFcmToken[i])
+                var dataSendToAdmin = {
+                    "to":AdminFcmToken[i],
+                    "priority":"high",
+                    "content_available":true,
+                    "data": {
+                        "sound": "surprise.mp3",
+                        "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                    },
+                    "notification":{
+                                "body": newOrderNotification,
+                                "title":"New Order Received",
+                                "badge":1
+                            }
+                };
+        
+                var options2 = {
+                    'method': 'POST',
+                    'url': 'https://fcm.googleapis.com/fcm/send',
+                    'headers': {
+                        'authorization': 'key=AAAAb8BaOXA:APA91bGPf4oQWUscZcjXnuyIJhEQ_bcb6pifUozs9mjrEyNWJcyut7zudpYLBtXGGDU4uopV8dnIjCOyapZToJ1QxPZVBDBSbhP_wxhriQ7kFBlHN1_HVTRtClUla0XSKGVreSgsbgjH',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dataSendToAdmin)
+                };
+                request(options2, function (error, response , body) {
+                    console.log("--------------------Sender--------------------");
+                    let myJsonBody = JSON.stringify(body);
+                    console.log(myJsonBody);
+                    //myJsonBody[51] USED TO ACCESS RESPONSE DATA SUCCESS FIELD
+                    console.log(myJsonBody[51]);
+                    if(myJsonBody[51]==0){
+                        console.log("Send Text notification of new order..........!!!");
+                        sendMessages(AdminPhoneNumbers[i],newOrderNotification);
+                    }
+                    if (error) {
+                        console.log(error.message);
+                    } else {
+                        console.log("Sending Notification Testing....!!!");
+                        console.log(response.body);
+                        if(response.body.success=="1"){
+                            console.log("Send Text notification of new order..........!!!");
+                            sendMessages(AdminPhoneNumbers[i],newOrderNotification);
+                        }
+                    }
+                });
+            }
+    
+        console.log("After sending notification");
+        
+        // FCM notification End
+    
+                // New Code 03-09-2020
+                var payload = {
+                    "title": "Order Alert",
+                    "body": "New Order Alert Found For You.",
+                    "data": {
+                        "sound": "surprise.mp3",
+                        "orderid": courierfound[0].orderId.toString(),
+                        "distance": courierfound[0].distance.toString(),
+                        "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                    },
+                    "to": courierfound[0].fcmToken
+                };
+                var options = {
+                    'method': 'POST',
+                    'url': 'https://fcm.googleapis.com/fcm/send',
+                    'headers': {
+                        'authorization': 'key=AAAAb8BaOXA:APA91bGPf4oQWUscZcjXnuyIJhEQ_bcb6pifUozs9mjrEyNWJcyut7zudpYLBtXGGDU4uopV8dnIjCOyapZToJ1QxPZVBDBSbhP_wxhriQ7kFBlHN1_HVTRtClUla0XSKGVreSgsbgjH',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                };
+                request(options, function (error, response) {
+                    if (error) {
+                        console.log(error.message);
+                    } else {
+                        console.log("Sending Notification");
+                        console.log(response.body);
+                    }
+                });
         }
         res.status(200).json({ IsSuccess:true , Data: MultiOrders , Message: "Multiorder Added" });
     }catch(error) {
