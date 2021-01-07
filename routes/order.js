@@ -1662,6 +1662,7 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
         extraKmByCourierBoy,
     } = req.body;
     console.log("-------------New Order--------------------------");
+    console.log(scheduleTime);
     // console.log(req.body.amount);
     // console.log(req.body.amount);
     // console.log(req.body.discount);
@@ -1721,6 +1722,7 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
             note: "Your order is processing!",
         });
         // console.log("---------------amount Collected-----------");
+        console.log(newOrder);
         var placedorder = await newOrder.save();
 
         var avlcourier = await PNDfinder(
@@ -1918,7 +1920,7 @@ router.post("/newoder2", orderimg.single("orderimg"), async function (
         }
         res
             .status(200)
-            .json({ Message: "Order Placed!", Data: 1, IsSuccess: true });
+            .json({ Message: "Order Placed!", Data: placedorder, IsSuccess: true });
     } catch (err) {
         console.log(err);
         res.status(500).json({ Message: err.message, Data: 0, IsSuccess: false });
@@ -2014,8 +2016,8 @@ router.post("/multiNewOrder", async function(req,res,next){
                 status: "Order Processing",
                 note: "Your order is processing!",
             });
-            var placeMultiOrder = await newMultiOrder.save();
-            // var placeMultiOrder = newMultiOrder;
+            // var placeMultiOrder = await newMultiOrder.save();
+            var placeMultiOrder = newMultiOrder;
             MultiOrders.push(placeMultiOrder);
         }
         console.log(placeMultiOrder);

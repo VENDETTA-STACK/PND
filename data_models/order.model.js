@@ -128,14 +128,15 @@ const orderSchema = mongoose.Schema({
     courierId: [
         { type: mongoose.Types.ObjectId, ref: "Couriers", default: null },
     ],
-    schedualDateTime: {
-        type: Date
-    },
+    // schedualDateTime: {
+    //     type: Date
+    // },
     scheduleDate: {
         type: String,
     },
-    schedualTime: {
+    scheduleTime: {
         type: String,
+        default: "",
     },
     orderType: {
         type: String
