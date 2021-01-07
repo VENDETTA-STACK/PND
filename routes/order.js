@@ -2327,7 +2327,8 @@ router.post("/activeOrdersV2", async function (req, res, next) {
     const { customerId } = req.body;
     try {
         let record = await orderSchema
-            .find({ customerId: customerId, isActive: true })
+            .find({ $and: [ { isActive: true }, { customerId: customerId } ] })
+            // .find({ customerId: customerId, isActive: true })
             .populate(
                 "courierId",
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified profileImg"
@@ -2343,7 +2344,7 @@ router.post("/activeOrdersV2", async function (req, res, next) {
         let result = [];
         for(let j=0;j<unique.length;j++){
             console.log(unique[j]);
-            let orderData = await orderSchema.find({ orderNo: unique[j] });
+            let orderData = await orderSchema.find({ orderNo: unique[j] , isActive: true });
             result.push(orderData);
         }
         if (result.length != 0) {
