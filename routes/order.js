@@ -2031,8 +2031,8 @@ router.post("/multiNewOrder", async function(req,res,next){
                 status: "Order Processing",
                 note: "Your order is processing!",
             });
-            // var placeMultiOrder = await newMultiOrder.save();
-            var placeMultiOrder = newMultiOrder;
+            var placeMultiOrder = await newMultiOrder.save();
+            // var placeMultiOrder = newMultiOrder;
             MultiOrders.push(placeMultiOrder);
         }
         console.log(placeMultiOrder);
