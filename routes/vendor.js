@@ -199,7 +199,7 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         deliverytype,
         promocode,
         parcelcontents,
-        amountCollected,  
+        // amountCollected,  
     } = req.body;
     try {
         let vendorData = await vendorModelSchema.find({ _id: vendorId });
@@ -220,37 +220,38 @@ router.post("/vendorOrderCalc",async function(req,res,next){
         let picklat = vendorData[0].gpsLocation.lat;
         let picklong = vendorData[0].gpsLocation.long;
 
-        let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
+        if(picklat != null && picklong != null || picklat != undefined && picklong != undefined){
+            let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
 
-        let prmcodes = await promoCodeSchema.find({ code: promocode });
-        let settings = await settingsSchema.find({});
-        let delivery = await deliverytypesSchema.find({});
+            let prmcodes = await promoCodeSchema.find({ code: promocode });
+            let settings = await settingsSchema.find({});
+            let delivery = await deliverytypesSchema.find({});
 
-        // let promoused = 0;
+            // let promoused = 0;
 
-        let FixKm = parseFloat(vendorData[0].FixKm);
-        let UnderFixKmCharge = parseFloat(vendorData[0].UnderFixKmCharge);
-        let perKmCharge = parseFloat(vendorData[0].perKmCharge);
+            let FixKm = parseFloat(vendorData[0].FixKm);
+            let UnderFixKmCharge = parseFloat(vendorData[0].UnderFixKmCharge);
+            let perKmCharge = parseFloat(vendorData[0].perKmCharge);
 
-        // console.log(FixKm);
-        // console.log(UnderFixKmCharge);
-        // console.log(perKmCharge);
+            // console.log(FixKm);
+            // console.log(UnderFixKmCharge);
+            // console.log(perKmCharge);
 
-        let basicKm = 0;
-        let basicCharge = 0;
-        let extraaKm = 0;
-        let extraaCharge = 0;
-        let Amount = 0;
-        let totalAmount = 0;
-        let addionalCharges = 0;
-        let thirdPartyCollection = 0
-        let thirdPartyCollectionCharge = 0;
+            let basicKm = 0;
+            let basicCharge = 0;
+            let extraaKm = 0;
+            let extraaCharge = 0;
+            let Amount = 0;
+            let totalAmount = 0;
+            let addionalCharges = 0;
+            let thirdPartyCollection = 0
+            let thirdPartyCollectionCharge = 0;
 
-        let DataPass = [];
-        let pndBill = [];
+            let DataPass = [];
+            let pndBill = [];
 
-        let handlingCharge = parseFloat(settings[0].handling_charges);
-        console.log("HAndling : "+handlingCharge);
+            let handlingCharge = parseFloat(settings[0].handling_charges);
+            console.log("HAndling : "+handlingCharge);
 
         for(let j=0;j<deliveryPoints.length;j++){
 
@@ -266,57 +267,35 @@ router.post("/vendorOrderCalc",async function(req,res,next){
             let totaldistance = await calculatelocation(fromLatitude, fromLongitude,toLatitude,toLongitude);
             totaldistance = parseFloat(totaldistance) / 1000;
             // console.log(totaldistance);
-            if(amountCollected){
-                if(totaldistance < FixKm){
-                    basicKm = totaldistance;
-                    basicCharge = UnderFixKmCharge;
-                    extraaKm = 0;
-                    extraaCharge = 0;
-                    addionalCharges = 0;
-                    thirdPartyCollection = amountCollected;
-                    thirdPartyCollectionCharge = parseFloat(thirdPartyCollection) * handlingCharge; 
-                    Amount = basicCharge + extraaCharge + addionalCharges + thirdPartyCollectionCharge;
-                    totalAmount = Amount; 
-                }else{
-                    let remKm = totaldistance - FixKm;
-                    basicCharge = UnderFixKmCharge;
-                    extraaKm = remKm;
-                    extraaCharge = extraaKm * perKmCharge;
-                    addionalCharges = 0;
-                    thirdPartyCollection = amountCollected;
-                    thirdPartyCollectionCharge = parseFloat(thirdPartyCollection) * handlingCharge;
-                    Amount = basicCharge + extraaCharge + addionalCharges + thirdPartyCollectionCharge;
-                    totalAmount = Amount;
-                }
+            if(totaldistance < FixKm){
+                basicKm = totaldistance;
+                basicCharge = UnderFixKmCharge;
+                extraaKm = 0;
+                extraaCharge = 0;
+                addionalCharges = 0;
+                Amount = basicCharge + extraaCharge + addionalCharges;
+                totalAmount = Amount; 
             }else{
-                console.log("Here...!!!")
-                if(totaldistance < FixKm){
-                    basicKm = totaldistance;
-                    basicCharge = UnderFixKmCharge;
-                    extraaKm = 0;
-                    extraaCharge = 0;
-                    addionalCharges = 0;
-                    Amount = basicCharge + extraaCharge + addionalCharges;
-                    totalAmount = Amount; 
-                }else{
-                    let remKm = totaldistance - FixKm;
-                    basicCharge = UnderFixKmCharge;
-                    extraaKm = remKm;
-                    extraaCharge = extraaKm * perKmCharge;
-                    addionalCharges = 0;
-                    Amount = basicCharge + extraaCharge + addionalCharges;
-                    totalAmount = Amount;
-                }
+                let remKm = totaldistance - FixKm;
+                basicCharge = UnderFixKmCharge;
+                extraaKm = remKm;
+                extraaCharge = extraaKm * perKmCharge;
+                addionalCharges = 0;
+                Amount = basicCharge + extraaCharge + addionalCharges;
+                totalAmount = Amount;
             }
+
             let courierChargeCollectFromCust = deliveryPoints[j].courierChargeCollectFromCustomer;
             let vendorAmount = parseFloat(deliveryPoints[j].vendorBillAmount);
             let totalVendorBill = 0;
 
+            //totalAmount is total Courier Charge
             if(courierChargeCollectFromCust == false){
                 totalVendorBill = totalAmount + vendorAmount;
             }else{
                 totalVendorBill = vendorAmount;
             }
+
             let sendData = {
                 VendorAmount : vendorAmount,
                 CouriersChargeIs : totalAmount,
@@ -360,6 +339,68 @@ router.post("/vendorOrderCalc",async function(req,res,next){
                                Data: DataPass, 
                                Message: "calculation Done" 
                             })
+        }else{
+            console.log("here=================================");
+            let FixKm = parseFloat(vendorData[0].FixKm);
+            let UnderFixKmCharge = parseFloat(vendorData[0].UnderFixKmCharge);
+            let perKmCharge = parseFloat(vendorData[0].perKmCharge);
+
+            let totalAmount = UnderFixKmCharge;
+            let DataPass = [];
+            // console.log(FixKm);
+            // console.log(UnderFixKmCharge);
+            // console.log(perKmCharge);
+            for(let h=0;h<deliveryPoints.length;h++){
+                let courierChargeCollectFromCust = deliveryPoints[h].courierChargeCollectFromCustomer;
+                let vendorAmount = parseFloat(deliveryPoints[h].vendorBillAmount);
+                let totalVendorBill = 0;
+
+                //totalAmount is total Courier Charge
+                if(courierChargeCollectFromCust == false){
+                    totalVendorBill = totalAmount + vendorAmount;
+                }else{
+                    totalVendorBill = vendorAmount;
+                }
+
+                let sendData = {
+                    VendorAmount : vendorAmount,
+                    CouriersChargeIs : totalAmount,
+                    VendorTotalBill : totalVendorBill
+                }
+                DataPass.push(sendData);
+            }
+            console.log(DataPass);
+            let pndTotalAmountCollect = 0;
+            let pndTotalCourierCharge = 0;
+
+            for(let k=0;k<DataPass.length;k++){
+                pndTotalAmountCollect = pndTotalAmountCollect + parseFloat(DataPass[k].VendorTotalBill);
+                pndTotalCourierCharge = pndTotalCourierCharge + parseFloat(DataPass[k].CouriersChargeIs);
+            }
+            console.log(pndTotalAmountCollect);
+            console.log(pndTotalCourierCharge);
+
+            let finalPNDBill = parseFloat(pndTotalAmountCollect) - parseFloat(pndTotalCourierCharge);
+            finalPNDBill = Math.abs(finalPNDBill);
+            for(let jk=0;jk<orderIs.length;jk++){
+                let updateIs = {
+                    "deliveryPoint.customerCourierCharge" : DataPass[jk].CouriersChargeIs,
+                    "deliveryPoint.vendorBillFinalAmount" : DataPass[jk].VendorTotalBill,
+                    "chargeOfPND" : finalPNDBill,
+                }
+                let vendorOrderMTNum = orderIs[jk].multiOrderNo;
+                // console.log(vendorOrderMTNum);
+                let updateInOrder = await demoOrderSchema.findOneAndUpdate({ multiOrderNo: vendorOrderMTNum},updateIs);
+            }
+            res.status(200).json({ 
+                IsSuccess: true,
+                PndTotalAmountCollect: pndTotalAmountCollect,
+                PndTotalCourierCharge: pndTotalCourierCharge,
+                PNDBill : finalPNDBill,
+                Data: DataPass, 
+                Message: "calculation Done" 
+             })
+        }
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }
