@@ -255,36 +255,45 @@ router.post("/vendorOrderCalc",async function(req,res,next){
 
         for(let j=0;j<deliveryPoints.length;j++){
 
-            let lat3 = parseFloat(deliveryPoints[j].lat);
-            let long3 = parseFloat(deliveryPoints[j].long);
-            let tolocation = { latitude: Number(lat3), longitude: Number(long3) };
-            
-            let fromLatitude = fromlocation.latitude;
-            let fromLongitude = fromlocation.longitude;
-            let toLatitude = tolocation.latitude;
-            let toLongitude = tolocation.longitude;
-            
-            let totaldistance = await calculatelocation(fromLatitude, fromLongitude,toLatitude,toLongitude);
-            totaldistance = parseFloat(totaldistance) / 1000;
-            // console.log(totaldistance);
-            if(totaldistance < FixKm){
-                basicKm = totaldistance;
-                basicCharge = UnderFixKmCharge;
-                extraaKm = 0;
-                extraaCharge = 0;
-                addionalCharges = 0;
-                Amount = basicCharge + extraaCharge + addionalCharges;
-                totalAmount = Amount; 
+            if(deliveryPoints[j].lat != null && deliveryPoints[j].long != null || deliveryPoints[j].lat != undefined && deliveryPoints[j].long != undefined){
+                let lat3 = parseFloat(deliveryPoints[j].lat);
+                let long3 = parseFloat(deliveryPoints[j].long);
+        
+                let tolocation = { latitude: Number(lat3), longitude: Number(long3) };
+                
+                let fromLatitude = fromlocation.latitude;
+                let fromLongitude = fromlocation.longitude;
+                let toLatitude = tolocation.latitude;
+                let toLongitude = tolocation.longitude;
+                
+                let totaldistance = await calculatelocation(fromLatitude, fromLongitude,toLatitude,toLongitude);
+                totaldistance = parseFloat(totaldistance) / 1000;
+                // console.log(totaldistance);
+                if(totaldistance < FixKm){
+                    basicKm = totaldistance;
+                    basicCharge = UnderFixKmCharge;
+                    extraaKm = 0;
+                    extraaCharge = 0;
+                    addionalCharges = 0;
+                    Amount = basicCharge + extraaCharge + addionalCharges;
+                    totalAmount = Amount; 
+                }else{
+                    let remKm = totaldistance - FixKm;
+                    basicCharge = UnderFixKmCharge;
+                    extraaKm = remKm;
+                    extraaCharge = extraaKm * perKmCharge;
+                    addionalCharges = 0;
+                    Amount = basicCharge + extraaCharge + addionalCharges;
+                    totalAmount = Amount;
+                }
             }else{
-                let remKm = totaldistance - FixKm;
-                basicCharge = UnderFixKmCharge;
-                extraaKm = remKm;
-                extraaCharge = extraaKm * perKmCharge;
-                addionalCharges = 0;
-                Amount = basicCharge + extraaCharge + addionalCharges;
-                totalAmount = Amount;
-            }
+                console.log("Helo============================================");
+                // let FixKm = parseFloat(vendorData[0].FixKm);
+                let UnderFixKmCharge = parseFloat(vendorData[0].UnderFixKmCharge);
+                // let perKmCharge = parseFloat(vendorData[0].perKmCharge);
 
+                totalAmount = UnderFixKmCharge;
+            }
             let courierChargeCollectFromCust = deliveryPoints[j].courierChargeCollectFromCustomer;
             let vendorAmount = parseFloat(deliveryPoints[j].vendorBillAmount);
             let totalVendorBill = 0;
