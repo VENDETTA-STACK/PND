@@ -109,6 +109,8 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
             "accStatus.flag": true,
         })
         .select("id fcmToken");
+    console.log("-------------Get PND Partner-----------------------------------");
+    // console.log(getpndpartners);
 
     if (deliveryType == "Normal Delivery") {
         for (let i = 0; i < getpndpartners.length; i++) {
@@ -117,37 +119,43 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
                 (partnerlocation.duty == "ON") &
                 (Number(partnerlocation.parcel) < 3)
             ) {
-                let totalrequests = await requestSchema.countDocuments({
-                    orderId: orderid,
-                });
-                let partnerrequest = await requestSchema.find({
-                    courierId: getpndpartners[i].id,
-                    orderId: orderid,
-                });
-                if (totalrequests <= 4) {
-                    if (partnerrequest.length == 0) {
-                        let pickupcoords = { latitude: pickuplat, longitude: pickuplong };
-                        let partnercoords = {
-                            latitude: partnerlocation.latitude,
-                            longitude: partnerlocation.longitude,
-                        };
-                        // console.log(partnerlocation);
-                        // console.log(pickupcoords, partnercoords)
-                        let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
-                        if (distancebtnpp <= 15) {
-                            available.push({
-                                courierId: getpndpartners[i].id,
-                                orderId: orderid,
-                                distance: distancebtnpp,
-                                status: "Pending",
-                                fcmToken: getpndpartners[i].fcmToken,
-                                reason: "",
-                            });
+                if(partnerlocation.latitude != null && partnerlocation.longitude != null){
+                
+                    let totalrequests = await requestSchema.countDocuments({
+                        orderId: orderid,
+                    });
+                    let partnerrequest = await requestSchema.find({
+                        courierId: getpndpartners[i].id,
+                        orderId: orderid,
+                    });
+                    if (totalrequests <= 4) {
+                        if (partnerrequest.length == 0) {
+                            let pickupcoords = { latitude: pickuplat, longitude: pickuplong };
+                            let partnercoords = {
+                                latitude: partnerlocation.latitude == null ? "" : partnerlocation.latitude,
+                                longitude: partnerlocation.longitude == null ? "" : partnerlocation.longitude,
+                            };
+                            // console.log(partnerlocation);
+                            // console.log(pickupcoords, partnercoords)
+                            let distancebtnpp = await GoogleMatrix(pickupcoords, partnercoords);
+                            // console.log("Distacnwe: "+distancebtnpp);
+                            if (distancebtnpp <= 15) {
+                                available.push({
+                                    courierId: getpndpartners[i].id,
+                                    orderId: orderid,
+                                    distance: distancebtnpp,
+                                    status: "Pending",
+                                    fcmToken: getpndpartners[i].fcmToken,
+                                    reason: "",
+                                });
+                            }
                         }
                     }
                 }
             }
         }
+        console.log("ifffffffffff Normal");
+        console.log(available);
     } else {
         for (let i = 0; i < getpndpartners.length; i++) {
             let partnerlocation = await currentLocation(getpndpartners[i].id);
@@ -185,9 +193,14 @@ async function PNDfinder(pickuplat, pickuplong, orderid, deliveryType) {
             }
         }
     }
-
+    console.log("==================================Return==========================");
+    console.log(available);
     return available;
 }
+
+router.post("/testEMP",async function(req,res,next){
+    PNDfinder("21.186025822785844" , "72.79283153971866" , "5ff979b382a5b2719caf3ac6","Normal Delivery")
+});
 
 //PND Finder for Multiple delivery Order-----06/01/2021----MONIL
 async function PNDMTfinder(pickuplat, pickuplong, orderid, deliveryType) {
@@ -1959,7 +1972,7 @@ router.post("/multiNewOrder", async function(req,res,next){
         deliveryAddresses,
         collectCash,
         promoCode,
-        amountCollection,
+        amountCollectionList,
         amount,
         discount,
         additionalAmount,
@@ -2009,7 +2022,7 @@ router.post("/multiNewOrder", async function(req,res,next){
                     distance: deliveryAddresses[i].dpDistance,
                 },
                 collectCash: collectCash,
-                amountCollection: amountCollection,
+                amountCollection: amountCollectionList[i],
                 promoCode: promoCode,
                 amount: amount,
                 discount: discount,
@@ -2018,19 +2031,20 @@ router.post("/multiNewOrder", async function(req,res,next){
                 status: "Order Processing",
                 note: "Your order is processing!",
             });
-            var placeMultiOrder = await newMultiOrder.save();
-            // var placeMultiOrder = newMultiOrder;
+            // var placeMultiOrder = await newMultiOrder.save();
+            var placeMultiOrder = newMultiOrder;
             MultiOrders.push(placeMultiOrder);
         }
         console.log(placeMultiOrder);
+        console.log("--------------------Hello------------------------------------------------");
         var avlcourier = await PNDfinder(
             pkLat,
             pkLong,
             placeMultiOrder.id,
             placeMultiOrder.deliveryType
         );
-        // console.log("===============================================================");
-        // console.log(avlcourier);
+        console.log("===============================================================");
+        console.log("Available Is: "+avlcourier);
         if (promoCode != "0") {
             let usedpromo = new usedpromoSchema({
                 _id: new config.mongoose.Types.ObjectId(),
