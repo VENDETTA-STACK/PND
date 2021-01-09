@@ -29,34 +29,6 @@ var imguploader = multer.diskStorage({
 });
 var orderimg = multer({ storage: imguploader });
 
-// async function GoogleMatrix(fromlocation, tolocation) {
-//     let link =
-//         "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&mode=driving&origins=" +
-//         fromlocation.latitude +
-//         "," +
-//         fromlocation.longitude +
-//         "&destinations=" +
-//         tolocation.latitude +
-//         "," +
-//         tolocation.longitude +
-//         "&key=" +
-//         process.env.GOOGLE_API;
-//     let results = await axios.get(link);
-//     console.log(results);
-//     let distancebe = results.data.rows[0].elements[0].distance.value;
-//     console.log("Distance : "+distancebe + " Meter");
-//     return distancebe / 1000;
-// }
-
-router.post("/getData",async function(req,res,next){
-    let loc1 = { latitude: 21.052, longitude: 72.05151 };
-    let loc2 = { latitude: 21.1702401, longitude: 72.83106070000001 };
-    // let a = await GoogleMatrix(loc1,loc2);
-    let a = await calculatelocation(loc1.latitude,loc1.longitude,loc2.latitude,loc2.longitude);
-
-    console.log(a);
-});
-
 //Function for finding distance between two locations
 function calculatelocation(lat1, long1, lat2, long2) {
     if (lat1 == 0 || long1 == 0) {
@@ -335,11 +307,7 @@ router.post("/vendorOrderCalc",async function(req,res,next){
             // console.log(vendorOrderMTNum);
             let updateInOrder = await demoOrderSchema.findOneAndUpdate({ multiOrderNo: vendorOrderMTNum},updateIs);
         }
-        // let updateIs = {
-
-        // };
-        // let updateInOrder = await demoOrderSchema.findOneAndUpdate({ orderNo: orderNo},updateIs)
-
+       
         res.status(200).json({ 
                                IsSuccess: true,
                                PndTotalAmountCollect: pndTotalAmountCollect,

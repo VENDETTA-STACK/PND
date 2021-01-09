@@ -880,6 +880,8 @@ router.post("/updateDeliveryLocation", async function(req,res,next){
     }
 });
 
+//Update Vendor DropLocation
+
 router.post('/getOtp', (req, res, next) => {
     res.json({
         Message: "Data Found!",
