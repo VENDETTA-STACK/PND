@@ -107,6 +107,7 @@ router.post("/updateVendor" , async function(req,res,next){
                     long: long,
                     completeAddress: completeAddress,
                 },
+                isUpdated: true,
             }
             let updateRecord = await vendorModelSchema.findByIdAndUpdate(existVendor[0]._id,updateIs);
             res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Data Updated" });

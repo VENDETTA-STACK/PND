@@ -70,6 +70,10 @@ const vendorSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isUpdated: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("Vendor", vendorSchema);

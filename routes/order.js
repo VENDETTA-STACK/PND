@@ -1003,7 +1003,7 @@ router.post("/ordercalcV4", async (req, res, next) => {
         deliverytype,
         promocode,
         parcelcontents,
-        amountCollected,
+        amountCollectionList, //Based on this calculate amount calc below--09/01/2021(pending)
     } = req.body;
 
     let tempDistanceForALL = 0;
