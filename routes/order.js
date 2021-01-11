@@ -1012,7 +1012,7 @@ router.post("/ordercalcV4", async (req, res, next) => {
         },0);
         console.log("------------------------------Amount Collect Here Is------------------");
         console.log(amountCollected);
-        
+
     let tempDistanceForALL = 0;
 
     let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
