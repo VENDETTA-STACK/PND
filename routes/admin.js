@@ -501,6 +501,38 @@ router.post("/orders", async function (req, res, next) {
 //     }
 // }); 
 
+//Test
+router.post("/testCom",async function(req,res,next){
+    const { resPerPage , page } = req.body;
+    let resPerPageIs = Number(resPerPage);
+    let pageIs = Number(page);
+    try {
+        let completeOrders = await orderSchema.aggregate([
+            { $match: { status: "Order Delivered" , isActive: false } },    // This is your query
+            { $sort: { dateTime: -1 } },
+            { $skip: (resPerPageIs * pageIs) - resPerPageIs },   // Always apply 'skip' before 'limit'
+            { $limit: resPerPageIs },
+        ])
+        // let completeOrders = await orderSchema
+        //     .find({ status: "Order Delivered", isActive: false })
+        //     .populate(
+        //         "courierId",
+        //         "firstName lastName fcmToken mobileNo accStatus transport isVerified"
+        //     )
+        //     .populate("customerId")
+        //     .skip((resPerPageIs * pageIs) - resPerPageIs)
+        //     .limit(resPerPageIs)
+        //     .sort({ dateTime: -1 });
+        if(completeOrders.length > 0){
+            res.status(200).json({ IsSuccess: true , Data: completeOrders, Message: "Data Found" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: completeOrders, Message: "Data Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
 //orders completed
 router.post("/completed_orders", async function (req, res, next) {
     // const used = process.memoryUsage().heapUsed / 1024 / 1024;

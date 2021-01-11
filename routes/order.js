@@ -1006,6 +1006,13 @@ router.post("/ordercalcV4", async (req, res, next) => {
         amountCollectionList, //Based on this calculate amount calc below--09/01/2021(pending)
     } = req.body;
 
+    let amountCollected;
+        amountCollected = amountCollectionList.reduce(function(res,curr){
+            return res + curr;
+        },0);
+        console.log("------------------------------Amount Collect Here Is------------------");
+        console.log(amountCollected);
+        
     let tempDistanceForALL = 0;
 
     let fromlocation = { latitude: Number(picklat), longitude: Number(picklong) };
@@ -1233,7 +1240,7 @@ router.post("/ordercalcV4", async (req, res, next) => {
         console.log("--------------------In New User-----------------------");
         var newUserPromocode = await promoCodeSchema.find({ isForNewUser: true });
         
-        if(req.body.amountCollected){
+        if(amountCollectionList.length > 0){
             var handlingChargeIs = parseFloat(settings[0].handling_charges);
             console.log("--------------------Handling Charge-----------------------");
             console.log(distamt);
@@ -1278,7 +1285,7 @@ router.post("/ordercalcV4", async (req, res, next) => {
         }
             
     }else{
-        if(req.body.amountCollected){
+        if(amountCollectionList.length > 0){
             var handlingChargeIs = parseFloat(settings[0].handling_charges);
             console.log("--------------------Handling Charge-----------------------");
             console.log(distamt);
