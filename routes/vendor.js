@@ -92,9 +92,8 @@ router.post("/vendor_register", async function(req , res , next){
     }
 });
 
-//Update Customer Charges-----31-12-2020---MONIL
-router.post("/updateVendor" , async function(req,res,next){
-    const { vendorId , FixKm , UnderFixKmCharge , perKmCharge , lat , long , completeAddress} = req.body;
+router.post("/updateVendorCharge", async function(req,res,next){
+    const { vendorId , FixKm , UnderFixKmCharge , perKmCharge } = req.body;
     try {
         let existVendor = await vendorModelSchema.find({ _id: vendorId });
         if(existVendor.length == 1){
@@ -102,12 +101,32 @@ router.post("/updateVendor" , async function(req,res,next){
                 FixKm: FixKm,
                 UnderFixKmCharge: UnderFixKmCharge,
                 perKmCharge: perKmCharge,
+                isUpdated: true,
+            }
+            let updateRecord = await vendorModelSchema.findByIdAndUpdate(existVendor[0]._id,updateIs);
+            res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Data Updated" });
+        }else{
+            res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Vendor Not Found" });
+        }
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    } 
+});
+
+//Update Vendor Location-----31-12-2020---MONIL
+router.post("/updateVendor" , async function(req,res,next){
+    const { vendorId , lat , long , completeAddress} = req.body;
+    try {
+        let existVendor = await vendorModelSchema.find({ _id: vendorId });
+        if(existVendor.length == 1){
+            let updateIs = {
+
                 gpsLocation :{
                     lat: lat,
                     long: long,
                     completeAddress: completeAddress,
                 },
-                isUpdated: true,
+           
             }
             let updateRecord = await vendorModelSchema.findByIdAndUpdate(existVendor[0]._id,updateIs);
             res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Data Updated" });
@@ -567,7 +586,7 @@ router.post("/getAllVendor", async function(req,res,next){
     try {
         let vendorsAre = await vendorModelSchema.find();
         if(vendorsAre.length > 0){
-            res.status(200).json({ IsSuccess: true , Data: vendorsAre , Message: "Vendors Found" });
+            res.status(200).json({ IsSuccess: true ,Count: vendorsAre.length ,Data: vendorsAre , Message: "Vendors Found" });
         }else{
             res.status(200).json({ IsSuccess: true , Data: [] , Message: "Empty Vendors List" });
         }
