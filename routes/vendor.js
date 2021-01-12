@@ -722,14 +722,15 @@ function convertISOToReadable(isoDate){
     // console.log(typeof(isoDate));
     let b = isoDate.toISOString();
     let temp = b.split("T");
-    
+    let dateList = temp[0].split("-")
+    let dateIs = dateList[2] + "/" + dateList[1] + "/" + dateList[0];   
     let hour = isoDate.getHours();
     let minutes = isoDate.getMinutes();
     let seconds = isoDate.getSeconds();
     
     let TimeIs = hour + ":" + minutes + ":" + seconds; 
     
-    return [temp[0],TimeIs];
+    return [dateIs,TimeIs];
 }
 
 //Convert String Date to ISO
