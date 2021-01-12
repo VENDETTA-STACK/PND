@@ -3106,8 +3106,9 @@ router.post("/cancelOrderV1", async function(req,res,next){
             }
             // console.log("Schedule Time :" + scheduleTime);
             var TimeLimit = temp;
-            // console.log(TimeLimit);
+            console.log("LocalCheck :"+TimeLimit);
             TimeLimit.setMinutes(TimeLimit.getMinutes() - 15);
+            console.log("LocalCheck :"+TimeLimit);
             console.log("Here :" + TimeLimit.toISOString());
             
             // console.log("Order Cancel Limit :"+ TimeLimit.getHours() + ":" + TimeLimit.getMinutes());
@@ -3117,24 +3118,26 @@ router.post("/cancelOrderV1", async function(req,res,next){
             currentDateTime = currentDateTime.toISOString();
             // console.log("current :"+currentTime);
             // console.log("TimeLimit :" + TimeLimit)
-            let cancelLimit = TimeLimit.toISOString();
+            let cancelLimit = TimeLimit.toISOString();  
             // console.log("aa" + cancelLimit);
             // let t = "2020-12-11T05:30:03.872Z";
             // console.log("CurrentDateTime :" + currentDateTime);
             // console.log("aa :" + cancelLimit);
             console.log("current : "+currentDateTime);
             console.log("Cancel : "+cancelLimit);
+            // let diff = currentDateTime - cancelLimit;
+            // console.log(diff);
             if(currentDateTime < cancelLimit){
                 // var deleteOrder = await orderSchema.findByIdAndDelete(orderIs[0]._id);
                 let updateIs = {
                     status : "Order Cancelled",
                     isActive : false,
                 }
-                var deleteOrder = await orderSchema.findByIdAndUpdate(orderIs[jk]._id,updateIs);
-                res.status(200).json({ IsSuccess: true , Data: 1 ,Message: "Order Deleted" });
+                // var deleteOrder = await orderSchema.findByIdAndUpdate(orderIs[jk]._id,updateIs);
+                return res.status(200).json({ IsSuccess: true , Data: 1 ,Message: "Order Deleted" });
             }
             else{
-                res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Order Can't Deleted Before 15 Minutes of ScheduleTime" });
+                return res.status(200).json({ IsSuccess: true , Data: [] , Message: "Order Can't Deleted Before 15 Minutes of ScheduleTime" });
             }
         }
     } catch (error) {
