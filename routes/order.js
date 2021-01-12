@@ -3149,7 +3149,7 @@ router.post("/cancelOrderV1", async function(req,res,next){
                 var deleteOrder = await orderSchema.findByIdAndUpdate(orderIs[jk]._id,updateIs);
                 return res.status(200).json({ IsSuccess: true , Data: 1 ,Message: "Order Deleted" });
             }else{
-                return res.status(200).json({ IsSuccess: true , Data: [] , Message: "Order Can't Deleted Before 15 Minutes of ScheduleTime" });
+                return res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Order Can't Deleted Before 15 Minutes of ScheduleTime" });
             }
 
             // console.log(scheduleTimeOf.getTime());
