@@ -721,8 +721,12 @@ router.post("/test",async function(req,res,next){
 //Convert ISO Time To Readable Time----06/01/2021---MONIL
 function convertISOToReadable(isoDate){
     // console.log(typeof(isoDate));
-    let dateTimeIs = moment(isoDate).format("MMM Do YYYY, h:mm:ss a");
-    // console.log(dateTimeIs);
+    
+    // let dateTimeIs = moment(isoDate).format("MMM Do YYYY, h:mm:ss a");
+    let dateTimeIs = moment(isoDate).tz("Asia/Calcutta")
+    .format("MMM Do YYYY, h:mm:ss a");
+    
+    console.log(dateTimeIs);
     let dateTimeInList = dateTimeIs.split(",");
     // isoDate = new Date(isoDate);
     // console.log(isoDate);
