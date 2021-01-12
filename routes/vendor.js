@@ -208,6 +208,7 @@ router.post("/vendorOrderCalc",async function(req,res,next){
             deliveryPoints.push(deliveryData);
         }
         console.log(deliveryPoints);
+        // console.log(typeof(deliveryPoints[0].lat));
 
         let picklat = vendorData[0].gpsLocation.lat;
         let picklong = vendorData[0].gpsLocation.long;
@@ -244,10 +245,18 @@ router.post("/vendorOrderCalc",async function(req,res,next){
 
             let handlingCharge = parseFloat(settings[0].handling_charges);
             console.log("HAndling : "+handlingCharge);
-
+            
         for(let j=0;j<deliveryPoints.length;j++){
+            let dropLat = Number(deliveryPoints[j].lat);
+            let dropLong = Number(deliveryPoints[j].long);
+            // console.log([dropLat,dropLong]);
 
-            if(deliveryPoints[j].lat != null && deliveryPoints[j].long != null || deliveryPoints[j].lat != undefined && deliveryPoints[j].long != undefined){
+            if((deliveryPoints[j].lat != null && deliveryPoints[j].long != null) && 
+                (deliveryPoints[j].lat != undefined && deliveryPoints[j].long != undefined) &&
+                (dropLat !== 0 && dropLong !== 0)){
+                    console.log("----------------------Delivery Lat & Long----------------------");
+                    console.log(deliveryPoints[j].lat);
+                    console.log(deliveryPoints[j].long);
                 let lat3 = parseFloat(deliveryPoints[j].lat);
                 let long3 = parseFloat(deliveryPoints[j].long);
         
@@ -259,8 +268,9 @@ router.post("/vendorOrderCalc",async function(req,res,next){
                 let toLongitude = tolocation.longitude;
                 
                 let totaldistance = await calculatelocation(fromLatitude, fromLongitude,toLatitude,toLongitude);
+            
                 totaldistance = parseFloat(totaldistance) / 1000;
-                // console.log(totaldistance);
+                console.log(totaldistance);
                 if(totaldistance < FixKm){
                     basicKm = totaldistance;
                     basicCharge = UnderFixKmCharge;
