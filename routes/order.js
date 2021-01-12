@@ -2357,6 +2357,26 @@ router.post("/activeOrdersV2", async function (req, res, next) {
                 "courierId",
                 "firstName lastName fcmToken mobileNo accStatus transport isVerified profileImg"
             );
+        
+        let complete_Record = await orderSchema
+                        .find({ $and: [ { isActive: false } ,{ status: "Order Delivered" }, { customerId: customerId } ] })
+                        .populate(
+                            "courierId",
+                            "firstName lastName fcmToken mobileNo accStatus transport isVerified profileImg"
+                        );
+        
+        let completeOrderIs = [];
+        for(let j=0;j<complete_Record.length;j++){
+            completeOrderIs.push(complete_Record[j].orderNo);
+        }
+        let completeUnique = completeOrderIs.filter(onlyUnique);
+
+        // let comRes = [];
+        // for(let k=0;k<completeUnique.length;k++){
+        //     console.log(completeUnique[k]);
+        //     let orderData = await orderSchema.find({ orderNo: completeUnique[k] , isActive: false });
+        //     comRes.push(orderData);
+        // }
 
         let aciveOrderIs = [];
         for(let i=0;i<record.length;i++){
@@ -2366,15 +2386,21 @@ router.post("/activeOrdersV2", async function (req, res, next) {
         var unique = aciveOrderIs.filter(onlyUnique);
         console.log(unique);
         let result = [];
-        for(let j=0;j<unique.length;j++){
-            console.log(unique[j]);
-            let orderData = await orderSchema.find({ orderNo: unique[j] , isActive: true });
+        let completeActiveList = completeUnique.concat(unique);
+        // console.log(completeActiveList);
+        for(let j=0;j<completeActiveList.length;j++){
+            console.log(completeActiveList[j]);
+            let orderData = await orderSchema.find({ orderNo: completeActiveList[j] });
             result.push(orderData);
         }
+        // let DataSend = {
+        //     Completed : comRes,
+        //     Active : result
+        // }
         if (result.length != 0) {
             res
                 .status(200)
-                .json({ Message: "Order Found!", Count: result.length , Data: result, IsSuccess: true });
+                .json({ Message: "Order Found!", Count: result.length ,Data: result, IsSuccess: true });
         } else {
             res
                 .status(200)
