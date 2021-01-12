@@ -9,6 +9,7 @@ var { encryptPWD, comparePWD } = require('../crypto');
 var Bcrypt = require("bcryptjs");
 var mongoose = require("mongoose");
 var geolib = require("geolib");
+const moment = require('moment-timezone');
 
 var vendorModelSchema = require("../data_models/vendor.model");
 var demoOrderSchema = require("../data_models/demoMultiModel");
@@ -720,28 +721,32 @@ router.post("/test",async function(req,res,next){
 //Convert ISO Time To Readable Time----06/01/2021---MONIL
 function convertISOToReadable(isoDate){
     // console.log(typeof(isoDate));
-    isoDate = new Date(isoDate);
-    let b = isoDate.toISOString();
-    let temp = b.split("T");
-    let dateList = temp[0].split("-")
-    let dateIs = dateList[2] + "/" + dateList[1] + "/" + dateList[0];   
-    let hour = isoDate.getHours();
-    let minutes = isoDate.getMinutes();
-    let seconds = isoDate.getSeconds();
+    let dateTimeIs = moment(isoDate).format("MMM Do YYYY, h:mm:ss a");
+    // console.log(dateTimeIs);
+    let dateTimeInList = dateTimeIs.split(",");
+    // isoDate = new Date(isoDate);
+    // console.log(isoDate);
+    // let b = isoDate.toISOString();
+    // let temp = b.split("T");
+    // let dateList = temp[0].split("-")
+    // let dateIs = dateList[2] + "/" + dateList[1] + "/" + dateList[0];   
+    // let hour = isoDate.getHours();
+    // let minutes = isoDate.getMinutes();
+    // let seconds = isoDate.getSeconds();
 
-    if(hour<10){
-        hour = "0" + hour;
-    }
-    if(minutes<10){
-        minutes = "0" + minutes;
-    }
-    if(seconds<10){
-        seconds = "0" + seconds;
-    }
+    // if(hour<10){
+    //     hour = "0" + hour;
+    // }
+    // if(minutes<10){
+    //     minutes = "0" + minutes;
+    // }
+    // if(seconds<10){
+    //     seconds = "0" + seconds;
+    // }
     
-    let TimeIs = hour + ":" + minutes + ":" + seconds; 
+    // let TimeIs = hour + ":" + minutes + ":" + seconds; 
     
-    return [dateIs,TimeIs];
+    return [dateTimeInList[0],dateTimeInList[1]];
 }
 
 //Convert String Date to ISO

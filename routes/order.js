@@ -3088,7 +3088,8 @@ function diff_minutes(dt2, dt1)
     console.log(dt2);
     var diff =(dt2.getTime() - dt1.getTime()) / 1000;
     diff /= 60;
-    return Math.abs(Math.round(diff));
+    return Math.round(diff);
+    // return Math.abs(Math.round(diff));
   
 }
 
@@ -3116,7 +3117,7 @@ router.post("/cancelOrderV1", async function(req,res,next){
             console.log(scheduleTime);
             console.log(typeof(scheduleTime));
 
-            let diff = diff_minutes(curr,scheduleTime);
+            let diff = diff_minutes(scheduleTime,curr);
             console.log(diff);
             
             if(diff > 15){
@@ -3127,6 +3128,8 @@ router.post("/cancelOrderV1", async function(req,res,next){
                 }
                 var deleteOrder = await orderSchema.findByIdAndUpdate(orderIs[jk]._id,updateIs);
                 return res.status(200).json({ IsSuccess: true , Data: 1 ,Message: "Order Deleted" });
+            }else if(diff < 0){
+                return res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Time limit Over" });
             }
             else{
                 return res.status(200).json({ IsSuccess: true , Data: [] , Message: "Order Can't Deleted Before 15 Minutes of ScheduleTime" });
