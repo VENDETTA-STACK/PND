@@ -720,6 +720,7 @@ router.post("/test",async function(req,res,next){
 //Convert ISO Time To Readable Time----06/01/2021---MONIL
 function convertISOToReadable(isoDate){
     // console.log(typeof(isoDate));
+    isoDate = new Date(isoDate);
     let b = isoDate.toISOString();
     let temp = b.split("T");
     let dateList = temp[0].split("-")
@@ -727,6 +728,16 @@ function convertISOToReadable(isoDate){
     let hour = isoDate.getHours();
     let minutes = isoDate.getMinutes();
     let seconds = isoDate.getSeconds();
+
+    if(hour<10){
+        hour = "0" + hour;
+    }
+    if(minutes<10){
+        minutes = "0" + minutes;
+    }
+    if(seconds<10){
+        seconds = "0" + seconds;
+    }
     
     let TimeIs = hour + ":" + minutes + ":" + seconds; 
     
