@@ -711,6 +711,25 @@ router.post("/delVendorOrder", async function(req,res,next){
     }
 });
 
+router.post("/cancelVendorOrder", async function(req,res,next){
+    const { orderNo , vendorId } = req.body;
+    try {
+        let orderIs = await demoOrderSchema.find({ $and: [ { orderNo: orderNo }, { vendorId: vendorId } , { orderBy: "vendor" } ] });
+        console.log(orderIs.length);
+        for(let jk=0;jk<orderIs.length;jk++){
+            console.log(orderIs[jk]._id);
+            let updateIs = {
+                        status : "Order Cancelled",
+                        isActive : false,
+                    }
+            let cancelOrderIs = await demoOrderSchema.findByIdAndUpdate(orderIs[jk]._id,updateIs);
+        }
+        res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Order Cancelled" })
+    } catch (error) {
+        res.status(500).json({ IsSuccess: false , Message: error.message });
+    }
+});
+
 router.post("/test",async function(req,res,next){
     let order = await demoOrderSchema.find({ multiOrderNo: "ORDMT-VND-8651810000" })
     let date = order[0].dateTime

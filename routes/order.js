@@ -41,6 +41,7 @@ var courierNotificationSchema = require("../data_models/courier.notification.mod
 var deliverytypesSchema = require("../data_models/deliverytype.model");
 var categorySchema = require('../data_models/category.model');
 var demoOrderSchema = require('../data_models/demoMultiModel');
+var scheduleNotificationSchema = require('../data_models/scheduleNotification');
 const { json } = require("body-parser");
 
 //Function for finding distance between two locations
@@ -3332,9 +3333,41 @@ router.post("/scheduleOrderNotification", async function(req,res,next){
             if(scheduleDate != undefined && scheduleTime != undefined){
                 console.log(scheduleTime);
                 console.log(scheduleDate);
-            }
-            
+                
+                let timeList = scheduleTime.split(":");
+                let dateList = scheduleDate.split("-");
+
+                let month = Number(dateList[1]);
+                
+                month = month - 1;
+                let scheduleTimeOf = new Date(Number(dateList[0]),month,Number(dateList[2]),timeList[0],timeList[1]);
+                
+                var substractScheduleTime = moment(scheduleTimeOf).subtract(30, "minutes").toDate()
+                
+                console.log(scheduleTimeOf)
+                console.log(substractScheduleTime)
+                
+                let scheduleNotiTime = moment(substractScheduleTime)
+                        .tz("Asia/Calcutta")
+                        .format("DD/MM/YYYY, h:mm:ss a")
+                        .split(",")[1];
+
+                console.log(scheduleNotiTime);
+                let scheduleNotiRecordIs = await new scheduleNotificationSchema({
+                    orderNo: scheduledOrder[i].orderNo,
+                    scheduleDate: scheduledOrder[i].scheduleDate,
+                    scheduleTime: scheduleNotiTime,
+                })
+                // console.log(scheduleNotiRecordIs);
+                scheduleNotiRecordIs.save();
+            }            
+            // if(scheduleNotiRecordIs){
+            //     res.status(200).json({ IsSuccess: true , Data: scheduleNotiRecordIs , Message: "Schedule Notification Added" });
+            // }else{
+            //     res.status(200).json({ IsSuccess: true , Data: [] , Message: "Not Added" });
+            // }
         }
+        res.status(200).json({ IsSuccess: true , Data: 1 , Message: "Schedule Notification Added" });
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
     }

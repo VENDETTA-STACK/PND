@@ -155,7 +155,7 @@ const orderSchema = mongoose.Schema({
         type: Number,
         default: 0,
     },
-    orderType: {
+    orderBy: {
         type: String,
         default: "customer"
     },
