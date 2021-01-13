@@ -2388,19 +2388,26 @@ router.post("/activeOrdersV2", async function (req, res, next) {
         let result = [];
         let completeActiveList = completeUnique.concat(unique);
         // console.log(completeActiveList);
+        let singleOrder = [];
+        let multiOrder = [];
         for(let j=0;j<completeActiveList.length;j++){
             console.log(completeActiveList[j]);
             let orderData = await orderSchema.find({ orderNo: completeActiveList[j] });
-            result.push(orderData);
+            if(orderData.length > 1){
+                singleOrder.push(orderData);
+            }else{
+                multiOrder.push(orderData);
+            }
+            // result.push(orderData);
         }
-        // let DataSend = {
-        //     Completed : comRes,
-        //     Active : result
-        // }
-        if (result.length != 0) {
+        let DataSend = {
+            SingleDeliveryOrdersAre : singleOrder,
+            MultiDeliveryOrdersAre : multiOrder
+        }
+        if (DataSend.length != 0) {
             res
                 .status(200)
-                .json({ Message: "Order Found!", Count: result.length ,Data: result, IsSuccess: true });
+                .json({ Message: "Order Found!", Data: DataSend , IsSuccess: true });
         } else {
             res
                 .status(200)
@@ -3317,23 +3324,16 @@ router.post("/cancelOrderV1", async function(req,res,next){
 //Scheduled delivery - before 30min -popup or notified--------MONIL(22-12-2020)
 router.post("/scheduleOrderNotification", async function(req,res,next){
     try {
-        let scheduledOrder = await orderSchema.find();
-        let currentDateTime = new Date();
-        // console.log("Current Time :"+currentDateTime);
-        let noticeTime = currentDateTime.setMinutes(currentDateTime.getMinutes() - 30);
-        // console.log("Notice Time :"+currentDateTime);
+        let scheduledOrder = await orderSchema.find({ isActive: true });
+        
         for(let i=0;i<scheduledOrder.length;i++){
-            let scheduleTime = scheduledOrder[i].schedualDateTime;
-            if(scheduleTime != undefined){
-                console.log("Schedule Time"+scheduleTime);
-                let notificationTime = scheduleTime.setMinutes(scheduleTime.getMinutes() - 30);
-                console.log("Notice Time:" + scheduleTime);
-                // let tempSchedule = new Date(scheduleTime);
-                // console.log(scheduleTime.getMinutes());
-                if(scheduleTime == currentDateTime){
-                    console.log("----------------------------------------------");
-                }
+            let scheduleDate = scheduledOrder[i].scheduleDate;
+            let scheduleTime = scheduledOrder[i].scheduleTime;
+            if(scheduleDate != undefined && scheduleTime != undefined){
+                console.log(scheduleTime);
+                console.log(scheduleDate);
             }
+            
         }
     } catch (error) {
         res.status(500).json({ IsSuccess: false , Message: error.message });
