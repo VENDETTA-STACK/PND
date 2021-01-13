@@ -3152,8 +3152,8 @@ router.post("/cancelOrderV1", async function(req,res,next){
             console.log(scheduleTimeOf);
             console.log(currentTimeIs);
 
-            var startTime = moment(scheduleTimeOf, "HH:mm:ss a");
-            var endTime = moment(currentTimeIs, "HH:mm:ss a");
+            var startTime = moment(currentTimeIs, "HH:mm:ss a");
+            var endTime = moment(scheduleTimeOf, "HH:mm:ss a");
 
             // calculate total duration
             var duration = moment.duration(endTime.diff(startTime));
@@ -3174,6 +3174,8 @@ router.post("/cancelOrderV1", async function(req,res,next){
                 }
                 var deleteOrder = await orderSchema.findByIdAndUpdate(orderIs[jk]._id,updateIs);
                 return res.status(200).json({ IsSuccess: true , Data: 1 ,Message: "Order Deleted" });
+            }else if(minutes < 0){
+                return res.status(200).json({ IsSuccess: true , Data: 1 ,Message: "Schedule Time Passed Away" });
             }else{
                 return res.status(200).json({ IsSuccess: true , Data: 0 , Message: "Order Can't Deleted Before 15 Minutes of ScheduleTime" });
             }
